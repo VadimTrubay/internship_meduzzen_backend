@@ -3,7 +3,9 @@ import uvicorn
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+
+from app.conf.config import settings
+from app.routers import healthcheck
 
 app = FastAPI()
 
@@ -29,17 +31,13 @@ app.add_middleware(
 )
 
 
-@app.get("/")
-def health_check():
-    return JSONResponse(
-        status_code=200,
-        content={
-            "status_code": 200,
-            "detail": "ok",
-            "result": "working"
-        }
-    )
+app.include_router(healthcheck.router)
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8000, reload=True)
+    uvicorn.run(
+        "main:app",
+        host=settings.HOST,
+        port=settings.PORT,
+        reload=True,
+    )
