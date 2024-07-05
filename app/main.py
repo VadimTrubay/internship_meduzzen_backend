@@ -1,14 +1,11 @@
 import time
-
-from conf.config import settings
+import uvicorn
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import healthcheck
-
-
-import uvicorn
+from app.conf.config import settings
+from app.routers import healthcheck
 
 app = FastAPI()
 
@@ -36,7 +33,7 @@ app.include_router(healthcheck.router)
 
 if __name__ == "__main__":
     uvicorn.run(
-        "main:app",
+        "app.main:app",
         host=settings.APP_HOST,
         port=settings.APP_PORT,
         reload=settings.DEBUG,

@@ -45,9 +45,7 @@ To start the development server, run:
 
 Using:
 ```bash
-cd app
-
-python main.py
+python -m app.main
 ```
 
 After the server starts, open your web browser and navigate to:
@@ -66,8 +64,6 @@ To running the tests, run:
 
 Using:
 ```bash
-cd internship_meduzzen_backend
-
 pytest
 ```
 
