@@ -3,7 +3,9 @@ import uvicorn
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+
+from app.conf.config import settings
+from app.routers import healthcheck
 
 app = FastAPI()
 
@@ -16,9 +18,8 @@ async def add_process_time_header(request: Request, call_next):
     response.headers["X-Process-Time"] = str(process_time)
     return response
 
-origins = [
-    "http://localhost:8000"
-]
+
+origins = ["*"]
 
 app.add_middleware(
     CORSMiddleware,  # noqa
@@ -28,18 +29,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-@app.get("/")
-def health_check():
-    return JSONResponse(
-        status_code=200,
-        content={
-            "status_code": 200,
-            "detail": "ok",
-            "result": "working"
-        }
-    )
-
+app.include_router(healthcheck.router)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=8000, reload=True)
+    uvicorn.run(
+        "app.main:app",
+        host=settings.APP_HOST,
+        port=settings.APP_PORT,
+        reload=settings.DEBUG,
+    )
