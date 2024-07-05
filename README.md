@@ -47,11 +47,11 @@ Using:
 ```bash
 cd app
 
-uvicorn main:app --reload
+python main.py
 ```
 
 After the server starts, open your web browser and navigate to:
-http://localhost:8000/
+http://127.0.0.1:8000/
 
 ### Stopped the application
 To stop the development server, run:
@@ -68,7 +68,7 @@ Using:
 ```bash
 cd internship_meduzzen_backend
 
-pytest tests/test_main.py -v
+pytest
 ```
 
 ### Using Docker
@@ -91,11 +91,4 @@ Stopping the Docker Container, run:
 Using:
 ```bash
 docker stop <container_id>
-```
-
-Running Tests in Docker, run:
-
-Using:
-```bash
-docker exec -it <container_id> pytest tests/test_main.py -v
 ```

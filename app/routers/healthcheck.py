@@ -8,9 +8,5 @@ router = APIRouter()
 def health_check():
     return JSONResponse(
         status_code=200,
-        content={
-            "status_code": 200,
-            "detail": "ok",
-            "result": "working"
-        }
+        content={"status_code": 200, "detail": "ok", "result": "working"},
     )

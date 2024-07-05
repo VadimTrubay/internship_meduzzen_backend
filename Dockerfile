@@ -1,13 +1,22 @@
-FROM python:3.11
+FROM python:3.11-slim
 
-EXPOSE ${APP_PORT}
+WORKDIR /app
 
-WORKDIR /APP
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY ./requirements.txt .
+COPY requirements.txt .
 
-RUN pip install --no-cache-dir --upgrade -r ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["sh", "-c", "uvicorn main:app --host ${APP_HOST} --port ${APP_PORT}"]
+COPY .env .
+
+ENV PYTHONPATH=/app
+
+EXPOSE 8000
+
+CMD ["python", "app/main.py"]
