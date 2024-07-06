@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.conf.config import settings
 from app.routers import healthcheck
+from app.routers import db_healthcheck
 
 app = FastAPI()
 
@@ -30,6 +31,7 @@ app.add_middleware(
 )
 
 app.include_router(healthcheck.router)
+app.include_router(db_healthcheck.router)
 
 if __name__ == "__main__":
     uvicorn.run(

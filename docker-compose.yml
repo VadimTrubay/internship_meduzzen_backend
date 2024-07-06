@@ -1,0 +1,46 @@
+version: '3.11.5'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    volumes:
+      - .:/code
+    depends_on:
+      - postgres
+      - redis
+    network_mode: bridge
+
+  postgres:
+    image: postgres:14.0-alpine
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    restart: always
+    network_mode: bridge
+
+  redis:
+    image: redis:latest
+    env_file:
+      - .env
+    ports:
+      - "${REDIS_PORT}:6379"
+    volumes:
+      - redis_data:/data
+    network_mode: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
