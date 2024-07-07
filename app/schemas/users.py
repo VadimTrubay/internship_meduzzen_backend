@@ -34,20 +34,6 @@ class UserUpdateRequest(BaseModel):
     username: str
 
 
-class UsersListResponse(BaseModel):
-    users: List[BaseUserSchema]
-
-    class Config:
-        schema_extra = {
-            "example": {
-                "users": [
-                    {"id": 1, "username": "user1", "email": "user1@example.com"},
-                    {"id": 2, "username": "user2", "email": "user2@example.com"},
-                ]
-            }
-        }
-
-
 class UserDetailResponse(BaseUserSchema):
     is_admin: bool
 
@@ -55,8 +41,35 @@ class UserDetailResponse(BaseUserSchema):
         schema_extra = {
             "example": {
                 "id": 1,
+                "uuid": "123e4567-e89b-12d3-a456-426614174000",
                 "username": "user1",
                 "email": "user1@example.com",
                 "is_admin": True,
+            }
+        }
+
+
+class UsersListResponse(BaseModel):
+    users: List[UserDetailResponse]
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "users": [
+                    {
+                        "id": 1,
+                        "uuid": "123e4567-e89b-12d3-a456-426614174000",
+                        "username": "user1",
+                        "email": "user1@example.com",
+                        "is_admin": True,
+                    },
+                    {
+                        "id": 2,
+                        "uuid": "223e4567-e89b-12d3-a456-426614174001",
+                        "username": "user2",
+                        "email": "user2@example.com",
+                        "is_admin": False,
+                    },
+                ]
             }
         }
