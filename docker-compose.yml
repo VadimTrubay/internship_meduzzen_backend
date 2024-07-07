@@ -19,7 +19,7 @@ services:
     network_mode: bridge
 
   postgres:
-    image: postgres:14.0-alpine
+    image:  postgres:14.0-alpine
     env_file:
       - .env
     environment:

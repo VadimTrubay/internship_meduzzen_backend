@@ -43,7 +43,6 @@ To get started with this project, you will need to have Python and pip installed
 
 To start the development server, run:
 
-Using:
 ```bash
 python -m app.main
 ```
@@ -51,10 +50,46 @@ python -m app.main
 After the server starts, open your web browser and navigate to:
 http://127.0.0.1:8000/
 
+### Using Docker
+Build the Docker Compose, run:
+
+```bash
+docker-compose up --build
+```
+
+### Getting Started with Alembic
+Apply Migrations, run:
+```bash
+alembic upgrade head
+```
+[//]: # (1. Install Alembic, run:)
+
+[//]: # (```bash)
+
+[//]: # (pip install sqlalchemy alembic)
+
+[//]: # (```)
+
+[//]: # (2. Initialize Alembic, run:)
+
+[//]: # (```bash)
+
+[//]: # (alembic init alembic)
+
+[//]: # (```)
+
+[//]: # (3. Generate Migrations, run:)
+
+[//]: # (```bash)
+
+[//]: # (alembic revision --autogenerate -m "initial migration")
+
+[//]: # (```)
+
+
 ### Stopped the application
 To stop the development server, run:
 
-Using:
 ```bash
 Ctrl + C
 ```
@@ -62,15 +97,6 @@ Ctrl + C
 ### Running the Tests
 To running the tests, run:
 
-Using:
 ```bash
 pytest
-```
-
-### Using Docker
-Build the Docker Compose, run:
-
-Using:
-```bash
-docker-compose up --build
 ```

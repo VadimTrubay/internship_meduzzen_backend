@@ -9,10 +9,9 @@ from sqlalchemy.pool import NullPool
 from app.conf.config import settings
 
 DATABASE_URL = (
-    f"postgresql+asyncpg://"
-    f"{settings.DB_USER}:{settings.DB_PASSWORD}@"
-    f"{settings.DB_HOST}:{settings.DB_PORT}/"
-    f"{settings.DB_NAME}"
+    f"postgresql+asyncpg://{settings.DB_USER}:"
+    f"{settings.DB_PASSWORD}@{settings.DB_HOST}:"
+    f"{settings.DB_PORT}/{settings.DB_NAME}"
 )
 
 Base = declarative_base()
