@@ -10,28 +10,29 @@ class BaseUserSchema(BaseModel):
     email: EmailStr
 
     class Config:
-        orm_mode = True
         from_attributes = True
 
 
 class UserSchema(BaseUserSchema):
-    password: str
+    hashed_password: str
     is_admin: bool
 
 
 class SignUpRequest(BaseModel):
     username: str
     email: EmailStr
-    password: str
+    hashed_password: str
 
 
 class SignInRequest(BaseModel):
     email: EmailStr
-    password: str
+    hashed_password: str
 
 
 class UserUpdateRequest(BaseModel):
-    username: str
+    username: str | None
+    hashed_password: str | None
+    email: str | None
 
 
 class UserDetailResponse(BaseUserSchema):
@@ -40,8 +41,7 @@ class UserDetailResponse(BaseUserSchema):
     class Config:
         schema_extra = {
             "example": {
-                "id": 1,
-                "uuid": "123e4567-e89b-12d3-a456-426614174000",
+                "id": "123e4567-e89b-12d3-a456-426614174000",
                 "username": "user1",
                 "email": "user1@example.com",
                 "is_admin": True,
@@ -57,15 +57,13 @@ class UsersListResponse(BaseModel):
             "example": {
                 "users": [
                     {
-                        "id": 1,
-                        "uuid": "123e4567-e89b-12d3-a456-426614174000",
+                        "id": "123e4567-e89b-12d3-a456-426614174000",
                         "username": "user1",
                         "email": "user1@example.com",
                         "is_admin": True,
                     },
                     {
-                        "id": 2,
-                        "uuid": "223e4567-e89b-12d3-a456-426614174001",
+                        "id": "223e4567-e89b-12d3-a456-426614174001",
                         "username": "user2",
                         "email": "user2@example.com",
                         "is_admin": False,
