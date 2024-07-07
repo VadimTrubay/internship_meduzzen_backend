@@ -1,14 +1,15 @@
 import time
 import uvicorn
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.conf.config import settings
+from app.db.redis import RedisService
 from app.routers import healthcheck
 from app.routers import db_healthcheck
 
 app = FastAPI()
+redis_service = RedisService()
 
 
 @app.middleware("http")
@@ -21,7 +22,6 @@ async def add_process_time_header(request: Request, call_next):
 
 
 origins = ["*"]
-
 app.add_middleware(
     CORSMiddleware,  # noqa
     allow_origins=origins,
