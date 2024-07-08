@@ -68,23 +68,9 @@ pytest
 ```
 
 ### Using Docker
-Build the Docker Image, run:
+Build the Docker Compose, run:
 
 Using:
 ```bash
-docker build -t internship_meduzzen_backend .
-```
-
-Run the Docker Container, run:
-
-Using:
-```bash
-docker run -d -p 8000:8000 --env-file .env internship_meduzzen_backend
-```
-
-Stopping the Docker Container, run:
-
-Using:
-```bash
-docker stop <container_id>
+docker-compose up --build
 ```
