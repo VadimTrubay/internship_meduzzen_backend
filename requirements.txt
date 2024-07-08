@@ -12,3 +12,5 @@ pytest-asyncio==0.23.7
 asyncpg==0.29.0
 redis==5.0.7
 pydantic-settings==2.3.4
+loguru==0.7.2
+passlib==1.7.4

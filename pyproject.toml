@@ -2,4 +2,4 @@
 pythonpath = [
   ".", "app",
 ]
-#asyncio_mode="auto"
+asyncio_mode="auto"
