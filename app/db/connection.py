@@ -1,25 +1,15 @@
-from typing import AsyncGenerator
-
-from sqlalchemy import MetaData
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import NullPool
-
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from app.conf.config import settings
 
-DATABASE_URL = f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+SQLALCHEMY_DATABASE_URL = f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
 
-Base = declarative_base()
-
-
-engine = create_async_engine(DATABASE_URL, poolclass=NullPool)
-async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+engine = create_async_engine(SQLALCHEMY_DATABASE_URL, echo=False, pool_pre_ping=True)
+async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 
-async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
+async def get_session() -> AsyncSession:
+    async with async_session() as session:
         try:
             yield session
             await session.commit()

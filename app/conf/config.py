@@ -1,11 +1,13 @@
-from dotenv import load_dotenv
-
-from pydantic.v1 import BaseSettings
-
-load_dotenv()
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import find_dotenv
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=find_dotenv(filename=".env", usecwd=True),
+        env_file_encoding="utf-8",
+        extra="allow",
+    )
     APP_HOST: str
     APP_PORT: int
     DEBUG: bool
@@ -18,9 +20,6 @@ class Settings(BaseSettings):
 
     REDIS_PORT: int
     REDIS_HOST: str
-
-    class Config:
-        env_file = ".env"
 
 
 settings = Settings()

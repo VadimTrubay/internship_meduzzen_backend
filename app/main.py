@@ -5,12 +5,10 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.conf.config import settings
-from app.db.redis import RedisService
 from app.routers import healthcheck
 from app.routers import db_healthcheck
 
 app = FastAPI()
-redis_service = RedisService()
 
 
 logger.add("app.log", rotation="250 MB", compression="zip", level="INFO")
