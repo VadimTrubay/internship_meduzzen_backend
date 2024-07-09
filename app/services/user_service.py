@@ -66,19 +66,31 @@ class UserService:
         logger.info("Creating a new user...")
         return user
 
-    async def update_user(self, user_id: uuid.UUID, user_data) -> UserUpdateRequest:
+    async def update_user(
+        self, user_id: uuid.UUID, user_data: UserUpdateRequest
+    ) -> UserSchema:
         user = await self.session.get(UserModel, user_id)
         try:
             if user is None:
                 logger.error(f"Error updating user: {user_id}")
                 raise HTTPException(status_code=404, detail="User not found")
+
             for field, value in user_data.model_dump(exclude_unset=True).items():
+                if field == "hashed_password":
+                    value = pwd_context.hash(value)
                 setattr(user, field, value)
+
             await self.session.commit()
             await self.session.refresh(user)
             logger.info(f"Updating user with ID: {user_id}.")
             return user
 
+        except IntegrityError as e:
+            await self.session.rollback()
+            logger.error(f"Error updating user: {e}")
+            raise HTTPException(
+                status_code=400, detail="User with this email already exists"
+            )
         except IntegrityError as e:
             logger.error(f"Error updating user: {e}")
             raise HTTPException(
