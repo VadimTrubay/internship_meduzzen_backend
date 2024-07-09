@@ -1,6 +1,5 @@
 import uuid
-from typing import List
-
+from typing import List, Optional
 from pydantic import BaseModel, EmailStr
 
 
@@ -9,12 +8,11 @@ class BaseUserSchema(BaseModel):
     username: str
     email: EmailStr
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 
 class UserSchema(BaseUserSchema):
-    hashed_password: str
     is_admin: bool
 
 
@@ -30,16 +28,16 @@ class SignInRequest(BaseModel):
 
 
 class UserUpdateRequest(BaseModel):
-    username: str | None
-    hashed_password: str | None
-    email: str | None
+    username: Optional[str]
+    hashed_password: Optional[str]
+    email: Optional[EmailStr]
 
 
 class UserDetailResponse(BaseUserSchema):
     is_admin: bool
 
-    class Config:
-        schema_extra = {
+    class ConfigDict:
+        json_schema_extra = {
             "example": {
                 "id": "123e4567-e89b-12d3-a456-426614174000",
                 "username": "user1",
@@ -52,8 +50,8 @@ class UserDetailResponse(BaseUserSchema):
 class UsersListResponse(BaseModel):
     users: List[UserDetailResponse]
 
-    class Config:
-        schema_extra = {
+    class ConfigDict:
+        json_schema_extra = {
             "example": {
                 "users": [
                     {
@@ -71,3 +69,4 @@ class UsersListResponse(BaseModel):
                 ]
             }
         }
+        strict = True
