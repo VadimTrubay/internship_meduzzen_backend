@@ -33,7 +33,9 @@ async def get_user(user_id: uuid.UUID, session=Depends(get_session)) -> UserSche
 
 
 @router.post("/", response_model=UserSchema)
-async def create_user(user_data: SignUpRequest, session=Depends(get_session)) -> UserSchema:
+async def create_user(
+    user_data: SignUpRequest, session=Depends(get_session)
+) -> UserSchema:
     user_service = UserService(session=session)
     user = await user_service.create_user(user_data)
     return user

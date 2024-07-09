@@ -48,7 +48,7 @@ class UserDetailResponse(BaseUserSchema):
 
 
 class UsersListResponse(BaseModel):
-    users: List[UserDetailResponse]
+    users: List[BaseUserSchema]
 
     class ConfigDict:
         json_schema_extra = {
