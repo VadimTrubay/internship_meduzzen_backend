@@ -1,6 +1,7 @@
 import time
 import uvicorn
 from loguru import logger
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 

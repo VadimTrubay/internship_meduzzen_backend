@@ -44,7 +44,7 @@ class UserDetailResponse(BaseUserSchema):
                 "email": "user1@example.com",
                 "is_admin": True,
             }
-        }
+        },
     )
 
 
@@ -71,5 +71,5 @@ class UsersListResponse(BaseModel):
                 ]
             }
         },
-        strict=True
+        strict=True,
     )
