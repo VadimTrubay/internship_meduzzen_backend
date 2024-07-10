@@ -1,109 +1,75 @@
 import uuid
+from typing import List, Optional
 
-from loguru import logger
+import bcrypt
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi.exceptions import HTTPException
-from sqlalchemy.exc import IntegrityError
-from app.models.user_model import User as UserModel
-from app.schemas.users import (
-    SignUpRequest,
-    UsersListResponse,
-    UserSchema,
-    UserUpdateRequest,
-)
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from fastapi import HTTPException, status
+from app.repository.user_repository import UserRepository
+from app.schemas.users import UserSchema, UserUpdateRequest, BaseUserSchema
 
 
 class UserService:
-    def __init__(self, session):
+    def __init__(self, session: AsyncSession, repository: UserRepository):
         self.session = session
+        self.repository = repository
 
-    async def get_all_users(self, skip: int, limit: int) -> UsersListResponse:
-        logger.info("Get all users.")
-        users = await self.session.execute(
-            UserModel.__table__.select().offset(skip).limit(limit)
-        )
-        all_users = users.fetchall()
-
-        users_list = []
-
-        for user in all_users:
-            users_list.append(
-                UserSchema(
-                    id=user.id,
-                    username=user.username,
-                    email=user.email,
-                    is_admin=user.is_admin,
-                )
-            )
-
-        return UsersListResponse(users=users_list)
-
-    async def get_user_by_id(self, user_id: uuid.UUID) -> UserSchema:
-        user = await self.session.get(UserModel, user_id)
-        if user is None:
-            raise HTTPException(status_code=404, detail="User not found")
-        logger.info(f"Get user by id ID: {user_id}.")
-
-        return user
-
-    async def create_user(self, user_data: SignUpRequest) -> UserSchema:
-        password_hash = pwd_context.hash(user_data.hashed_password)
-        user_data.hashed_password = password_hash
-        user = UserModel(**user_data.model_dump())
-        try:
-            self.session.add(user)
-            await self.session.commit()
-            await self.session.refresh(user)
-        except IntegrityError as e:
-            await self.session.rollback()
-            logger.error(f"Error creating user: {e}")
+    async def _get_user_or_raise(self, user_id: uuid.UUID) -> UserSchema:
+        user = await self.repository.get_one(id=user_id)
+        if not user:
             raise HTTPException(
-                status_code=400, detail="User with this email already exists"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
             )
-        logger.info("Creating a new user...")
-        return user
+        return UserSchema.from_orm(user)
+
+    async def create_user(self, data: dict) -> UserSchema:
+        email = data.get("email")
+        existing_user_email = await self.repository.get_one(email=email)
+        if existing_user_email:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User with this email already exists",
+            )
+
+        username = data.get("username")
+        existing_user_username = await self.repository.get_one(username=username)
+        if existing_user_username:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="User with this username already exists",
+            )
+
+        hashed_password = data.get("hashed_password")
+        hashed_password = bcrypt.hashpw(
+            hashed_password.encode("utf-8"), bcrypt.gensalt()
+        )
+
+        user_data = {
+            "email": email,
+            "username": username,
+            "hashed_password": hashed_password.decode("utf-8"),
+            "is_admin": data.get("is_admin", False),
+        }
+
+        user = await self.repository.create_one(user_data)
+        return UserSchema.from_orm(user)
+
+    async def get_users(self, skip: int = 1, limit: int = 10) -> List[UserSchema]:
+        users = await self.repository.get_many(skip=skip, limit=limit)
+        return users
+
+    async def get_user_by_id(self, user_id: uuid.UUID) -> Optional[UserSchema]:
+        return await self._get_user_or_raise(user_id)
 
     async def update_user(
-        self, user_id: uuid.UUID, user_data: UserUpdateRequest
+        self, user_id: uuid.UUID, update_data: UserUpdateRequest
     ) -> UserSchema:
-        user = await self.session.get(UserModel, user_id)
-        try:
-            if user is None:
-                logger.error(f"Error updating user: {user_id}")
-                raise HTTPException(status_code=404, detail="User not found")
+        await self._get_user_or_raise(user_id)
+        update_dict = update_data.dict(exclude_unset=True)
+        updated_user = await self.repository.update_one(user_id, update_dict)
+        return UserSchema.from_orm(updated_user)
 
-            for field, value in user_data.model_dump(exclude_unset=True).items():
-                if field == "hashed_password":
-                    value = pwd_context.hash(value)
-                setattr(user, field, value)
-
-            await self.session.commit()
-            await self.session.refresh(user)
-            logger.info(f"Updating user with ID: {user_id}.")
-            return user
-
-        except IntegrityError as e:
-            await self.session.rollback()
-            logger.error(f"Error updating user: {e}")
-            raise HTTPException(
-                status_code=400, detail="User with this email already exists"
-            )
-        except IntegrityError as e:
-            logger.error(f"Error updating user: {e}")
-            raise HTTPException(
-                status_code=400, detail="User with this email already exists"
-            )
-
-    async def delete_by_id(self, user_id: uuid.UUID) -> UserSchema:
-        user = await self.session.get(UserModel, user_id)
-        if user is None:
-            logger.error(f"Error deleting user: {user_id}")
-            raise HTTPException(status_code=404, detail="User not found")
-
-        await self.session.delete(user)
-        await self.session.commit()
-        logger.info(f"Deleting user with ID: {user_id}.")
-        return user
+    async def delete_user(self, user_id: uuid.UUID) -> BaseUserSchema:
+        await self._get_user_or_raise(user_id)
+        return await self.repository.delete_one(user_id)

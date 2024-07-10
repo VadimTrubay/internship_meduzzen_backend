@@ -1,57 +1,61 @@
 import uuid
 
 from fastapi import APIRouter, Depends
-from app.db.connection import get_session
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.connection import get_session
+from app.repository.user_repository import UserRepository
 from app.schemas.users import (
     UserSchema,
     SignUpRequest,
-    UserUpdateRequest,
     UsersListResponse,
     UserUpdateRequest,
+    BaseUserSchema,
 )
-
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["users"])
 
 
-@router.get("/", response_model=UsersListResponse)
-async def get_users(
-    skip: int = 0, limit: int = 10, session=Depends(get_session)
-) -> UsersListResponse:
-    user_service = UserService(session=session)
-    users = await user_service.get_all_users(skip=skip, limit=limit)
-    return users
-
-
-@router.get("/{user_id}", response_model=UserSchema)
-async def get_user(user_id: uuid.UUID, session=Depends(get_session)) -> UserSchema:
-    user_service = UserService(session=session)
-    user = await user_service.get_user_by_id(user_id)
-    return user
+async def get_user_service(session: AsyncSession = Depends(get_session)) -> UserService:
+    user_repository = UserRepository(session)
+    return UserService(session=session, repository=user_repository)
 
 
 @router.post("/", response_model=UserSchema)
 async def create_user(
-    user_data: SignUpRequest, session=Depends(get_session)
-) -> UserSchema:
-    user_service = UserService(session=session)
-    user = await user_service.create_user(user_data)
+    user_create: SignUpRequest, user_service: UserService = Depends(get_user_service)
+):
+    return await user_service.create_user(user_create.model_dump())
+
+
+@router.get("/", response_model=UsersListResponse)
+async def get_all_users(user_service: UserService = Depends(get_user_service)):
+    users = await user_service.get_users()
+    return UsersListResponse(users=[UserSchema.from_orm(user) for user in users])
+
+
+@router.get("/{user_id}", response_model=UserSchema)
+async def get_user_by_id(
+    user_id: uuid.UUID, user_service: UserService = Depends(get_user_service)
+):
+    user = await user_service.get_user_by_id(user_id)
     return user
 
 
-@router.put("/{user_id}", response_model=UserUpdateRequest)
+@router.patch("/{user_id}", response_model=UserSchema)
 async def update_user(
-    user_id: uuid.UUID, user_data: UserUpdateRequest, session=Depends(get_session)
-) -> UserUpdateRequest:
-    user_service = UserService(session=session)
-    user = await user_service.update_user(user_id, user_data)
-    return user
+    user_id: uuid.UUID,
+    update_data: UserUpdateRequest,
+    user_service: UserService = Depends(get_user_service),
+):
+    updated_user = await user_service.update_user(user_id, update_data)
+    return updated_user
 
 
-@router.delete("/{user_id}", response_model=UserSchema)
-async def delete_user(user_id: uuid.UUID, session=Depends(get_session)) -> UserSchema:
-    user_service = UserService(session=session)
-    user = await user_service.delete_by_id(user_id)
-    return user
+@router.delete("/{user_id}", response_model=BaseUserSchema)
+async def delete_user(
+    user_id: uuid.UUID, user_service: UserService = Depends(get_user_service)
+):
+    deleted_user = await user_service.delete_user(user_id)
+    return deleted_user
