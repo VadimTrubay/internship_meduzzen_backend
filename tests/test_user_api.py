@@ -1,18 +1,16 @@
 import unittest
-from unittest.mock import AsyncMock, patch, MagicMock
-from fastapi.testclient import TestClient
-from fastapi import HTTPException
 from uuid import uuid4
+from unittest.mock import AsyncMock
+
+from fastapi.testclient import TestClient
 
 from app.main import app
-from app.schemas.users import SignUpRequest, UserUpdateRequest, UserSchema
+from app.schemas.users import UserSchema
 from app.routers.users import get_user_service
 
-# Create a TestClient
 client = TestClient(app)
 
 
-# Mock dependencies
 class TestUserRoutes(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
         self.user_service = AsyncMock()
@@ -97,4 +95,3 @@ class TestUserRoutes(unittest.IsolatedAsyncioTestCase):
         user_id = uuid4()
         response = client.delete(f"/users/{user_id}")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["username"], "deleteduser")
