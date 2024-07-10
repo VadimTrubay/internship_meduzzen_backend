@@ -18,17 +18,17 @@ class UserSchema(BaseUserSchema):
 class SignUpRequest(BaseModel):
     username: str
     email: EmailStr
-    hashed_password: str
+    password: str
 
 
 class SignInRequest(BaseModel):
     email: EmailStr
-    hashed_password: str
+    password: str
 
 
 class UserUpdateRequest(BaseModel):
     username: Optional[str]
-    hashed_password: Optional[str]
+    password: Optional[str]
     email: Optional[EmailStr]
 
 

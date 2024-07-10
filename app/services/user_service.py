@@ -47,7 +47,7 @@ class UserService:
                 detail=detail.USER_ALREADY_EXISTS,
             )
 
-        hashed_password = data.get("hashed_password")
+        hashed_password = data.get("password")
         hashed_password = bcrypt.hashpw(
             hashed_password.encode("utf-8"), bcrypt.gensalt()
         )
@@ -55,7 +55,7 @@ class UserService:
         user_data = {
             "email": email,
             "username": username,
-            "hashed_password": hashed_password.decode("utf-8"),
+            "password": hashed_password.decode("utf-8"),
             "is_admin": data.get("is_admin", False),
         }
 
@@ -70,11 +70,15 @@ class UserService:
     async def get_user_by_id(self, user_id: uuid.UUID) -> Optional[UserSchema]:
         return await self._get_user_or_raise(user_id)
 
-    async def update_user(
-        self, user_id: uuid.UUID, update_data: UserUpdateRequest
-    ) -> UserSchema:
+    async def update_user(self, user_id: uuid.UUID, update_data: UserUpdateRequest) -> UserSchema:
         await self._get_user_or_raise(user_id)
         update_dict = update_data.dict(exclude_unset=True)
+
+        if 'password' in update_dict:
+            update_dict['password'] = bcrypt.hashpw(
+                update_dict['password'].encode("utf-8"), bcrypt.gensalt()
+            ).decode("utf-8")
+
         updated_user = await self.repository.update_one(user_id, update_dict)
         logger.info(detail.SUCCESS_UPDATE_USER)
         return UserSchema.from_orm(updated_user)

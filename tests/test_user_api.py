@@ -61,7 +61,7 @@ class TestUserRoutes(unittest.IsolatedAsyncioTestCase):
             json={
                 "username": "testuser",
                 "email": "testuser@example.com",
-                "hashed_password": "hashedpassword",
+                "password": "hashedpassword",
             },
         )
         self.assertEqual(response.status_code, 200)
@@ -85,11 +85,13 @@ class TestUserRoutes(unittest.IsolatedAsyncioTestCase):
             json={
                 "username": "updateduser",
                 "email": "updateduser@example.com",
-                "hashed_password": "updatehashedpassword",
+                "password": "updatehashedpassword",
             },
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["username"], "updateduser")
+        self.assertEqual(response.json()["email"], "updateduser@example.com")
+
 
     async def test_delete_user(self):
         user_id = uuid4()
