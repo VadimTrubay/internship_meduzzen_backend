@@ -10,7 +10,7 @@ from app.schemas.auth import TokenInfo
 from app.services.auth_service import AuthService
 from app.schemas.users import SignInRequest, SignUpRequest, UserSchema
 
-router = APIRouter(prefix="/auth", tags=["JWT"])
+router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 async def get_auth_service(session: AsyncSession = Depends(get_session)) -> AuthService:

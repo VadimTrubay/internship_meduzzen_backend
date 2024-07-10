@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     AUTH0_API_AUDIENCE: str
     AUTH0_ALGORITHMS: str
     AUTH0_USERNAME_PREFIX: str
+    CLIENT_URI: str
+    ISSUER: str
     TOKEN_EXPIRATION: int
 
 
