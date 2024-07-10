@@ -12,20 +12,21 @@ EMAIL_CONFIRMED = "Email confirmed"
 CHECK_CONFIRMATION = "Check your email for confirmation."
 INVALID_TOKEN = "Invalid scope for token"
 NOT_VALIDATE = "Could not validate credentials"
-
+USER_WITH_EMAIL_NOT_EXIST = "User with this email does not exist"
+USER_WITH_EMAIL_ALREADY_EXIST = "User with this email already exists"
+USER_WITH_USERNAME_ALREADY_EXIST = "User with this username already exists"
 SUCCESS_CREATE_USER = "Success create user"
 SUCCESS_UPDATE_USER = "User updated"
 SUCCESS_DELETE_USER = "User deleted"
 USER_ALREADY_EXISTS = "User already exists"
 USER_NOT_ACTIVE = "User is not active"
-
+INCORRECT_PASSWORD = "Incorrect password"
 INVALID_TOKEN_EMAIL = "Invalid token for email verification"
 USER_BANNED = "User successfully banned"
 PRIVILEGES_DENIED = "You don have this privileges"
-
 USER_ROLE_EXISTS = "User role exists"
 USER_CHANGE_ROLE_TO = "User change role"
-
+TOKEN_HAS_EXPIRED = "Token has expired"
 COMMENT_NOT_FOUND = "Comment not found or not available."
 OPERATION_FORBIDDEN = "Operation forbidden"
 

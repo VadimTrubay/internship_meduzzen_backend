@@ -92,7 +92,6 @@ class TestUserRoutes(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.json()["username"], "updateduser")
         self.assertEqual(response.json()["email"], "updateduser@example.com")
 
-
     async def test_delete_user(self):
         user_id = uuid4()
         response = client.delete(f"/users/{user_id}")

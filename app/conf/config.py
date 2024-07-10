@@ -22,5 +22,12 @@ class Settings(BaseSettings):
     REDIS_PORT: int
     REDIS_HOST: str
 
+    AUTH0_SECRET: str
+    AUTH0_DOMAIN: str
+    AUTH0_API_AUDIENCE: str
+    AUTH0_ALGORITHMS: str
+    AUTH0_USERNAME_PREFIX: str
+    TOKEN_EXPIRATION: int
+
 
 settings = Settings()
