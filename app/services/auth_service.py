@@ -103,22 +103,22 @@ class AuthService:
         user_repository = UserRepository(session=session)
         current_user = await user_repository.get_one(email=user_email)
 
-        if not current_user:
-            username_prefix = settings.AUTH0_USERNAME_PREFIX
-            random_suffix = "".join(choices(ascii_lowercase + digits, k=6))
-            username = username_prefix + random_suffix
-            password = str(datetime.now())
+        """        *Подзадача **: реализовать
+        функцию
+        создания
+        пользователя
+        в
+        вашей
+        базе
+        данных
+        из
+        электронной
+        почты
+        Auth0, если
+        он
+        еще
+        не
+        существует."""
 
-            hashed_password = password_utils.hash_password(password)
-
-            user_data = {
-                "email": user_email,
-                "username": username,
-                "password": hashed_password.decode("utf-8"),
-                "is_admin": decoded_token.get("is_admin", False),
-            }
-
-            await user_repository.create_one(user_data)
-            current_user = username
-
-        return current_user
+    if not current_user:
+        pass

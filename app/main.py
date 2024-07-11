@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.conf.config import settings
 from app.routers import healthcheck, users, auth
 from app.routers import db_healthcheck
+from app.exept import exceptions_handler
 
 app = FastAPI()
 
@@ -21,7 +22,6 @@ async def add_process_time_header(request: Request, call_next):
     response = await call_next(request)
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(process_time)
-    logger.info(f"Processed request {request.url.path} in {process_time} seconds")
     return response
 
 
