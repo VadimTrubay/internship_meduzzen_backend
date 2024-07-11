@@ -4,11 +4,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=find_dotenv(filename=".env", usecwd=True),
-        env_file_encoding="utf-8",
-        extra="allow",
-    )
     APP_HOST: str
     APP_PORT: int
     DEBUG: bool
@@ -21,6 +16,12 @@ class Settings(BaseSettings):
 
     REDIS_PORT: int
     REDIS_HOST: str
+
+    model_config = SettingsConfigDict(
+        env_file=find_dotenv(filename=".env", usecwd=True),
+        env_file_encoding="utf-8",
+        extra="allow",
+    )
 
 
 settings = Settings()
