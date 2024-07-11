@@ -1,20 +1,22 @@
 from datetime import datetime
 from http.client import HTTPException
-from random import choices
-from string import ascii_lowercase, digits
 
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status, Depends
 
 from app.db.connection import get_session
-from app.conf.config import settings
 from app.conf import detail
 from app.repository.user_repository import UserRepository
 from app.schemas.auth import TokenModel
 from app.utils import jwt_utils
 from app.utils import password_utils
-
+from app.exept.custom_exceptions import (
+    UserWithEmailNotFound,
+    IncorrectPassword,
+    EmailAlreadyExists,
+    UserAlreadyExists,
+)
 
 security = HTTPBearer()
 
@@ -30,18 +32,14 @@ class AuthService:
         db_user = await self.repository.get_one(email=email)
 
         if not db_user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=detail.USER_WITH_EMAIL_NOT_EXIST,
-            )
+            raise UserWithEmailNotFound()
 
         if not password_utils.validate_password(
-            password=password,
-            hashed_password=db_user.password,
+                password=password,
+                hashed_password=db_user.password,
         ):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail=detail.INCORRECT_PASSWORD
-            )
+            raise IncorrectPassword()
+
         token = await jwt_utils.encode_jwt(payload={"email": email, "from": "noauth0"})
         token_info = TokenModel(access_token=token, token_type="Bearer")
         return token_info
@@ -50,18 +48,12 @@ class AuthService:
         email = data.get("email")
         existing_user_email = await self.repository.get_one(email=email)
         if existing_user_email:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=detail.USER_WITH_EMAIL_ALREADY_EXIST,
-            )
+            raise EmailAlreadyExists()
 
         username = data.get("username")
         existing_user_username = await self.repository.get_one(username=username)
         if existing_user_username:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail=detail.USER_WITH_USERNAME_ALREADY_EXIST,
-            )
+            raise UserAlreadyExists()
 
         password = data.get("password")
         hashed_password = password_utils.hash_password(password=password)
@@ -82,8 +74,8 @@ class AuthService:
 
     @staticmethod
     async def get_current_user(
-        token: HTTPAuthorizationCredentials = Depends(security),
-        session: AsyncSession = Depends(get_session),
+            token: HTTPAuthorizationCredentials = Depends(security),
+            session: AsyncSession = Depends(get_session),
     ) -> str:
         decoded_token = jwt_utils.decode_jwt(token.credentials)
         if not decoded_token:
@@ -103,22 +95,21 @@ class AuthService:
         user_repository = UserRepository(session=session)
         current_user = await user_repository.get_one(email=user_email)
 
-        """        *Подзадача **: реализовать
-        функцию
-        создания
-        пользователя
-        в
-        вашей
-        базе
-        данных
-        из
-        электронной
-        почты
-        Auth0, если
-        он
-        еще
-        не
-        существует."""
-
-    if not current_user:
-        pass
+        if not current_user:
+            pass
+        # """        *Подзадача **: реализовать
+        # функцию
+        # создания
+        # пользователя
+        # в
+        # вашей
+        # базе
+        # данных
+        # из
+        # электронной
+        # почты
+        # Auth0, если
+        # он
+        # еще
+        # не
+        # существует."""

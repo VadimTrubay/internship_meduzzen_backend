@@ -25,3 +25,13 @@ class UserNotFound(BaseCustomError):
 class NotFound(BaseCustomError):
     def __init__(self, message=Messages.NOT_FOUND):
         super().__init__(message)
+
+
+class UserWithEmailNotFound(BaseCustomError):
+    def __init__(self, message=Messages.USER_WITH_EMAIL_NOT_FOUND):
+        super().__init__(message)
+
+
+class IncorrectPassword(BaseCustomError):
+    def __init__(self, message=Messages.INCORRECT_PASSWORD):
+        super().__init__(message)

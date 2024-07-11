@@ -1,14 +1,14 @@
-from loguru import logger
 import uuid
 from typing import List, Optional
 
 import bcrypt
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.repository.user_repository import UserRepository
-from app.schemas.users import UserSchema, UserUpdateRequest, BaseUserSchema
 from app.conf.detail import Messages
 from app.exept.custom_exceptions import UserNotFound, NotFound
+from app.schemas.users import UserSchema, UserUpdateRequest, BaseUserSchema
+from app.repository.user_repository import UserRepository
 
 
 class UserService:
@@ -29,6 +29,7 @@ class UserService:
         if not users:
             logger.info(Messages.NOT_FOUND)
             raise NotFound()
+        logger.info(Messages.SUCCESS_GET_USERS)
         return users
 
     async def get_user_by_id(self, user_id: uuid.UUID) -> Optional[UserSchema]:

@@ -3,14 +3,17 @@ from enum import Enum
 
 class Messages(Enum):
     NOT_FOUND = "Not found"
+    SUCCESS_GET_USER = "Success get user"
+    SUCCESS_GET_USERS = "Success get users"
     SUCCESS_CREATE_USER = "Success create user"
     SUCCESS_UPDATE_USER = "User updated"
     SUCCESS_DELETE_USER = "User deleted"
     USER_ALREADY_EXISTS = "User already exists"
     EMAIL_AlREADY_EXISTS = "Email already exists"
     USER_NOT_FOUND = "User is not found"
-    SUCCESS_GET_USER = "Success get user"
+    USER_WITH_EMAIL_NOT_FOUND = "User with email not found"
     INVALID_EMAIL = "Invalid email"
+    INCORRECT_PASSWORD = "Incorrect password"
     EMAIL_NOT_CONFIRMED = "Email not confirmed"
     INVALID_PASSWORD = "Invalid password"
     INVALID_REFRESH_TOKEN = "Invalid refresh token"
