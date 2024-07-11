@@ -1,17 +1,16 @@
 import time
 import uvicorn
 from loguru import logger
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.conf.config import settings
-from app.db.redis import RedisService
-from app.routers import healthcheck
+from app.routers import healthcheck, users
 from app.routers import db_healthcheck
+from app.exept import exceptions_handler
 
 app = FastAPI()
-redis_service = RedisService()
-
 
 logger.add("app.log", rotation="250 MB", compression="zip", level="INFO")
 
@@ -22,7 +21,6 @@ async def add_process_time_header(request: Request, call_next):
     response = await call_next(request)
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(process_time)
-    logger.info(f"Processed request {request.url.path} in {process_time} seconds")
     return response
 
 
@@ -35,8 +33,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 app.include_router(healthcheck.router)
 app.include_router(db_healthcheck.router)
+app.include_router(users.router)
 
 if __name__ == "__main__":
     uvicorn.run(

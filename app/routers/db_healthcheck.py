@@ -1,34 +1,34 @@
-from fastapi import Depends, APIRouter, HTTPException
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
+from loguru import logger
+from fastapi import APIRouter
+from starlette.responses import JSONResponse
 
-from app.db.connection import get_async_session
-from app.db.redis import RedisService
+from app.db.postgres_db import check_postgres_connection
+from app.db.redis_db import check_redis_connection
 
 router = APIRouter()
 
 
 @router.get("/test_postgres")
-async def check_postgres(session: AsyncSession = Depends(get_async_session)):
+async def check_postgres():
     try:
-        result = session.execute(text("SELECT 1"))
-        if result is None:
-            raise HTTPException(
-                status_code=500, detail="Database is not configured correctly"
-            )
-        return {"message": "Postgres connection test successful"}
-    except Exception as e:
-        return {"message": f"Postgres connection test failed: {str(e)}"}
+        await check_postgres_connection()
+        logger.info("Postgres connection test successful")
+        return JSONResponse(
+            content={"postgres_status": "Postgres connection test successful"}
+        )
+    except Exception as error:
+        logger.error("Postgres connection test failed")
+        return error
 
 
 @router.get("/test_redis")
-async def check_redis(redis_service: RedisService = Depends()):
+async def check_redis():
     try:
-        await redis_service.set("test_key", "test_value")
-        value = await redis_service.get("test_key")
-        assert value == "test_value"
-        return {"message": "Redis connection test successful"}
-    except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Redis connection test failed: {str(e)}"
+        await check_redis_connection()
+        logger.info("Redis connection test successful")
+        return JSONResponse(
+            content={"redis_status": "Redis connection test successful"}
         )
+    except Exception as error:
+        logger.error("Redis connection test failed")
+        return error

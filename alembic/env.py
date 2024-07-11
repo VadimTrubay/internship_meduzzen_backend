@@ -6,7 +6,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from app.db.connection import DATABASE_URL
+from app.db.connection import SQLALCHEMY_DATABASE_URL
 from app.models.base_model import Base
 
 config = context.config
@@ -22,7 +22,7 @@ if config.config_file_name is not None:
 # target_metadata = mymodel.Base.metadata
 target_metadata = Base.metadata
 
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
+config.set_main_option("sqlalchemy.url", SQLALCHEMY_DATABASE_URL)
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
