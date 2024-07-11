@@ -7,13 +7,14 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status, Depends
 
-from app.conf.config import settings
 from app.db.connection import get_session
-from app.repository.user_repository import UserRepository
-from app.schemas.auth import TokenInfo
-from app.utils import auth as auth_utils
-
+from app.conf.config import settings
 from app.conf import detail
+from app.repository.user_repository import UserRepository
+from app.schemas.auth import TokenModel
+from app.utils import jwt_utils
+from app.utils import password_utils
+
 
 security = HTTPBearer()
 
@@ -23,7 +24,7 @@ class AuthService:
         self.session = session
         self.repository = repository
 
-    async def validate_auth_user(self, data: dict) -> TokenInfo:
+    async def validate_auth_user(self, data: dict) -> TokenModel:
         email = data.get("email")
         password = data.get("password")
         db_user = await self.repository.get_one(email=email)
@@ -34,18 +35,18 @@ class AuthService:
                 detail=detail.USER_WITH_EMAIL_NOT_EXIST,
             )
 
-        if not auth_utils.validate_password(
+        if not password_utils.validate_password(
             password=password,
             hashed_password=db_user.password,
         ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN, detail=detail.INCORRECT_PASSWORD
             )
-        token = await auth_utils.encode_jwt(payload={"email": email, "from": "noauth0"})
-        token_info = TokenInfo(access_token=token, token_type="Bearer")
+        token = await jwt_utils.encode_jwt(payload={"email": email, "from": "noauth0"})
+        token_info = TokenModel(access_token=token, token_type="Bearer")
         return token_info
 
-    async def create_user(self, data: dict) -> TokenInfo:
+    async def create_user(self, data: dict) -> TokenModel:
         email = data.get("email")
         existing_user_email = await self.repository.get_one(email=email)
         if existing_user_email:
@@ -63,7 +64,7 @@ class AuthService:
             )
 
         password = data.get("password")
-        hashed_password = auth_utils.hash_password(password=password)
+        hashed_password = password_utils.hash_password(password=password)
 
         user_data = {
             "email": email,
@@ -74,8 +75,8 @@ class AuthService:
 
         await self.repository.create_one(user_data)
 
-        token = await auth_utils.encode_jwt(payload={"email": email})
-        token_info = TokenInfo(access_token=token, token_type="Bearer")
+        token = await jwt_utils.encode_jwt(payload={"email": email})
+        token_info = TokenModel(access_token=token, token_type="Bearer")
 
         return token_info
 
@@ -84,7 +85,7 @@ class AuthService:
         token: HTTPAuthorizationCredentials = Depends(security),
         session: AsyncSession = Depends(get_session),
     ) -> str:
-        decoded_token = auth_utils.decode_jwt(token.credentials)
+        decoded_token = jwt_utils.decode_jwt(token.credentials)
         if not decoded_token:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail=detail.INVALID_TOKEN
@@ -108,7 +109,7 @@ class AuthService:
             username = username_prefix + random_suffix
             password = str(datetime.now())
 
-            hashed_password = auth_utils.hash_password(password)
+            hashed_password = password_utils.hash_password(password)
 
             user_data = {
                 "email": user_email,
