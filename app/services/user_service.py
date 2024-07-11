@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.repository.user_repository import UserRepository
 from app.schemas.users import UserSchema, UserUpdateRequest, BaseUserSchema
 from app.conf.detail import Messages
-from exept.custom_exceptions import (
+from app.exept.custom_exceptions import (
     UserNotFound,
     EmailAlreadyExists,
     UserAlreadyExists,

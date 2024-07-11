@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.conf.config import settings
 from app.routers import healthcheck, users
 from app.routers import db_healthcheck
-from exept import exceptions_handler
+from app.exept import exceptions_handler
 
 app = FastAPI()
 
