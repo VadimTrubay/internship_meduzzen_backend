@@ -4,7 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.connection import get_session
 from app.repository.user_repository import UserRepository
 from app.services.auth_service import AuthService
-from app.schemas.users import SignInRequest, SignUpRequest, UserSchema, SignInResponse, UserResponse
+from app.schemas.users import (
+    SignInRequest,
+    SignUpRequest,
+    UserSchema,
+    SignInResponse,
+    UserResponse,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
