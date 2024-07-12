@@ -25,13 +25,14 @@ async def add_process_time_header(request: Request, call_next):
     return response
 
 
-origins = ["*"]
+origins = ["http://localhost", "http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,  # noqa
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS", "DELETE", "PATCH", "PUT"],
+    allow_headers=["Content-Type", "Set-Cookie", "Access-Control-Allow-Headers", "Access-Control-Allow-Origin",
+                   "Authorization"],
 )
 
 app.include_router(healthcheck.router)
