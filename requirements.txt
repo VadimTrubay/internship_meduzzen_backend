@@ -20,3 +20,4 @@ pytest~=8.2.2
 bcrypt==3.2.2
 PyJWT==2.8.0
 cryptography==42.0.8
+faker==26.0.0
