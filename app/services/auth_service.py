@@ -38,8 +38,8 @@ class AuthService:
             raise UserWithEmailNotFound()
 
         if not password_utils.validate_password(
-                password=password,
-                hashed_password=db_user.password,
+            password=password,
+            hashed_password=db_user.password,
         ):
             raise IncorrectPassword()
 
@@ -87,19 +87,26 @@ class AuthService:
         # Extract user information from the token
         email = decoded_token.get("email")
         if not email:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email not found in token")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email not found in token",
+            )
 
         # Check if the user already exists
         existing_user = await self.repository.get_one(email=email)
         if existing_user:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="User already exists"
+            )
 
         # Create the new user
         user_data = {
             "email": email,
-            "username": email.split('@')[0],  # Use part of the email as username
-            "password": password_utils.hash_password(password="defaultpassword").decode("utf-8"),
-            "is_admin": False
+            "username": email.split("@")[0],  # Use part of the email as username
+            "password": password_utils.hash_password(password="defaultpassword").decode(
+                "utf-8"
+            ),
+            "is_admin": False,
         }
         new_user = await self.repository.create_one(user_data)
 
@@ -111,8 +118,8 @@ class AuthService:
 
     @staticmethod
     async def get_current_user(
-            token: HTTPAuthorizationCredentials = Depends(security),
-            session: AsyncSession = Depends(get_session),
+        token: HTTPAuthorizationCredentials = Depends(security),
+        session: AsyncSession = Depends(get_session),
     ) -> UserModel:
         decoded_token = jwt_utils.decode_jwt(token.credentials)
         if not decoded_token:
@@ -136,9 +143,13 @@ class AuthService:
             # Decode Auth0 token again to get email and create new user
             new_user_data = {
                 "email": user_email,
-                "username": user_email.split('@')[0],  # Use part of the email as username
-                "password": password_utils.hash_password(password="defaultpassword").decode("utf-8"),
-                "is_admin": False
+                "username": user_email.split("@")[
+                    0
+                ],  # Use part of the email as username
+                "password": password_utils.hash_password(
+                    password="defaultpassword"
+                ).decode("utf-8"),
+                "is_admin": False,
             }
             await user_repository.create_one(new_user_data)
             current_user = await user_repository.get_one(email=user_email)
@@ -146,12 +157,12 @@ class AuthService:
         if not current_user:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Failed to create user from Auth0 token"
+                detail="Failed to create user from Auth0 token",
             )
 
         return UserModel(
             id=current_user.id,
             email=current_user.email,
             username=current_user.username,
-            is_admin=current_user.is_admin
+            is_admin=current_user.is_admin,
         )
