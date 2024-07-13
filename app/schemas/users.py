@@ -15,11 +15,6 @@ class UserSchema(BaseUserSchema):
     is_admin: bool
 
 
-class UserResponse(BaseUserSchema):
-    password: str
-    is_admin: bool
-
-
 class SignUpRequest(BaseModel):
     username: str
     email: EmailStr
