@@ -3,7 +3,7 @@ from datetime import datetime
 from faker import Faker
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import HTTPException, status, Depends
+from fastapi import Depends
 
 from app.db.connection import get_session
 from app.repository.user_repository import UserRepository
@@ -15,6 +15,8 @@ from app.exept.custom_exceptions import (
     IncorrectPassword,
     EmailAlreadyExists,
     UserAlreadyExists,
+    UserNotFound,
+    UnAuthorized
 )
 
 security = HTTPBearer()
@@ -34,8 +36,8 @@ class AuthService:
             raise UserWithEmailNotFound()
 
         if not password_utils.validate_password(
-            password=password,
-            hashed_password=db_user.password,
+                password=password,
+                hashed_password=db_user.password,
         ):
             raise IncorrectPassword()
 
@@ -71,23 +73,17 @@ class AuthService:
 
     @staticmethod
     async def get_current_user(
-        token: HTTPAuthorizationCredentials = Depends(security),
-        session: AsyncSession = Depends(get_session),
+            token: HTTPAuthorizationCredentials = Depends(security),
+            session: AsyncSession = Depends(get_session),
     ) -> str:
         decoded_token = jwt_utils.decode_jwt(token.credentials)
         if not decoded_token:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Token invalid",
-            )
+            raise UserNotFound()
 
         current_time = datetime.utcnow()
         expiration_time = datetime.utcfromtimestamp(decoded_token["exp"])
         if current_time >= expiration_time:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has expired",
-            )
+            raise UnAuthorized()
 
         user_email = decoded_token.get("email")
         user_repository = UserRepository(session=session)
@@ -107,6 +103,6 @@ class AuthService:
             }
 
             await user_repository.create_one(user_data)
-            current_user = username
+            current_user = await user_repository.get_one(email=user_email)
 
         return current_user

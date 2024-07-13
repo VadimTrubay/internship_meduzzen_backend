@@ -3,6 +3,7 @@ from enum import Enum
 
 class Messages(Enum):
     NOT_FOUND = "Not found"
+    UNAUTHORIZED = "Unauthorized"
     SUCCESS_GET_USER = "Success get user"
     SUCCESS_GET_USERS = "Success get users"
     SUCCESS_CREATE_USER = "Success create user"
