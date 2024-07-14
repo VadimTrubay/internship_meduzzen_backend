@@ -1,6 +1,7 @@
 from app.main import app
 from fastapi import status, Request
 from fastapi.responses import JSONResponse
+
 from app.services.user_service import UserNotFound, NotFound
 from app.services.auth_service import (
     UserWithEmailNotFound,
@@ -16,6 +17,13 @@ async def not_found_exception_handler(request: Request, exc: NotFound):
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
     )
+
+
+from app.services.user_service import (
+    UserNotFound,
+    UserAlreadyExists,
+    EmailAlreadyExists,
+)
 
 
 @app.exception_handler(UserNotFound)

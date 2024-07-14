@@ -12,7 +12,6 @@ from app.exept import exceptions_handler
 
 app = FastAPI()
 
-
 logger.add("app.log", rotation="250 MB", compression="zip", level="INFO")
 
 
@@ -39,6 +38,7 @@ app.add_middleware(
         "Authorization",
     ],
 )
+
 
 app.include_router(healthcheck.router)
 app.include_router(db_healthcheck.router)

@@ -9,6 +9,15 @@ from app.conf.detail import Messages
 from app.exept.custom_exceptions import UserNotFound, NotFound
 from app.schemas.users import UserSchema, UserUpdateRequest, BaseUserSchema
 from app.repository.user_repository import UserRepository
+from app.repository.user_repository import UserRepository
+from app.schemas.users import UserSchema, UserUpdateRequest, BaseUserSchema
+from app.conf.detail import Messages
+from app.exept.custom_exceptions import (
+    UserNotFound,
+    EmailAlreadyExists,
+    UserAlreadyExists,
+    NotFound,
+)
 
 
 class UserService:
@@ -22,6 +31,37 @@ class UserService:
             logger.info(Messages.NOT_FOUND)
             raise UserNotFound()
         logger.info(Messages.SUCCESS_GET_USER)
+
+        return UserSchema.from_orm(user)
+
+    async def create_user(self, data: dict) -> UserSchema:
+        email = data.get("email")
+        existing_user_email = await self.repository.get_one(email=email)
+        if existing_user_email:
+            logger.info(Messages.EMAIL_AlREADY_EXISTS)
+            raise EmailAlreadyExists()
+
+        username = data.get("username")
+        existing_user_username = await self.repository.get_one(username=username)
+        if existing_user_username:
+            logger.info(Messages.USER_ALREADY_EXISTS)
+            raise UserAlreadyExists()
+
+        hashed_password = data.get("password")
+        hashed_password = bcrypt.hashpw(
+            hashed_password.encode("utf-8"), bcrypt.gensalt()
+        )
+
+        user_data = {
+            "email": email,
+            "username": username,
+            "password": hashed_password.decode("utf-8"),
+            "is_admin": data.get("is_admin", False),
+        }
+
+        user = await self.repository.create_one(user_data)
+        logger.info(Messages.SUCCESS_CREATE_USER)
+        
         return UserSchema.from_orm(user)
 
     async def get_users(self, skip: int = 1, limit: int = 10) -> List[UserSchema]:
@@ -30,6 +70,7 @@ class UserService:
             logger.info(Messages.NOT_FOUND)
             raise NotFound()
         logger.info(Messages.SUCCESS_GET_USERS)
+
         return users
 
     async def get_user_by_id(self, user_id: uuid.UUID) -> Optional[UserSchema]:
