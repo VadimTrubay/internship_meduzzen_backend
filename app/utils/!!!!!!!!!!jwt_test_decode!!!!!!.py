@@ -3,14 +3,14 @@ import base64
 import jwt
 from jwt import ExpiredSignatureError, InvalidTokenError
 
-'''
+"""
 AUTH0_SECRET=MRP5BAsfD2cfZWlIx1Fa6rxklRG3Kcva6YbEJUzVfZZpMbVJ6CdQlxD7ACDZ1BHt
 AUTH0_DOMAIN=dev-8y2zbk3ly7hqi1x2.eu.auth0.com
 AUTH0_API_AUDIENCE=https://meduzzen-app
 AUTH0_ALGORITHM=HS256
 ISSUER=https://dev-8y2zbk3ly7hqi1x2.eu.auth0.com/
 TOKEN_EXPIRATION=240000
-'''
+"""
 
 
 client_secret1 = "TVJQNUJBc2ZEMmNmWldsSXgxRmE2cnhrbFJHM0tjdmE2WWJFSlV6VmZaWnBNYlZKNkNkUWx4RDdBQ0RaMUJIdA=="
