@@ -16,7 +16,7 @@ from app.exept.custom_exceptions import (
     EmailAlreadyExists,
     UserAlreadyExists,
     UserNotFound,
-    UnAuthorized
+    UnAuthorized,
 )
 
 security = HTTPBearer()
@@ -36,8 +36,8 @@ class AuthService:
             raise UserWithEmailNotFound()
 
         if not password_utils.validate_password(
-                password=password,
-                hashed_password=db_user.password,
+            password=password,
+            hashed_password=db_user.password,
         ):
             raise IncorrectPassword()
 
@@ -73,8 +73,8 @@ class AuthService:
 
     @staticmethod
     async def get_current_user(
-            token: HTTPAuthorizationCredentials = Depends(security),
-            session: AsyncSession = Depends(get_session),
+        token: HTTPAuthorizationCredentials = Depends(security),
+        session: AsyncSession = Depends(get_session),
     ) -> str:
         decoded_token = jwt_utils.decode_jwt(token.credentials)
         if not decoded_token:

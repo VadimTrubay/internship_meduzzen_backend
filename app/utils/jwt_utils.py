@@ -8,6 +8,7 @@ async def encode_jwt(
     payload: dict,
     client_secret: str = settings.AUTH0_SECRET,
     algorithm: str = settings.AUTH0_ALGORITHM,
+    audience: str = settings.AUTH0_API_AUDIENCE,
     expire_minutes: int = settings.TOKEN_EXPIRATION,
     expire_timedelta: timedelta | None = None,
 ) -> str:
@@ -18,38 +19,27 @@ async def encode_jwt(
     else:
         expire = now + timedelta(minutes=expire_minutes)
     to_encode.update(
-        exp=expire, iat=now, iss=settings.ISSUER, aud=settings.AUTH0_API_AUDIENCE
+        exp=expire,
+        iat=now,
+        aud=audience,
     )
-    try:
-        encoded = jwt.encode(
-            to_encode,
-            client_secret,
-            algorithm=algorithm,
-        )
-    except ValueError as e:
-        print(f"Error encoding JWT: {e}")
-        raise
-
+    encoded = jwt.encode(
+        to_encode,
+        client_secret,
+        algorithm=algorithm,
+    )
     return encoded
 
 
 def decode_jwt(
     token: str | bytes,
     client_secret: str = settings.AUTH0_SECRET,
-    algorithm: str = "HS256",
+    algorithm: str = settings.AUTH0_ALGORITHM,
 ) -> dict:
-    try:
-        decoded = jwt.decode(
-            token,
-            client_secret,
-            algorithms=[algorithm],
-            audience=settings.AUTH0_API_AUDIENCE,
-        )
-    except jwt.ExpiredSignatureError:
-        print("Token has expired")
-        raise
-    except jwt.InvalidTokenError as e:
-        print(f"Invalid token: {e}")
-        raise
-
+    decoded = jwt.decode(
+        token,
+        client_secret,
+        algorithms=[algorithm],
+        audience=settings.AUTH0_API_AUDIENCE,
+    )
     return decoded
