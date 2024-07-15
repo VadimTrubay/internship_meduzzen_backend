@@ -1,39 +1,33 @@
-from app.main import app
 from fastapi import status, Request
 from fastapi.responses import JSONResponse
 
-from app.services.user_service import UserNotFound, NotFound
 from app.services.auth_service import (
     UserWithEmailNotFound,
     IncorrectPassword,
-    UserAlreadyExists,
-    EmailAlreadyExists,
     UnAuthorized,
 )
 
+from app.services.user_service import (
+    UserNotFound,
+    UserAlreadyExists,
+    EmailAlreadyExists,
+    NotFound,
+    NotPermission,
+)
 
-@app.exception_handler(NotFound)
+
 async def not_found_exception_handler(request: Request, exc: NotFound):
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
     )
 
 
-from app.services.user_service import (
-    UserNotFound,
-    UserAlreadyExists,
-    EmailAlreadyExists,
-)
-
-
-@app.exception_handler(UserNotFound)
 async def user_not_found_exception_handler(request: Request, exc: UserNotFound):
     return JSONResponse(
         status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
     )
 
 
-@app.exception_handler(EmailAlreadyExists)
 async def email_already_exists_exception_handler(
     request: Request, exc: EmailAlreadyExists
 ):
@@ -42,7 +36,6 @@ async def email_already_exists_exception_handler(
     )
 
 
-@app.exception_handler(UserAlreadyExists)
 async def user_already_exists_exception_handler(
     request: Request, exc: UserAlreadyExists
 ):
@@ -51,7 +44,6 @@ async def user_already_exists_exception_handler(
     )
 
 
-@app.exception_handler(UserWithEmailNotFound)
 async def user_with_email_not_found_exception_handler(
     request: Request, exc: UserWithEmailNotFound
 ):
@@ -60,7 +52,6 @@ async def user_with_email_not_found_exception_handler(
     )
 
 
-@app.exception_handler(IncorrectPassword)
 async def incorrect_password_exception_handler(
     request: Request, exc: IncorrectPassword
 ):
@@ -69,8 +60,13 @@ async def incorrect_password_exception_handler(
     )
 
 
-@app.exception_handler(UnAuthorized)
 async def unauthorized_exception_handler(request: Request, exc: UnAuthorized):
     return JSONResponse(
         status_code=status.HTTP_401_UNAUTHORIZED, content={"detail": str(exc)}
+    )
+
+
+async def not_permission_exception_handler(request: Request, exc: NotPermission):
+    return JSONResponse(
+        status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)}
     )

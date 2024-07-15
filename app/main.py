@@ -1,13 +1,21 @@
 import time
 import uvicorn
 from loguru import logger
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.conf.config import settings
-from app.routers import healthcheck, users, auth
-from app.routers import db_healthcheck
+from app.exept.custom_exceptions import (
+    NotFound,
+    UserNotFound,
+    EmailAlreadyExists,
+    UserAlreadyExists,
+    UserWithEmailNotFound,
+    IncorrectPassword,
+    UnAuthorized,
+    NotPermission,
+)
+from app.routers import healthcheck, users, auth, db_healthcheck
 from app.exept import exceptions_handler
 
 app = FastAPI()
@@ -39,11 +47,34 @@ app.add_middleware(
     ],
 )
 
-
 app.include_router(healthcheck.router)
 app.include_router(db_healthcheck.router)
 app.include_router(users.router)
 app.include_router(auth.router)
+
+app.add_exception_handler(NotFound, exceptions_handler.not_found_exception_handler)
+app.add_exception_handler(
+    UserNotFound, exceptions_handler.user_not_found_exception_handler
+)
+app.add_exception_handler(
+    EmailAlreadyExists, exceptions_handler.email_already_exists_exception_handler
+)
+app.add_exception_handler(
+    UserAlreadyExists, exceptions_handler.user_already_exists_exception_handler
+)
+app.add_exception_handler(
+    UserWithEmailNotFound,
+    exceptions_handler.user_with_email_not_found_exception_handler,
+)
+app.add_exception_handler(
+    IncorrectPassword, exceptions_handler.incorrect_password_exception_handler
+)
+app.add_exception_handler(
+    UnAuthorized, exceptions_handler.unauthorized_exception_handler
+)
+app.add_exception_handler(
+    NotPermission, exceptions_handler.not_permission_exception_handler
+)
 
 if __name__ == "__main__":
     uvicorn.run(

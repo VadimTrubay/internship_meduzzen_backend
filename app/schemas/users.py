@@ -12,6 +12,7 @@ class BaseUserSchema(BaseModel):
 
 
 class UserSchema(BaseUserSchema):
+    password: str
     is_admin: bool
 
 
@@ -36,7 +37,6 @@ class SignInResponse(BaseModel):
 class UserUpdateRequest(BaseModel):
     username: Optional[str]
     password: Optional[str]
-    email: Optional[EmailStr]
 
 
 class UserDetailResponse(BaseUserSchema):

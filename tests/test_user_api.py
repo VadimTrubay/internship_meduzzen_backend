@@ -1,98 +1,259 @@
 import unittest
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
-from unittest.mock import AsyncMock
 
-from fastapi.testclient import TestClient
+from app.schemas.users import UserSchema, UserUpdateRequest, BaseUserSchema
+from app.services.user_service import UserService
+from app.exept.custom_exceptions import (
+    UserNotFound,
+    EmailAlreadyExists,
+    UserAlreadyExists,
+    NotFound,
+    NotPermission,
+)
+from app.conf.detail import Messages
 
-from app.main import app
-from app.schemas.users import UserSchema
-from app.routers.users import get_user_service
 
-client = TestClient(app)
-
-
-class TestUserRoutes(unittest.IsolatedAsyncioTestCase):
+class TestUserService(unittest.IsolatedAsyncioTestCase):
     def setUp(self):
-        self.user_service = AsyncMock()
-        self.user_service.create_user.return_value = UserSchema(
+        self.session = AsyncMock()
+        self.repository = AsyncMock()
+        self.user_service = UserService(
+            session=self.session, repository=self.repository
+        )
+
+    async def test_create_user_success(self):
+        user_data = {
+            "email": "testuser@example.com",
+            "username": "testuser",
+            "password": "testpassword",
+        }
+        self.repository.get_one.side_effect = [None, None]
+        self.repository.create_one.return_value = UserSchema(
             id=uuid4(),
-            username="testuser",
             email="testuser@example.com",
+            username="testuser",
+            password="hashedpassword",
             is_admin=False,
         )
-        self.user_service.get_users.return_value = [
+
+        user = await self.user_service.create_user(user_data)
+        self.assertEqual(user.email, user_data["email"])
+        self.assertEqual(user.username, user_data["username"])
+
+    async def test_create_user_email_already_exists(self):
+        user_data = {
+            "email": "testuser@example.com",
+            "username": "testuser",
+            "password": "testpassword",
+        }
+        self.repository.get_one.side_effect = [
             UserSchema(
                 id=uuid4(),
-                username="testuser1",
-                email="testuser1@example.com",
+                email="testuser@example.com",
+                username="testuser",
+                password="testpassword",
                 is_admin=False,
             ),
+            None,
+        ]
+
+        with self.assertRaises(EmailAlreadyExists):
+            await self.user_service.create_user(user_data)
+
+    async def test_create_user_username_already_exists(self):
+        user_data = {
+            "email": "testuser@example.com",
+            "username": "testuser",
+            "password": "testpassword",
+        }
+        self.repository.get_one.side_effect = [
+            None,
             UserSchema(
                 id=uuid4(),
-                username="testuser2",
-                email="testuser2@example.com",
+                email="testuser@example.com",
+                username="testuser",
+                password="testpassword",
                 is_admin=False,
             ),
         ]
-        self.user_service.get_user_by_id.return_value = UserSchema(
-            id=uuid4(),
-            username="testuser",
+
+        with self.assertRaises(UserAlreadyExists):
+            await self.user_service.create_user(user_data)
+
+    async def test_get_users_success(self):
+        self.repository.get_many.return_value = [
+            UserSchema(
+                id=uuid4(),
+                email="testuser1@example.com",
+                username="testuser1",
+                password="testpassword1",
+                is_admin=False,
+            ),
+            UserSchema(
+                id=uuid4(),
+                email="testuser2@example.com",
+                username="testuser2",
+                password="testpassword2",
+                is_admin=False,
+            ),
+        ]
+        users = await self.user_service.get_users()
+        self.assertEqual(len(users), 2)
+
+    async def test_get_users_not_found(self):
+        self.repository.get_many.return_value = []
+        with self.assertRaises(NotFound):
+            await self.user_service.get_users()
+
+    async def test_get_user_by_id_success(self):
+        user_id = uuid4()
+        self.repository.get_one.return_value = UserSchema(
+            id=user_id,
             email="testuser@example.com",
+            username="testuser",
+            password="testpassword",
             is_admin=False,
         )
-        self.user_service.update_user.return_value = UserSchema(
-            id=uuid4(),
+        user = await self.user_service.get_user_by_id(user_id)
+        self.assertEqual(user.id, user_id)
+
+    async def test_get_user_by_id_not_found(self):
+        user_id = uuid4()
+        self.repository.get_one.return_value = None
+        with self.assertRaises(UserNotFound):
+            await self.user_service.get_user_by_id(user_id)
+
+    async def test_update_user_success(self):
+        user_id = uuid4()
+        current_user = UserSchema(
+            id=user_id,
+            email="testuser@example.com",
+            username="testuser",
+            password="testpassword",
+            is_admin=False,
+        )
+        update_data = UserUpdateRequest(
+            username="updateduser", password="updatedpassword"
+        )
+
+        self.repository.get_one.side_effect = [current_user, None]
+        self.repository.update_one.return_value = UserSchema(
+            id=user_id,
+            email="testuser@example.com",
             username="updateduser",
-            email="updateduser@example.com",
+            password="updatedpassword",
             is_admin=False,
         )
-        self.user_service.delete_user.return_value = UserSchema(
+
+        updated_user = await self.user_service.update_user(
+            user_id, update_data, current_user
+        )
+        self.assertEqual(updated_user.username, "updateduser")
+
+    async def test_update_user_permission_denied(self):
+        user_id = uuid4()
+        current_user = UserSchema(
             id=uuid4(),
-            username="deleteduser",
-            email="deleteduser@example.com",
+            email="testuser@example.com",
+            username="testuser",
+            password="testpassword",
+            is_admin=False,
+        )
+        update_data = UserUpdateRequest(
+            username="updateduser", password="updatedpassword"
+        )
+
+        with self.assertRaises(NotPermission):
+            await self.user_service.update_user(user_id, update_data, current_user)
+
+    async def test_update_user_user_not_found(self):
+        user_id = uuid4()
+        current_user = UserSchema(
+            id=user_id,
+            email="testuser@example.com",
+            username="testuser",
+            password="testpassword",
+            is_admin=False,
+        )
+        update_data = UserUpdateRequest(
+            username="updateduser", password="updatedpassword"
+        )
+
+        self.repository.get_one.side_effect = [None]
+        with self.assertRaises(UserNotFound):
+            await self.user_service.update_user(user_id, update_data, current_user)
+
+    async def test_update_user_username_already_exists(self):
+        user_id = uuid4()
+        current_user = UserSchema(
+            id=user_id,
+            email="testuser@example.com",
+            username="testuser",
+            password="testpassword",
+            is_admin=False,
+        )
+        update_data = UserUpdateRequest(
+            username="updateduser", password="updatedpassword"
+        )
+
+        self.repository.get_one.side_effect = [
+            current_user,
+            UserSchema(
+                id=uuid4(),
+                email="anotheruser@example.com",
+                username="updateduser",
+                password="testpassword",
+                is_admin=False,
+            ),
+        ]
+        with self.assertRaises(UserAlreadyExists):
+            await self.user_service.update_user(user_id, update_data, current_user)
+
+    async def test_delete_user_success(self):
+        user_id = uuid4()
+        current_user = UserSchema(
+            id=user_id,
+            email="testuser@example.com",
+            username="testuser",
+            password="testpassword",
             is_admin=False,
         )
 
-        app.dependency_overrides[get_user_service] = lambda: self.user_service
-
-    # async def test_create_user(self):
-    #     response = client.post(
-    #         "/users/",
-    #         json={
-    #             "username": "testuser",
-    #             "email": "testuser@example.com",
-    #             "password": "hashedpassword",
-    #         },
-    #     )
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(response.json()["username"], "testuser")
-
-    async def test_get_all_users(self):
-        response = client.get("/users/")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["users"]), 2)
-
-    async def test_get_user_by_id(self):
-        user_id = uuid4()
-        response = client.get(f"/users/{user_id}")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["username"], "testuser")
-
-    async def test_update_user(self):
-        user_id = uuid4()
-        response = client.patch(
-            f"/users/{user_id}",
-            json={
-                "username": "updateduser",
-                "email": "updateduser@example.com",
-                "password": "updatehashedpassword",
-            },
+        self.repository.get_one.return_value = current_user
+        self.repository.delete_one.return_value = BaseUserSchema(
+            id=user_id,
+            email="testuser@example.com",
+            username="testuser",
+            is_admin=False,
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["username"], "updateduser")
-        self.assertEqual(response.json()["email"], "updateduser@example.com")
 
-    async def test_delete_user(self):
+        deleted_user = await self.user_service.delete_user(user_id, current_user)
+        self.assertEqual(deleted_user.id, user_id)
+
+    async def test_delete_user_permission_denied(self):
         user_id = uuid4()
-        response = client.delete(f"/users/{user_id}")
-        self.assertEqual(response.status_code, 200)
+        current_user = UserSchema(
+            id=uuid4(),
+            email="testuser@example.com",
+            username="testuser",
+            password="testpassword",
+            is_admin=False,
+        )
+
+        with self.assertRaises(NotPermission):
+            await self.user_service.delete_user(user_id, current_user)
+
+    async def test_delete_user_not_found(self):
+        user_id = uuid4()
+        current_user = UserSchema(
+            id=user_id,
+            email="testuser@example.com",
+            username="testuser",
+            password="testpassword",
+            is_admin=False,
+        )
+
+        self.repository.get_one.return_value = None
+        with self.assertRaises(UserNotFound):
+            await self.user_service.delete_user(user_id, current_user)
