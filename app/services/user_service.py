@@ -68,7 +68,7 @@ class UserService:
 
         return UserSchema.model_validate(user)
 
-    async def get_users(self, skip: int = 1, limit: int = 10) -> List[UserSchema]:
+    async def get_users(self, skip, limit) -> List[UserSchema]:
         users = await self.repository.get_many(skip=skip, limit=limit)
         if not users:
             logger.info(Messages.NOT_FOUND)

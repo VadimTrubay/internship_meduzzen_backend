@@ -34,8 +34,8 @@ async def get_user_service(session: AsyncSession = Depends(get_session)) -> User
 
 
 @router.get("/", response_model=UsersListResponse)
-async def get_all_users(user_service: UserService = Depends(get_user_service)):
-    users = await user_service.get_users()
+async def get_all_users(skip: int = 1, limit: int = 10, user_service: UserService = Depends(get_user_service)):
+    users = await user_service.get_users(skip, limit)
     return UsersListResponse(users=[UserSchema.from_orm(user) for user in users])
 
 
