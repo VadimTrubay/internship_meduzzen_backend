@@ -15,8 +15,6 @@ class Messages(Enum):
     USER_WITH_EMAIL_NOT_FOUND = "User with email not found"
     INVALID_EMAIL = "Invalid email"
     INCORRECT_PASSWORD = "Incorrect password"
-    SUCCESS_GET_USER = "Success get user"
-    INVALID_EMAIL = "Invalid email"
     EMAIL_NOT_CONFIRMED = "Email not confirmed"
     INVALID_PASSWORD = "Invalid password"
     INVALID_REFRESH_TOKEN = "Invalid refresh token"
