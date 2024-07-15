@@ -57,6 +57,7 @@ class UserDetailResponse(BaseUserSchema):
 
 class UsersListResponse(BaseModel):
     users: List[BaseUserSchema]
+    total_count: int
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -75,7 +76,8 @@ class UsersListResponse(BaseModel):
                         "email": "user2@example.com",
                         "is_admin": False,
                     },
-                ]
+                ],
+                "total_count": 0,
             }
         },
         strict=True,

@@ -10,6 +10,7 @@ class Messages(Enum):
     SUCCESS_CREATE_USER = "Success create user"
     SUCCESS_UPDATE_USER = "User updated"
     SUCCESS_DELETE_USER = "User deleted"
+    SUCCESS_GET_TOTAL_COUNT = "Success get total count"
     USER_ALREADY_EXISTS = "User already exists"
     EMAIL_AlREADY_EXISTS = "Email already exists"
     USER_NOT_FOUND = "User is not found"

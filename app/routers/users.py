@@ -40,7 +40,9 @@ async def get_all_users(
     user_service: UserService = Depends(get_user_service),
 ):
     users = await user_service.get_users(skip, limit)
-    return UsersListResponse(users=[UserSchema.from_orm(user) for user in users])
+    total_count = await user_service.get_total_count()
+    result = [UserSchema.from_orm(user) for user in users]
+    return UsersListResponse(users=result, total_count=total_count)
 
 
 @router.get("/{user_id}", response_model=UserSchema)

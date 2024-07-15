@@ -1,5 +1,5 @@
 import uuid
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import bcrypt
 from loguru import logger
@@ -28,6 +28,11 @@ class UserService:
         if user_id != current_user.id:
             logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
+
+    async def get_total_count(self):
+        count = await self.repository.get_count()
+        logger.info(Messages.SUCCESS_GET_TOTAL_COUNT)
+        return count
 
     async def _get_user_or_raise(self, user_id: uuid.UUID) -> UserSchema:
         user = await self.repository.get_one(id=user_id)
@@ -73,6 +78,7 @@ class UserService:
         if not users:
             logger.info(Messages.NOT_FOUND)
             raise NotFound()
+
         logger.info(Messages.SUCCESS_GET_USERS)
 
         return [UserSchema.model_validate(user) for user in users]
