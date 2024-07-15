@@ -17,14 +17,14 @@ class Settings(BaseSettings):
     REDIS_PORT: int
     REDIS_HOST: str
 
+    AUTH0_ALGORITHM: str
     AUTH0_SECRET: str
     AUTH0_DOMAIN: str
     AUTH0_API_AUDIENCE: str
     TOKEN_EXPIRATION: int
     ISSUER: str
 
-    ALGORITHM: str
-
+    API_ALGORITHM: str
     API_AUDIENCE: str
     API_SECRET: str
 

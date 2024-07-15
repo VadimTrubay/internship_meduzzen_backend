@@ -8,7 +8,7 @@ from app.conf.config import settings
 async def encode_jwt(
     payload: dict,
     client_secret: str = settings.API_SECRET,
-    algorithm: str = settings.ALGORITHM,
+    algorithm: str = settings.API_ALGORITHM,
     audience: str = settings.API_AUDIENCE,
     expire_minutes: int = settings.TOKEN_EXPIRATION,
     expire_timedelta: timedelta | None = None,
@@ -36,7 +36,7 @@ def decode_jwt_token(token: str) -> dict:
     decoded = jwt.decode(
         token,
         settings.API_SECRET,
-        algorithms=[settings.ALGORITHM],
+        algorithms=[settings.API_ALGORITHM],
         audience=settings.API_AUDIENCE,
     )
     return decoded
@@ -46,7 +46,7 @@ def decode_auth0_token(token: str) -> dict:
     decoded = jwt.decode(
         token,
         settings.AUTH0_SECRET,
-        algorithms=[settings.ALGORITHM],
+        algorithms=[settings.AUTH0_ALGORITHM],
         audience=settings.AUTH0_API_AUDIENCE,
     )
     return decoded
