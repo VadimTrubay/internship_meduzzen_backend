@@ -6,12 +6,12 @@ from app.conf.config import settings
 
 
 async def encode_jwt(
-        payload: dict,
-        client_secret: str = settings.AUTH0_SECRET,
-        algorithm: str = settings.AUTH0_ALGORITHM,
-        audience: str = settings.AUTH0_API_AUDIENCE,
-        expire_minutes: int = settings.TOKEN_EXPIRATION,
-        expire_timedelta: timedelta | None = None,
+    payload: dict,
+    client_secret: str = settings.API_SECRET,
+    algorithm: str = settings.ALGORITHM,
+    audience: str = settings.API_AUDIENCE,
+    expire_minutes: int = settings.TOKEN_EXPIRATION,
+    expire_timedelta: timedelta | None = None,
 ) -> str:
     to_encode = payload.copy()
     now = datetime.utcnow()
@@ -32,11 +32,11 @@ async def encode_jwt(
     return encoded_jwt
 
 
-def decode_jwt_token(token: str, ) -> dict:
+def decode_jwt_token(token: str) -> dict:
     decoded = jwt.decode(
         token,
-        settings.AUTH0_SECRET,
-        algorithms=[settings.AUTH0_ALGORITHM],
+        settings.API_SECRET,
+        algorithms=[settings.ALGORITHM],
         audience=settings.API_AUDIENCE,
     )
     return decoded
@@ -46,7 +46,7 @@ def decode_auth0_token(token: str) -> dict:
     decoded = jwt.decode(
         token,
         settings.AUTH0_SECRET,
-        algorithms=[settings.AUTH0_ALGORITHM],
+        algorithms=[settings.ALGORITHM],
         audience=settings.AUTH0_API_AUDIENCE,
     )
     return decoded
@@ -54,6 +54,10 @@ def decode_auth0_token(token: str) -> dict:
 
 def decode_jwt(token: str) -> dict:
     try:
-        return decode_jwt_token(token)
+        if token:
+            return decode_jwt_token(token)
+        else:
+            print(token)
+            return decode_auth0_token(token)
     except Exception as e:
         logger.info(f"Exception occurred own token {e}")

@@ -20,9 +20,13 @@ class Settings(BaseSettings):
     AUTH0_SECRET: str
     AUTH0_DOMAIN: str
     AUTH0_API_AUDIENCE: str
-    AUTH0_ALGORITHM: str
     TOKEN_EXPIRATION: int
     ISSUER: str
+
+    ALGORITHM: str
+
+    API_AUDIENCE: str
+    API_SECRET: str
 
     model_config = SettingsConfigDict(
         env_file=find_dotenv(filename=".env", usecwd=True),
