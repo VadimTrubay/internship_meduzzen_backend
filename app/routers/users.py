@@ -64,6 +64,7 @@ async def update_user(
     user_service: UserService = Depends(get_user_service),
     current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
+
     updated_user = await user_service.update_user(user_id, update_data, current_user)
     return updated_user
 
@@ -78,5 +79,6 @@ async def delete_user(
     user_service: UserService = Depends(get_user_service),
     current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
+
     deleted_user = await user_service.delete_user(user_id, current_user)
     return deleted_user

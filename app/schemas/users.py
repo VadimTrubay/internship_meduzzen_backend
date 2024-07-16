@@ -35,8 +35,8 @@ class SignInResponse(BaseModel):
 
 
 class UserUpdateRequest(BaseModel):
-    username: Optional[str]
-    password: Optional[str]
+    username: Optional[str] = None
+    password: Optional[str] = None
 
 
 class UserDetailResponse(BaseUserSchema):
