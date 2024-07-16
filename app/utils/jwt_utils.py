@@ -9,12 +9,12 @@ from app.conf.config import settings
 
 
 async def encode_jwt(
-        payload: dict,
-        client_secret: str = settings.API_SECRET,
-        algorithm: str = settings.API_ALGORITHM,
-        audience: str = settings.API_AUDIENCE,
-        expire_minutes: int = settings.TOKEN_EXPIRATION,
-        expire_timedelta: timedelta | None = None,
+    payload: dict,
+    client_secret: str = settings.API_SECRET,
+    algorithm: str = settings.API_ALGORITHM,
+    audience: str = settings.API_AUDIENCE,
+    expire_minutes: int = settings.TOKEN_EXPIRATION,
+    expire_timedelta: timedelta | None = None,
 ) -> str:
     to_encode = payload.copy()
     now = datetime.utcnow()
