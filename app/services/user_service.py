@@ -1,10 +1,14 @@
-from loguru import logger
 import uuid
 from typing import List, Optional
 
 import bcrypt
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.conf.detail import Messages
+from app.exept.custom_exceptions import UserNotFound, NotFound
+from app.schemas.users import UserSchema, UserUpdateRequest, BaseUserSchema
+from app.repository.user_repository import UserRepository
 from app.repository.user_repository import UserRepository
 from app.schemas.users import UserSchema, UserUpdateRequest, BaseUserSchema
 from app.conf.detail import Messages
@@ -27,6 +31,7 @@ class UserService:
             logger.info(Messages.NOT_FOUND)
             raise UserNotFound()
         logger.info(Messages.SUCCESS_GET_USER)
+
         return UserSchema.from_orm(user)
 
     async def create_user(self, data: dict) -> UserSchema:
@@ -56,6 +61,7 @@ class UserService:
 
         user = await self.repository.create_one(user_data)
         logger.info(Messages.SUCCESS_CREATE_USER)
+        
         return UserSchema.from_orm(user)
 
     async def get_users(self, skip: int = 1, limit: int = 10) -> List[UserSchema]:
@@ -63,6 +69,8 @@ class UserService:
         if not users:
             logger.info(Messages.NOT_FOUND)
             raise NotFound()
+        logger.info(Messages.SUCCESS_GET_USERS)
+
         return users
 
     async def get_user_by_id(self, user_id: uuid.UUID) -> Optional[UserSchema]:

@@ -22,13 +22,6 @@ async def get_user_service(session: AsyncSession = Depends(get_session)) -> User
     return UserService(session=session, repository=user_repository)
 
 
-@router.post("/", response_model=UserSchema)
-async def create_user(
-    user_create: SignUpRequest, user_service: UserService = Depends(get_user_service)
-):
-    return await user_service.create_user(user_create.model_dump())
-
-
 @router.get("/", response_model=UsersListResponse)
 async def get_all_users(user_service: UserService = Depends(get_user_service)):
     users = await user_service.get_users()

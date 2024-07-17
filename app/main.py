@@ -6,7 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.conf.config import settings
-from app.routers import healthcheck, users
+from app.routers import healthcheck, users, auth
 from app.routers import db_healthcheck
 from app.exept import exceptions_handler
 
@@ -24,19 +24,26 @@ async def add_process_time_header(request: Request, call_next):
     return response
 
 
-origins = ["*"]
+origins = ["http://localhost", "http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,  # noqa
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS", "DELETE", "PATCH", "PUT"],
+    allow_headers=[
+        "Content-Type",
+        "Set-Cookie",
+        "Access-Control-Allow-Headers",
+        "Access-Control-Allow-Origin",
+        "Authorization",
+    ],
 )
 
 
 app.include_router(healthcheck.router)
 app.include_router(db_healthcheck.router)
 app.include_router(users.router)
+app.include_router(auth.router)
 
 if __name__ == "__main__":
     uvicorn.run(

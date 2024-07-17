@@ -26,6 +26,13 @@ class SignInRequest(BaseModel):
     password: str
 
 
+class SignInResponse(BaseModel):
+    username: str
+    email: EmailStr
+    access_token: str
+    token_type: str
+
+
 class UserUpdateRequest(BaseModel):
     username: Optional[str]
     password: Optional[str]

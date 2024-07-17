@@ -55,17 +55,17 @@ class TestUserRoutes(unittest.IsolatedAsyncioTestCase):
 
         app.dependency_overrides[get_user_service] = lambda: self.user_service
 
-    async def test_create_user(self):
-        response = client.post(
-            "/users/",
-            json={
-                "username": "testuser",
-                "email": "testuser@example.com",
-                "password": "hashedpassword",
-            },
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["username"], "testuser")
+    # async def test_create_user(self):
+    #     response = client.post(
+    #         "/users/",
+    #         json={
+    #             "username": "testuser",
+    #             "email": "testuser@example.com",
+    #             "password": "hashedpassword",
+    #         },
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(response.json()["username"], "testuser")
 
     async def test_get_all_users(self):
         response = client.get("/users/")
