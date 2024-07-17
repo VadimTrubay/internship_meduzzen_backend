@@ -16,18 +16,16 @@ NUM_FAKE_RECORDS = 54
 # Инициализация генератора фейковых данных
 fake = Faker()
 
+
 # Функция для генерации хешированного пароля
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
+
 # Подключение к базе данных
 try:
     conn = psycopg2.connect(
-        dbname=DB_NAME,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        host=DB_HOST,
-        port=DB_PORT
+        dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT
     )
     cursor = conn.cursor()
     print("Connected to the database successfully.")

@@ -13,7 +13,8 @@ from app.exept.custom_exceptions import (
     EmailAlreadyExists,
     UserAlreadyExists,
     NotFound,
-    NotPermission, IncorrectPassword,
+    NotPermission,
+    IncorrectPassword,
 )
 from app.utils import password_utils
 
@@ -87,10 +88,10 @@ class UserService:
         return await self._get_user_or_raise(user_id)
 
     async def update_user(
-            self,
-            user_id: uuid.UUID,
-            update_data: UserUpdateRequest,
-            current_user: UserSchema,
+        self,
+        user_id: uuid.UUID,
+        update_data: UserUpdateRequest,
+        current_user: UserSchema,
     ) -> UserSchema:
         await self.check_user_permission(user_id, current_user)
         user = await self._get_user_or_raise(user_id)
@@ -109,7 +110,9 @@ class UserService:
             update_dict["username"] = update_data.username
 
         if update_data.password and update_data.new_password:
-            if not password_utils.validate_password(update_data.password, user.password):
+            if not password_utils.validate_password(
+                update_data.password, user.password
+            ):
                 logger.info(Messages.INVALID_PASSWORD)
                 raise IncorrectPassword()
 
