@@ -13,7 +13,7 @@ from app.exept.custom_exceptions import (
     EmailAlreadyExists,
     UserAlreadyExists,
     NotFound,
-    NotPermission,
+    NotPermission, IncorrectPassword,
 )
 from app.utils import password_utils
 
@@ -87,23 +87,38 @@ class UserService:
         return await self._get_user_or_raise(user_id)
 
     async def update_user(
-        self,
-        user_id: uuid.UUID,
-        update_data: UserUpdateRequest,
-        current_user: UserSchema,
+            self,
+            user_id: uuid.UUID,
+            update_data: UserUpdateRequest,
+            current_user: UserSchema,
     ) -> UserSchema:
         await self.check_user_permission(user_id, current_user)
-        await self._get_user_or_raise(user_id)
-        existing_user = await self.repository.get_one(username=update_data.username)
-        if existing_user:
-            logger.info(Messages.USER_ALREADY_EXISTS)
-            raise UserAlreadyExists()
+        user = await self._get_user_or_raise(user_id)
 
-        update_dict = update_data.model_dump(exclude_unset=True)
+        if not user:
+            logger.info(Messages.NOT_FOUND)
+            raise UserNotFound()
 
-        if update_data.password:
-            hashed_password = password_utils.hash_password(update_dict["password"])
+        update_dict = {}
+
+        if update_data.username:
+            existing_user = await self.repository.get_one(username=update_data.username)
+            if existing_user and existing_user.id != user_id:
+                logger.info(Messages.USER_ALREADY_EXISTS)
+                raise UserAlreadyExists()
+            update_dict["username"] = update_data.username
+
+        if update_data.password and update_data.new_password:
+            if not password_utils.validate_password(update_data.password, user.password):
+                logger.info(Messages.INVALID_PASSWORD)
+                raise IncorrectPassword()
+
+            hashed_password = password_utils.hash_password(update_data.new_password)
             update_dict["password"] = hashed_password.decode("utf-8")
+
+        if not update_dict:
+            logger.info(Messages.NOT_FOUND)
+            raise NotFound()
 
         updated_user = await self.repository.update_one(user_id, update_dict)
         logger.info(Messages.SUCCESS_UPDATE_USER)
