@@ -1,36 +1,34 @@
 import psycopg2
 from faker import Faker
 import hashlib
+
+from loguru import logger
+
 from app.conf.config import settings
 
-# Загрузка переменных окружения из .env файлаКонфигурация подключения к базе данных PostgreSQL
 DB_NAME = settings.DB_NAME
 DB_USER = settings.DB_USER
 DB_PASSWORD = settings.DB_PASSWORD
 DB_HOST = settings.DB_HOST
 DB_PORT = settings.DB_PORT
 
-# Количество фейковых записей для создания
 NUM_FAKE_RECORDS = 54
 
-# Инициализация генератора фейковых данных
 fake = Faker()
 
 
-# Функция для генерации хешированного пароля
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
 
 
-# Подключение к базе данных
 try:
     conn = psycopg2.connect(
         dbname=DB_NAME, user=DB_USER, password=DB_PASSWORD, host=DB_HOST, port=DB_PORT
     )
     cursor = conn.cursor()
+    logger.info("Connected to the database successfully.")
     print("Connected to the database successfully.")
 
-    # Создание таблицы, если она не существует
     create_table_query = """
     CREATE TABLE IF NOT EXISTS users (
         id SERIAL PRIMARY KEY,
@@ -44,9 +42,9 @@ try:
     """
     cursor.execute(create_table_query)
     conn.commit()
+    logger.info("Table created successfully.")
     print("Table created successfully.")
 
-    # Генерация и вставка фейковых данных
     insert_query = """
     INSERT INTO users (id, email, username, password, is_admin) VALUES (%s, %s, %s, %s, %s);
     """
@@ -59,6 +57,7 @@ try:
         cursor.execute(insert_query, (id, email, username, password, is_admin))
 
     conn.commit()
+    logger.info(f"{NUM_FAKE_RECORDS} fake records inserted successfully.")
     print(f"{NUM_FAKE_RECORDS} fake records inserted successfully.")
 
 except Exception as e:
@@ -68,4 +67,5 @@ finally:
         cursor.close()
     if conn:
         conn.close()
+    logger.info("Database connection closed.")
     print("Database connection closed.")

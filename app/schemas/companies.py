@@ -36,8 +36,9 @@ class CompaniesListResponse(BaseModel):
 class CompanyDetailResponse(BaseCompanySchema):
     owner_id: uuid.UUID
 
-    class Config:
-        schema_extra = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
             "example": {
                 "id": "123r4567-e89b-12dt-a456-426614174567",
                 "name": "Company name",
@@ -45,4 +46,5 @@ class CompanyDetailResponse(BaseCompanySchema):
                 "visible": True,
                 "owner_id": "123e4567-e89b-12d3-a456-426614174000",
             }
-        }
+        },
+    )
