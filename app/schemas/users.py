@@ -12,6 +12,7 @@ class BaseUserSchema(BaseModel):
 
 
 class UserSchema(BaseUserSchema):
+    password: str
     is_admin: bool
 
 
@@ -34,9 +35,9 @@ class SignInResponse(BaseModel):
 
 
 class UserUpdateRequest(BaseModel):
-    username: Optional[str]
-    password: Optional[str]
-    email: Optional[EmailStr]
+    username: Optional[str] = None
+    password: Optional[str] = None
+    new_password: Optional[str] = None
 
 
 class UserDetailResponse(BaseUserSchema):
@@ -57,6 +58,7 @@ class UserDetailResponse(BaseUserSchema):
 
 class UsersListResponse(BaseModel):
     users: List[BaseUserSchema]
+    total_count: int
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -75,7 +77,8 @@ class UsersListResponse(BaseModel):
                         "email": "user2@example.com",
                         "is_admin": False,
                     },
-                ]
+                ],
+                "total_count": 0,
             }
         },
         strict=True,

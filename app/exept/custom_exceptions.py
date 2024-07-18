@@ -40,3 +40,8 @@ class IncorrectPassword(BaseCustomError):
 class UnAuthorized(BaseCustomError):
     def __init__(self, message=Messages.UNAUTHORIZED):
         super().__init__(message)
+
+
+class NotPermission(BaseCustomError):
+    def __init__(self, message=Messages.NOT_PERMISSION):
+        super().__init__(message)

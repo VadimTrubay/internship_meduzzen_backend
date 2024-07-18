@@ -15,7 +15,7 @@ from app.exept.custom_exceptions import (
     IncorrectPassword,
     EmailAlreadyExists,
     UserAlreadyExists,
-    UserNotFound,
+    NotFound,
     UnAuthorized,
 )
 
@@ -78,7 +78,7 @@ class AuthService:
     ) -> str:
         decoded_token = jwt_utils.decode_jwt(token.credentials)
         if not decoded_token:
-            raise UserNotFound()
+            raise NotFound()
 
         current_time = datetime.utcnow()
         expiration_time = datetime.utcfromtimestamp(decoded_token["exp"])
