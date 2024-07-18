@@ -46,16 +46,7 @@ class UserService:
 
     async def create_user(self, data: dict) -> UserSchema:
         email = data.get("email")
-        existing_user_email = await self.repository.get_one(email=email)
-        if existing_user_email:
-            logger.info(Messages.EMAIL_AlREADY_EXISTS)
-            raise EmailAlreadyExists()
-
         username = data.get("username")
-        existing_user_username = await self.repository.get_one(username=username)
-        if existing_user_username:
-            logger.info(Messages.USER_ALREADY_EXISTS)
-            raise UserAlreadyExists()
 
         hashed_password = data.get("password")
         hashed_password = bcrypt.hashpw(
