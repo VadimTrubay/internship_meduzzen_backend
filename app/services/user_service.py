@@ -1,7 +1,6 @@
 import uuid
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
-import bcrypt
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 

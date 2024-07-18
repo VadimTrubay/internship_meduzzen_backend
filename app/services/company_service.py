@@ -5,10 +5,8 @@ from typing import Optional
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from fastapi import HTTPException, status
-
 from app.conf.detail import Messages
-from app.exept.custom_exceptions import NotPermission, NotFound
+from app.exept.custom_exceptions import NotPermission, NotFound, CompanyNotFound
 from app.repository.company_repository import CompanyRepository
 from app.schemas.companies import (
     CompanySchema,
@@ -31,15 +29,9 @@ class CompanyService:
     @staticmethod
     async def check_company_owner(user_id: uuid.UUID, company_owner_id) -> None:
         if user_id != company_owner_id:
+            logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
         return
-
-    # GET COMPANY OR RAISE
-    async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
-        company = await self.repository.get_one(id=company_id)
-        if not company:
-            raise NotFound()
-        return company
 
     # GET TOTAL COUNT
     async def get_total_count(self):
@@ -47,11 +39,24 @@ class CompanyService:
         logger.info(Messages.SUCCESS_GET_TOTAL_COUNT)
         return count
 
+    # GET COMPANY OR RAISE
+    async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
+        company = await self.repository.get_one(id=company_id)
+        if not company:
+            raise CompanyNotFound()
+        return company
+
     # GET COMPANIES
     async def get_companies(
         self, skip, limit, user_id: uuid.UUID = None
     ) -> CompaniesListResponse:
         companies = await self.repository.get_many(skip=skip, limit=limit)
+        if not companies:
+            logger.info(Messages.NOT_FOUND)
+            raise NotFound()
+
+        logger.info(Messages.SUCCESS_GET_COMPANIES)
+        total_count = await self.get_total_count()
         visible_companies = [
             BaseCompanySchema(
                 id=company.id,
@@ -61,7 +66,9 @@ class CompanyService:
             )
             for company in companies
         ]
-        return CompaniesListResponse(companies=visible_companies)
+        return CompaniesListResponse(
+            companies=visible_companies, total_count=total_count
+        )
 
     # GET COMPANY BY ID
     async def get_company_by_id(
@@ -91,14 +98,16 @@ class CompanyService:
         self, data: dict, current_user_id: uuid.UUID
     ) -> CompanySchema:
         data["owner_id"] = current_user_id
+        logger.info(Messages.SUCCESS_CREATE_COMPANY)
         return await self.repository.create_one(data=data)
 
     # EDIT COMPANY
-    async def edit_company(
+    async def update_company(
         self, data: dict, current_user_id: uuid.UUID, company_id: uuid.UUID
     ) -> CompanySchema:
         company = await self._get_company_or_raise(company_id)
         await self.check_company_owner(current_user_id, company.owner_id)
+        logger.info(Messages.SUCCESS_UPDATE_COMPANY)
         return await self.repository.update_one(company_id, data)
 
     # DELETE COMPANY
@@ -107,4 +116,5 @@ class CompanyService:
     ) -> CompanySchema:
         company = await self._get_company_or_raise(company_id)
         await self.check_company_owner(current_user_id, company.owner_id)
+        logger.info(Messages.SUCCESS_DELETE_COMPANY)
         return await self.repository.delete_one(company_id)

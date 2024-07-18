@@ -60,11 +60,14 @@ class TestCompanyService(unittest.IsolatedAsyncioTestCase):
             ),
         ]
         self.repository.get_many.return_value = companies_data
+        self.repository.get_count.return_value = (
+            2  # Mocking the total count as an integer
+        )
         user_id = uuid4()
 
-        companies_response = await self.company_service.get_companies(0, 10, user_id)
-        self.assertIsInstance(companies_response, CompaniesListResponse)
-        self.assertEqual(len(companies_response.companies), 2)
+        companies = await self.company_service.get_companies(0, 10, user_id)
+        self.assertEqual(len(companies.companies), 2)
+        self.assertEqual(companies.total_count, 2)
 
     async def test_get_company_by_id_success(self):
         company_id = uuid4()
@@ -88,7 +91,7 @@ class TestCompanyService(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(NotFound):
             await self.company_service.get_company_by_id(company_id, user_id)
 
-    async def test_edit_company_success(self):
+    async def test_update_company_success(self):
         company_id = uuid4()
         user_id = uuid4()
         company_data = {"name": "updatedname", "description": "updateddescription"}
@@ -107,7 +110,7 @@ class TestCompanyService(unittest.IsolatedAsyncioTestCase):
             owner_id=user_id,
         )
 
-        company = await self.company_service.edit_company(
+        company = await self.company_service.update_company(
             company_data, user_id, company_id
         )
         self.assertEqual(company.name, company_data["name"])

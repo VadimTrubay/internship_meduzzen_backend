@@ -77,7 +77,6 @@ class AuthService:
         session: AsyncSession = Depends(get_session),
     ) -> str:
         decoded_token = jwt_utils.decode_jwt(token.credentials)
-        print(decoded_token)
         if not decoded_token:
             raise NotFound()
 

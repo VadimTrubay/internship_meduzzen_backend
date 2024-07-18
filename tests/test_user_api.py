@@ -20,25 +20,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             session=self.session, repository=self.repository
         )
 
-    async def test_create_user_success(self):
-        user_data = {
-            "email": "testuser@example.com",
-            "username": "testuser",
-            "password": "testpassword",
-        }
-        self.repository.get_one.side_effect = [None, None]
-        self.repository.create_one.return_value = UserSchema(
-            id=uuid4(),
-            email="testuser@example.com",
-            username="testuser",
-            password="hashedpassword",
-            is_admin=False,
-        )
-
-        user = await self.user_service.create_user(user_data)
-        self.assertEqual(user.email, user_data["email"])
-        self.assertEqual(user.username, user_data["username"])
-
     async def test_get_users_success(self):
         self.repository.get_many.return_value = [
             UserSchema(

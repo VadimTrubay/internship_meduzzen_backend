@@ -29,10 +29,6 @@ class CompanyUpdateRequest(BaseModel):
     visible: Optional[bool] = None
 
 
-class CompaniesListResponse(BaseModel):
-    companies: List[BaseCompanySchema]
-
-
 class CompanyDetailResponse(BaseCompanySchema):
     owner_id: uuid.UUID
 
@@ -47,4 +43,35 @@ class CompanyDetailResponse(BaseCompanySchema):
                 "owner_id": "123e4567-e89b-12d3-a456-426614174000",
             }
         },
+    )
+
+
+class CompaniesListResponse(BaseModel):
+    companies: List[BaseCompanySchema]
+    total_count: int
+
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
+            "example": {
+                "users": [
+                    {
+                        "id": "123e4567-e89b-12d3-a456-426614174000",
+                        "name": "Company name",
+                        "description": "Description company",
+                        "visible": True,
+                        "owner_id": "123e4567-e89b-12d3-a456-426614174000",
+                    },
+                    {
+                        "id": "223e4567-e89b-12d3-a456-426614174001",
+                        "name": "Company name",
+                        "description": "Description company",
+                        "visible": False,
+                        "owner_id": "123e4567-e89b-12d3-a456-426614174001",
+                    },
+                ],
+                "total_count": 0,
+            }
+        },
+        strict=True,
     )
