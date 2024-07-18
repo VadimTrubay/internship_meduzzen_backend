@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.conf.config import settings
 
-from app.routers import healthcheck, users, auth, db_healthcheck
+from app.routers import healthcheck, users, auth, db_healthcheck, companies
 from app.exept.exceptions_handler import register_exception_handler
 
 app = FastAPI()
@@ -44,6 +44,7 @@ app.include_router(healthcheck.router)
 app.include_router(db_healthcheck.router)
 app.include_router(users.router)
 app.include_router(auth.router)
+app.include_router(companies.router)
 
 if __name__ == "__main__":
     uvicorn.run(

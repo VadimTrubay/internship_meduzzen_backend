@@ -16,7 +16,7 @@ from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
 from app.services.company_service import CompanyService
 
-router = APIRouter(tags=["Companies"])
+router = APIRouter(prefix="/companies", tags=["companies"])
 
 
 async def get_company_service(

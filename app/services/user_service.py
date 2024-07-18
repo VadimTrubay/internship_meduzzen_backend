@@ -47,37 +47,6 @@ class UserService:
 
         return UserSchema.model_validate(user)
 
-    # CREATE USER
-    async def create_user(self, data: dict) -> UserSchema:
-        email = data.get("email")
-        existing_user_email = await self.repository.get_one(email=email)
-        if existing_user_email:
-            logger.info(Messages.EMAIL_AlREADY_EXISTS)
-            raise EmailAlreadyExists()
-
-        username = data.get("username")
-        existing_user_username = await self.repository.get_one(username=username)
-        if existing_user_username:
-            logger.info(Messages.USER_ALREADY_EXISTS)
-            raise UserAlreadyExists()
-
-        hashed_password = data.get("password")
-        hashed_password = bcrypt.hashpw(
-            hashed_password.encode("utf-8"), bcrypt.gensalt()
-        )
-
-        user_data = {
-            "email": email,
-            "username": username,
-            "password": hashed_password.decode("utf-8"),
-            "is_admin": data.get("is_admin", False),
-        }
-
-        user = await self.repository.create_one(user_data)
-        logger.info(Messages.SUCCESS_CREATE_USER)
-
-        return UserSchema.model_validate(user)
-
     # GET USERS
     async def get_users(self, skip, limit) -> List[UserSchema]:
         users = await self.repository.get_many(skip=skip, limit=limit)
@@ -95,10 +64,10 @@ class UserService:
 
     # UPDATE USER
     async def update_user(
-            self,
-            user_id: uuid.UUID,
-            update_data: UserUpdateRequest,
-            current_user: UserSchema,
+        self,
+        user_id: uuid.UUID,
+        update_data: UserUpdateRequest,
+        current_user: UserSchema,
     ) -> UserSchema:
         await self.check_user_permission(user_id, current_user)
         user = await self._get_user_or_raise(user_id)
@@ -118,7 +87,7 @@ class UserService:
 
         if update_data.password and update_data.new_password:
             if not password_utils.validate_password(
-                    update_data.password, user.password
+                update_data.password, user.password
             ):
                 logger.info(Messages.INVALID_PASSWORD)
                 raise IncorrectPassword()
@@ -136,7 +105,7 @@ class UserService:
 
     # DELETE USER
     async def delete_user(
-            self, user_id: uuid.UUID, current_user: UserSchema
+        self, user_id: uuid.UUID, current_user: UserSchema
     ) -> BaseUserSchema:
         await self.check_user_permission(user_id, current_user)
         await self._get_user_or_raise(user_id)
