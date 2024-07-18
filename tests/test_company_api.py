@@ -10,7 +10,7 @@ from app.schemas.companies import (
     CompaniesListResponse,
 )
 from app.services.company_service import CompanyService
-from app.exept.custom_exceptions import NotFound, NotPermission
+from app.exept.custom_exceptions import NotFound, NotPermission, CompanyNotFound
 
 
 class TestCompanyService(unittest.IsolatedAsyncioTestCase):
@@ -88,7 +88,7 @@ class TestCompanyService(unittest.IsolatedAsyncioTestCase):
         user_id = uuid4()
         self.repository.get_one.return_value = None
 
-        with self.assertRaises(NotFound):
+        with self.assertRaises(CompanyNotFound):
             await self.company_service.get_company_by_id(company_id, user_id)
 
     async def test_update_company_success(self):
