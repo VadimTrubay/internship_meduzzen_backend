@@ -24,17 +24,20 @@ class UserService:
         self.session = session
         self.repository = repository
 
+    # CHECK USER PERMISSION
     @staticmethod
     async def check_user_permission(user_id: uuid.UUID, current_user: UserSchema):
         if user_id != current_user.id:
             logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
 
+    # GET TOTAL COUNT
     async def get_total_count(self):
         count = await self.repository.get_count()
         logger.info(Messages.SUCCESS_GET_TOTAL_COUNT)
         return count
 
+    # GET USER BY OR RAISE
     async def _get_user_or_raise(self, user_id: uuid.UUID) -> UserSchema:
         user = await self.repository.get_one(id=user_id)
         if not user:
@@ -44,6 +47,7 @@ class UserService:
 
         return UserSchema.model_validate(user)
 
+    # CREATE USER
     async def create_user(self, data: dict) -> UserSchema:
         email = data.get("email")
         username = data.get("username")
@@ -65,6 +69,7 @@ class UserService:
 
         return UserSchema.model_validate(user)
 
+    # GET USERS
     async def get_users(self, skip, limit) -> List[UserSchema]:
         users = await self.repository.get_many(skip=skip, limit=limit)
         if not users:
@@ -75,9 +80,11 @@ class UserService:
 
         return [UserSchema.model_validate(user) for user in users]
 
+    # GET USER BY ID
     async def get_user_by_id(self, user_id: uuid.UUID) -> Optional[UserSchema]:
         return await self._get_user_or_raise(user_id)
 
+    # UPDATE USER
     async def update_user(
         self,
         user_id: uuid.UUID,
@@ -118,6 +125,7 @@ class UserService:
         logger.info(Messages.SUCCESS_UPDATE_USER)
         return UserSchema.model_validate(updated_user)
 
+    # DELETE USER
     async def delete_user(
         self, user_id: uuid.UUID, current_user: UserSchema
     ) -> BaseUserSchema:

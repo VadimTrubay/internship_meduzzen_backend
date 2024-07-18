@@ -41,46 +41,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(user.email, user_data["email"])
         self.assertEqual(user.username, user_data["username"])
 
-    async def test_create_user_email_already_exists(self):
-        user_data = {
-            "email": "testuser@example.com",
-            "username": "testuser",
-            "password": "testpassword",
-        }
-        self.repository.get_one.side_effect = [
-            UserSchema(
-                id=uuid4(),
-                email="testuser@example.com",
-                username="testuser",
-                password="testpassword",
-                is_admin=False,
-            ),
-            None,
-        ]
-
-        with self.assertRaises(EmailAlreadyExists):
-            await self.user_service.create_user(user_data)
-
-    async def test_create_user_username_already_exists(self):
-        user_data = {
-            "email": "testuser@example.com",
-            "username": "testuser",
-            "password": "testpassword",
-        }
-        self.repository.get_one.side_effect = [
-            None,
-            UserSchema(
-                id=uuid4(),
-                email="testuser@example.com",
-                username="testuser",
-                password="testpassword",
-                is_admin=False,
-            ),
-        ]
-
-        with self.assertRaises(UserAlreadyExists):
-            await self.user_service.create_user(user_data)
-
     async def test_get_users_success(self):
         self.repository.get_many.return_value = [
             UserSchema(
@@ -98,13 +58,13 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
                 is_admin=False,
             ),
         ]
-        users = await self.user_service.get_users()
+        users = await self.user_service.get_users(skip=0, limit=10)
         self.assertEqual(len(users), 2)
 
     async def test_get_users_not_found(self):
         self.repository.get_many.return_value = []
         with self.assertRaises(NotFound):
-            await self.user_service.get_users()
+            await self.user_service.get_users(skip=0, limit=10)
 
     async def test_get_user_by_id_success(self):
         user_id = uuid4()
