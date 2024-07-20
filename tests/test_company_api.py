@@ -4,13 +4,9 @@ from uuid import uuid4
 
 from app.schemas.companies import (
     CompanySchema,
-    CompanyCreateRequest,
-    CompanyUpdateRequest,
-    BaseCompanySchema,
-    CompaniesListResponse,
 )
 from app.services.company_service import CompanyService
-from app.exept.custom_exceptions import NotFound, NotPermission, CompanyNotFound
+from app.exept.custom_exceptions import  CompanyNotFound
 
 
 class TestCompanyService(unittest.IsolatedAsyncioTestCase):

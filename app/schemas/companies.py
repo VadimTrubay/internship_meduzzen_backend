@@ -29,7 +29,7 @@ class CompanyUpdateRequest(BaseModel):
     visible: Optional[bool] = None
 
 
-class CompanyDetailResponse(BaseCompanySchema):
+class CompanyDetailResponse(CompanySchema):
     owner_id: uuid.UUID
 
     model_config = ConfigDict(
@@ -47,7 +47,7 @@ class CompanyDetailResponse(BaseCompanySchema):
 
 
 class CompaniesListResponse(BaseModel):
-    companies: List[BaseCompanySchema]
+    companies: List[CompanySchema]
     total_count: int
 
     model_config = ConfigDict(

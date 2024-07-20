@@ -11,7 +11,6 @@ from app.repository.company_repository import CompanyRepository
 from app.schemas.companies import (
     CompanySchema,
     CompaniesListResponse,
-    BaseCompanySchema,
 )
 
 
@@ -58,11 +57,12 @@ class CompanyService:
         logger.info(Messages.SUCCESS_GET_COMPANIES)
         total_count = await self.get_total_count()
         visible_companies = [
-            BaseCompanySchema(
+            CompanySchema(
                 id=company.id,
                 name=company.name,
                 description=company.description,
                 visible=self._is_visible_to_user(company, user_id),
+                owner_id=company.owner_id,
             )
             for company in companies
         ]

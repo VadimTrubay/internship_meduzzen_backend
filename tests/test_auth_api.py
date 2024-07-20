@@ -1,21 +1,16 @@
 import unittest
-from unittest.mock import AsyncMock, patch, MagicMock
+from unittest.mock import AsyncMock, patch
 from uuid import uuid4
 from datetime import datetime, timedelta
 
 from fastapi.security import HTTPAuthorizationCredentials
-from app.schemas.auth import TokenModel
-from app.schemas.users import UserSchema, SignInRequest, SignUpRequest
+from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
 from app.exept.custom_exceptions import (
     UserWithEmailNotFound,
-    IncorrectPassword,
     EmailAlreadyExists,
-    UserAlreadyExists,
-    NotFound,
     UnAuthorized,
 )
-from app.utils import jwt_utils, password_utils
 
 
 class TestAuthService(unittest.IsolatedAsyncioTestCase):

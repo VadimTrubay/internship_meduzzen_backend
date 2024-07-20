@@ -10,7 +10,6 @@ from app.schemas.companies import (
     CompanyCreateRequest,
     CompanyUpdateRequest,
     CompaniesListResponse,
-    BaseCompanySchema,
 )
 from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
