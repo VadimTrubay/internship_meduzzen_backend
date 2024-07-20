@@ -6,7 +6,7 @@ from app.schemas.companies import (
     CompanySchema,
 )
 from app.services.company_service import CompanyService
-from app.exept.custom_exceptions import  CompanyNotFound
+from app.exept.custom_exceptions import CompanyNotFound
 
 
 class TestCompanyService(unittest.IsolatedAsyncioTestCase):
