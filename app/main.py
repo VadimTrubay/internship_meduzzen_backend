@@ -25,12 +25,12 @@ async def add_process_time_header(request: Request, call_next):
     return response
 
 
-origins = ["http://localhost", "http://localhost:5173"]
+origins = ["*"]
 app.add_middleware(
     CORSMiddleware,  # noqa
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS", "DELETE", "PATCH", "PUT"],
+    allow_methods=["*"],
     allow_headers=[
         "Content-Type",
         "Set-Cookie",
