@@ -22,6 +22,11 @@ class UserNotFound(BaseCustomError):
         super().__init__(message)
 
 
+class CompanyNotFound(BaseCustomError):
+    def __init__(self, message=Messages.COMPANY_NOT_FOUND):
+        super().__init__(message)
+
+
 class NotFound(BaseCustomError):
     def __init__(self, message=Messages.NOT_FOUND):
         super().__init__(message)

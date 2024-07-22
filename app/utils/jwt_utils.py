@@ -49,11 +49,9 @@ def decode_auth0_token(token: str) -> Any | None:
     try:
         url = f"https://{settings.AUTH0_DOMAIN}/.well-known/jwks.json"
         jwks_client = PyJWKClient(url)
-        print(jwks_client)
         header = jwt.get_unverified_header(token)
         logger.debug(f"Token header: {header}")
         signing_key = jwks_client.get_signing_key_from_jwt(token).key
-        print(signing_key)
 
         logger.debug(f"Signing key: {signing_key}")
         payload = jwt.decode(
