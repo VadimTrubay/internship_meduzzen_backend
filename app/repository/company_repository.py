@@ -35,7 +35,9 @@ class CompanyRepository(BaseRepository):
 
         return company_member_schema
 
-    async def is_user_company_owner(self, user_id: uuid.UUID, company_id: uuid.UUID) -> bool:
+    async def is_user_company_owner(
+        self, user_id: uuid.UUID, company_id: uuid.UUID
+    ) -> bool:
         query = select(CompanyMember).filter(
             CompanyMember.user_id == user_id,
             CompanyMember.company_id == company_id,
