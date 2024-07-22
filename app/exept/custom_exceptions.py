@@ -27,6 +27,11 @@ class CompanyNotFound(BaseCustomError):
         super().__init__(message)
 
 
+class ActionNotFound(BaseCustomError):
+    def __init__(self, message=Messages.ACTION_NOT_FOUND):
+        super().__init__(message)
+
+
 class NotFound(BaseCustomError):
     def __init__(self, message=Messages.NOT_FOUND):
         super().__init__(message)
@@ -49,4 +54,14 @@ class UnAuthorized(BaseCustomError):
 
 class NotPermission(BaseCustomError):
     def __init__(self, message=Messages.NOT_PERMISSION):
+        super().__init__(message)
+
+
+class AlreadyInCompany(BaseCustomError):
+    def __init__(self, message=Messages.ALREADY_IN_COMPANY):
+        super().__init__(message)
+
+
+class NotOwner(BaseCustomError):
+    def __init__(self, message=Messages.NOT_OWNER_COMPANY):
         super().__init__(message)

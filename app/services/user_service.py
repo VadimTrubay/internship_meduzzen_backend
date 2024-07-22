@@ -88,7 +88,7 @@ class UserService:
             if not password_utils.validate_password(
                 update_data.password, user.password
             ):
-                logger.info(Messages.INVALID_PASSWORD)
+                logger.info(Messages.INCORRECT_PASSWORD)
                 raise IncorrectPassword()
 
             hashed_password = password_utils.hash_password(update_data.new_password)

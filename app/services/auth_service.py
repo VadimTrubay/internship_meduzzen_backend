@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from faker import Faker
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
@@ -90,8 +89,7 @@ class AuthService:
         current_user = await user_repository.get_one(email=user_email)
 
         if not current_user:
-            fake = Faker()
-            username = fake.user_name()
+            username = user_email.split("@")[0]
             password = str(datetime.now())
             hashed_password = password_utils.hash_password(password)
 

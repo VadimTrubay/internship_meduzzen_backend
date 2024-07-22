@@ -1,6 +1,7 @@
 from fastapi import status, Request, FastAPI
 from fastapi.responses import JSONResponse
 
+from app.services.action_service import AlreadyInCompany, NotOwner, ActionNotFound
 from app.services.company_service import CompanyNotFound
 from app.services.auth_service import (
     UserWithEmailNotFound,
@@ -34,6 +35,12 @@ def register_exception_handler(app: FastAPI):
     async def company_not_found_exception_handler(
         request: Request, exc: CompanyNotFound
     ):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(CompanyNotFound)
+    async def action_not_found_exception_handler(request: Request, exc: ActionNotFound):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
         )
@@ -78,6 +85,20 @@ def register_exception_handler(app: FastAPI):
 
     @app.exception_handler(NotPermission)
     async def not_permission_exception_handler(request: Request, exc: NotPermission):
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(AlreadyInCompany)
+    async def already_in_company_exception_handler(
+        request: Request, exc: AlreadyInCompany
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(NotOwner)
+    async def not_owner_exception_handler(request: Request, exc: NotOwner):
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)}
         )
