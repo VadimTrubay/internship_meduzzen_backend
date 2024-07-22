@@ -18,7 +18,7 @@ from app.schemas.users import UserSchema
 from app.services.action_service import ActionService
 from app.services.auth_service import AuthService
 
-router = APIRouter(tags=["actions"])
+router = APIRouter(prefix="/actions", tags=["actions"])
 
 
 async def get_action_service(

@@ -1,10 +1,12 @@
+import uuid
+
 from fastapi import HTTPException
 from starlette import status
 
 from app.conf.invite import InvitationStatus
 
 
-async def check_company_owner(user_id: int, company_owner_id) -> None:
+async def check_company_owner(user_id: uuid.UUID, company_owner_id) -> None:
     if user_id != company_owner_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -13,7 +15,7 @@ async def check_company_owner(user_id: int, company_owner_id) -> None:
     return
 
 
-async def check_correct_user(user_id: int, current_user_id: int) -> None:
+async def check_correct_user(user_id: uuid.UUID, current_user_id: uuid.UUID) -> None:
     if user_id != current_user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

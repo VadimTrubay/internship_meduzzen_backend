@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import select
 
 from app.models.user_model import User
-from app.models.action import CompanyAction
+from app.models.action_model import CompanyAction
 from app.conf.invite import InvitationStatus
 from app.repository.base_repository import BaseRepository
 
