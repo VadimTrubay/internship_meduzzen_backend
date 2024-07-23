@@ -112,11 +112,11 @@ class ActionService:
                 case InvitationStatus.DECLINED_BY_COMPANY:
                     invite.status = InvitationStatus.REQUESTED
                     return invite
-                case _:
-                    data = action_data.dict()
-                    data["status"] = InvitationStatus.INVITED.value
-                    data["type"] = InvitationType.INVITE.value
-                    return await self.action_repository.create_one(data=data)
+        else:
+            data = action_data.dict()
+            data["status"] = InvitationStatus.INVITED.value
+            data["type"] = InvitationType.INVITE.value
+            return await self.action_repository.create_one(data=data)
 
     async def cancel_invite(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
@@ -167,25 +167,26 @@ class ActionService:
         ):
             raise AlreadyInCompany()
         if request:
-            if request.status == InvitationStatus.REQUESTED:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="You have already sent a request to this company",
-                )
-            elif request.status == InvitationStatus.ACCEPTED:
-                raise AlreadyInCompany()
-            elif request.status == InvitationStatus.INVITED:
-                await self._add_user_to_company(request.id, current_user_id, company.id)
-                request.status = InvitationStatus.ACCEPTED
-                return request
-            elif request.status == InvitationStatus.DECLINED_BY_COMPANY:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="You have already declined this company",
-                )
-            elif request.status == InvitationStatus.DECLINED_BY_USER:
-                request.status = InvitationStatus.REQUESTED
-                return request
+            match request.status:
+                case InvitationStatus.REQUESTED:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="You have already sent a request to this company",
+                    )
+                case InvitationStatus.ACCEPTED:
+                    raise AlreadyInCompany()
+                case InvitationStatus.INVITED:
+                    await self._add_user_to_company(request.id, current_user_id, company.id)
+                    request.status = InvitationStatus.ACCEPTED
+                    return request
+                case InvitationStatus.DECLINED_BY_COMPANY:
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="You have already declined this company",
+                    )
+                case InvitationStatus.DECLINED_BY_USER:
+                    request.status = InvitationStatus.REQUESTED
+                    return request
         else:
             data = action_data.dict()
             data["status"] = InvitationStatus.REQUESTED.value
