@@ -176,7 +176,9 @@ class ActionService:
                 case InvitationStatus.ACCEPTED:
                     raise AlreadyInCompany()
                 case InvitationStatus.INVITED:
-                    await self._add_user_to_company(request.id, current_user_id, company.id)
+                    await self._add_user_to_company(
+                        request.id, current_user_id, company.id
+                    )
                     request.status = InvitationStatus.ACCEPTED
                     return request
                 case InvitationStatus.DECLINED_BY_COMPANY:
