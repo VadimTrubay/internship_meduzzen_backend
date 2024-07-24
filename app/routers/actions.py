@@ -194,7 +194,7 @@ async def get_my_invites(
     return await action_service.get_my_invites(current_user_id)
 
 
-@router.get("company/members", response_model=List[GetActionsResponseSchema])
+@router.get("/company/members", response_model=List[GetActionsResponseSchema])
 async def get_company_members(
     current_user: UserSchema = Depends(AuthService.get_current_user),
     company_id: Optional[uuid.UUID] = Query(None),
