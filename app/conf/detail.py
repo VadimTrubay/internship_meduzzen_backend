@@ -25,6 +25,12 @@ class Messages(Enum):
     INCORRECT_PASSWORD = "Incorrect password"
     ALREADY_IN_COMPANY = "User is already in company"
     NOT_OWNER_COMPANY = "You are not the owner of this company"
+    USER_NOT_REQUESTED = "User is not requested"
+    USER_NOT_INVITED = "User is not invited"
+    USER_NOT_INTERACT_WITH_ACTIONS = "You can't interact with this action"
+    USER_ALREADY_INVITED = "User is already invited"
+    ACTION_ALREADY_AVAILABLE = "Action is already available"
+    SUCCESS_GET_CURRENT_USER = "Success get current user"
 
     def __str__(self):
         return self.value

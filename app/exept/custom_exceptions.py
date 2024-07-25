@@ -65,3 +65,28 @@ class AlreadyInCompany(BaseCustomError):
 class NotOwner(BaseCustomError):
     def __init__(self, message=Messages.NOT_OWNER_COMPANY):
         super().__init__(message)
+
+
+class UserNotRequested(BaseCustomError):
+    def __init__(self, message=Messages.USER_NOT_REQUESTED):
+        super().__init__(message)
+
+
+class UserNotInvited(BaseCustomError):
+    def __init__(self, message=Messages.USER_NOT_INVITED):
+        super().__init__(message)
+
+
+class UserNotInteractWithActions(BaseCustomError):
+    def __init__(self, message=Messages.USER_NOT_INTERACT_WITH_ACTIONS):
+        super().__init__(message)
+
+
+class UserAlreadyInvited(BaseCustomError):
+    def __init__(self, message=Messages.USER_ALREADY_INVITED):
+        super().__init__(message)
+
+
+class ActionAlreadyAvailable(BaseCustomError):
+    def __init__(self, message=Messages.ACTION_ALREADY_AVAILABLE):
+        super().__init__(message)

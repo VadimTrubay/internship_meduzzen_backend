@@ -42,6 +42,7 @@ class CompanyService:
     async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
         company = await self.repository.get_one(id=company_id)
         if not company:
+            logger.info(Messages.COMPANY_NOT_FOUND)
             raise CompanyNotFound()
         return company
 
@@ -76,6 +77,7 @@ class CompanyService:
     ) -> Optional[CompanySchema]:
         company = await self._get_company_or_raise(company_id)
         if not self._is_visible_to_user(company, user_id):
+            logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
         return company
 
@@ -88,9 +90,7 @@ class CompanyService:
             company = await self._get_company_or_raise(company_id)
             if user_id != company.owner_id:
                 raise NotPermission()
-
             return await func(*args, **kwargs)
-
         return wrapper
 
     # CREATE COMPANY
@@ -98,7 +98,6 @@ class CompanyService:
         self, data: dict, current_user_id: uuid.UUID
     ) -> CompanySchema:
         data["owner_id"] = current_user_id
-        logger.info(Messages.SUCCESS_CREATE_COMPANY)
         return await self.repository.create_one(data=data)
 
     # EDIT COMPANY
@@ -107,7 +106,6 @@ class CompanyService:
     ) -> CompanySchema:
         company = await self._get_company_or_raise(company_id)
         await self.check_company_owner(current_user_id, company.owner_id)
-        logger.info(Messages.SUCCESS_UPDATE_COMPANY)
         return await self.repository.update_one(company_id, data)
 
     # DELETE COMPANY
@@ -116,5 +114,4 @@ class CompanyService:
     ) -> CompanySchema:
         company = await self._get_company_or_raise(company_id)
         await self.check_company_owner(current_user_id, company.owner_id)
-        logger.info(Messages.SUCCESS_DELETE_COMPANY)
         return await self.repository.delete_one(company_id)

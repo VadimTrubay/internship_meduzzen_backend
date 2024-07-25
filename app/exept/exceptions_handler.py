@@ -1,20 +1,30 @@
 from fastapi import status, Request, FastAPI
 from fastapi.responses import JSONResponse
 
-from app.services.action_service import AlreadyInCompany, NotOwner, ActionNotFound
+from app.services.action_service import (
+    AlreadyInCompany,
+    NotOwner,
+    ActionNotFound,
+    UserAlreadyInvited,
+    ActionAlreadyAvailable,
+)
 from app.services.company_service import CompanyNotFound
 from app.services.auth_service import (
     UserWithEmailNotFound,
     IncorrectPassword,
     UnAuthorized,
 )
-
 from app.services.user_service import (
     UserNotFound,
     UserAlreadyExists,
     EmailAlreadyExists,
     NotFound,
     NotPermission,
+)
+from app.utils.companies_utils import (
+    UserNotRequested,
+    UserNotInvited,
+    UserNotInteractWithActions,
 )
 
 
@@ -101,4 +111,42 @@ def register_exception_handler(app: FastAPI):
     async def not_owner_exception_handler(request: Request, exc: NotOwner):
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(UserNotRequested)
+    async def user_not_requested_exception_handler(
+        request: Request, exc: UserNotRequested
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(UserNotInvited)
+    async def user_not_invited_exception_handler(request: Request, exc: UserNotInvited):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(UserNotInteractWithActions)
+    async def user_not_interact_with_actions_exception_handler(
+        request: Request, exc: UserNotInteractWithActions
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(UserAlreadyInvited)
+    async def user_already_invited_exception_handler(
+        request: Request, exc: UserAlreadyInvited
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(ActionAlreadyAvailable)
+    async def action_already_available_exception_handler(
+        request: Request, exc: ActionAlreadyAvailable
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
         )
