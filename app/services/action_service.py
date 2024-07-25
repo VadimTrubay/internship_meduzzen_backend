@@ -1,16 +1,19 @@
 import uuid
 from typing import Optional, List
 
-from fastapi import HTTPException
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
 
+from app.conf.detail import Messages
 from app.exept.custom_exceptions import (
     AlreadyInCompany,
     NotOwner,
     CompanyNotFound,
     UserNotFound,
     ActionNotFound,
+    NotPermission,
+    UserAlreadyInvited,
+    ActionAlreadyAvailable,
 )
 from app.conf.invite import InvitationStatus, InvitationType, MemberStatus
 from app.repository.action_repository import ActionRepository
@@ -44,18 +47,21 @@ class ActionService:
     async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
         company = await self.company_repository.get_one(id=company_id)
         if not company:
+            logger.info(Messages.COMPANY_NOT_FOUND)
             raise CompanyNotFound()
         return company
 
     async def _get_user_or_raise(self, user_id: uuid.UUID) -> UserSchema:
         user = await self.user_repository.get_one(id=user_id)
         if not user:
+            logger.info(Messages.USER_NOT_FOUND)
             raise UserNotFound()
         return user
 
     async def _get_action_or_raise(self, action_id: uuid.UUID) -> ActionSchema:
         action = await self.action_repository.get_one(id=action_id)
         if not action:
+            logger.info(Messages.ACTION_NOT_FOUND)
             raise ActionNotFound()
         return action
 
@@ -82,10 +88,8 @@ class ActionService:
         await self.company_repository.is_user_company_owner(current_user_id, company.id)
 
         if action_data.user_id == current_user_id:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="You can't invite yourself",
-            )
+            logger.info(Messages.ACTION_ALREADY_AVAILABLE)
+            raise ActionAlreadyAvailable()
         invite = await self.action_repository.get_one(
             company_id=company.id,
             user_id=action_data.user_id,
@@ -93,11 +97,10 @@ class ActionService:
         if invite:
             match invite.status:
                 case InvitationStatus.ACCEPTED:
-                    raise HTTPException(
-                        status_code=status.HTTP_409_CONFLICT,
-                        detail="User is already invited",
-                    )
+                    logger.info(Messages.USER_ALREADY_INVITED)
+                    raise UserAlreadyInvited()
                 case InvitationStatus.ACCEPTED:
+                    logger.info(Messages.ALREADY_IN_COMPANY)
                     raise AlreadyInCompany()
                 case InvitationStatus.REQUESTED:
                     await self._add_user_to_company(
@@ -105,10 +108,8 @@ class ActionService:
                     )
                     return invite
                 case InvitationStatus.DECLINED_BY_USER:
-                    raise HTTPException(
-                        status_code=status.HTTP_403_FORBIDDEN,
-                        detail="You can't invite this user",
-                    )
+                    logger.info(Messages.NOT_PERMISSION)
+                    raise NotPermission()
                 case InvitationStatus.DECLINED_BY_COMPANY:
                     invite.status = InvitationStatus.REQUESTED
                     return invite
@@ -126,6 +127,7 @@ class ActionService:
         if not self.company_repository.is_user_company_owner(
             current_user_id, company.id
         ):
+            logger.info(Messages.NOT_OWNER_COMPANY)
             raise NotOwner()
         await self.action_repository.delete_one(action_id)
         return action
@@ -165,15 +167,15 @@ class ActionService:
         if await self.company_repository.is_user_company_owner(
             current_user_id, company.id
         ):
+            logger.info(Messages.ALREADY_IN_COMPANY)
             raise AlreadyInCompany()
         if request:
             match request.status:
                 case InvitationStatus.REQUESTED:
-                    raise HTTPException(
-                        status_code=status.HTTP_409_CONFLICT,
-                        detail="You have already sent a request to this company",
-                    )
+                    logger.info(Messages.ACTION_ALREADY_AVAILABLE)
+                    raise ActionAlreadyAvailable()
                 case InvitationStatus.ACCEPTED:
+                    logger.info(Messages.ALREADY_IN_COMPANY)
                     raise AlreadyInCompany()
                 case InvitationStatus.INVITED:
                     await self._add_user_to_company(
@@ -182,10 +184,8 @@ class ActionService:
                     request.status = InvitationStatus.ACCEPTED
                     return request
                 case InvitationStatus.DECLINED_BY_COMPANY:
-                    raise HTTPException(
-                        status_code=status.HTTP_409_CONFLICT,
-                        detail="You have already declined this company",
-                    )
+                    logger.info(Messages.ACTION_ALREADY_AVAILABLE)
+                    raise ActionAlreadyAvailable()
                 case InvitationStatus.DECLINED_BY_USER:
                     request.status = InvitationStatus.REQUESTED
                     return request
@@ -213,10 +213,8 @@ class ActionService:
         if not await self.company_repository.is_user_company_owner(
             current_user_id, company.id
         ):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You do not have permission to perform this action",
-            )
+            logger.info(Messages.NOT_PERMISSION)
+            raise NotPermission()
         return action
 
     async def accept_request(
@@ -243,10 +241,8 @@ class ActionService:
         action = await self._get_action_or_raise(action_id)
         company_id = action.company_id
         if current_user_id != action.user_id:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You are not allowed to leave this company",
-            )
+            logger.info(Messages.ACTION_ALREADY_AVAILABLE)
+            raise ActionAlreadyAvailable()
         await self.company_repository.delete_company_member(company_id, current_user_id)
         return await self.action_repository.delete_one(action.id)
 

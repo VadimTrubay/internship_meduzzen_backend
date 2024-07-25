@@ -1,9 +1,11 @@
 from datetime import datetime
 
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 
+from app.conf.detail import Messages
 from app.db.connection import get_session
 from app.repository.user_repository import UserRepository
 from app.schemas.auth import TokenModel
@@ -32,12 +34,14 @@ class AuthService:
         db_user = await self.repository.get_one(email=email)
 
         if not db_user:
+            logger.info(Messages.USER_WITH_EMAIL_NOT_FOUND)
             raise UserWithEmailNotFound()
 
         if not password_utils.validate_password(
             password=password,
             hashed_password=db_user.password,
         ):
+            logger.info(Messages.INCORRECT_PASSWORD)
             raise IncorrectPassword()
 
         token = await jwt_utils.encode_jwt(payload={"email": email, "from": "noauth0"})
@@ -48,11 +52,13 @@ class AuthService:
         email = data.get("email")
         existing_user_email = await self.repository.get_one(email=email)
         if existing_user_email:
+            logger.info(Messages.EMAIL_AlREADY_EXISTS)
             raise EmailAlreadyExists()
 
         username = data.get("username")
         existing_user_username = await self.repository.get_one(username=username)
         if existing_user_username:
+            logger.info(Messages.USER_ALREADY_EXISTS)
             raise UserAlreadyExists()
 
         password = data.get("password")
@@ -77,11 +83,13 @@ class AuthService:
     ) -> str:
         decoded_token = jwt_utils.decode_jwt(token.credentials)
         if not decoded_token:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
 
         current_time = datetime.utcnow()
         expiration_time = datetime.utcfromtimestamp(decoded_token["exp"])
         if current_time >= expiration_time:
+            logger.info(Messages.UNAUTHORIZED)
             raise UnAuthorized()
 
         user_email = decoded_token.get("email")
@@ -102,5 +110,4 @@ class AuthService:
 
             await user_repository.create_one(user_data)
             current_user = await user_repository.get_one(email=user_email)
-
         return current_user
