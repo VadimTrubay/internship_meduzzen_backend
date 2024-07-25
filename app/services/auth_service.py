@@ -28,6 +28,7 @@ class AuthService:
         self.session = session
         self.repository = repository
 
+    # VALIDATE AUTH USER
     async def validate_auth_user(self, data: dict) -> TokenModel:
         email = data.get("email")
         password = data.get("password")
@@ -48,6 +49,7 @@ class AuthService:
         token_info = TokenModel(access_token=token, token_type="Bearer")
         return token_info
 
+    # CREATE USER
     async def create_user(self, data: dict) -> TokenModel:
         email = data.get("email")
         existing_user_email = await self.repository.get_one(email=email)
@@ -76,6 +78,7 @@ class AuthService:
         token_info = TokenModel(access_token=token, token_type="Bearer")
         return token_info
 
+    # GET CURRENT USER
     @staticmethod
     async def get_current_user(
         token: HTTPAuthorizationCredentials = Depends(security),

@@ -44,6 +44,7 @@ class ActionService:
         self.company_repository = company_repository
         self.user_repository = user_repository
 
+    # GET COMPANY OR RAISE
     async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
         company = await self.company_repository.get_one(id=company_id)
         if not company:
@@ -51,6 +52,7 @@ class ActionService:
             raise CompanyNotFound()
         return company
 
+    # GET USER OR RAISE
     async def _get_user_or_raise(self, user_id: uuid.UUID) -> UserSchema:
         user = await self.user_repository.get_one(id=user_id)
         if not user:
@@ -58,6 +60,7 @@ class ActionService:
             raise UserNotFound()
         return user
 
+    # GET ACTION OR RAISE
     async def _get_action_or_raise(self, action_id: uuid.UUID) -> ActionSchema:
         action = await self.action_repository.get_one(id=action_id)
         if not action:
@@ -65,6 +68,7 @@ class ActionService:
             raise ActionNotFound()
         return action
 
+    # ADD USER TO COMPANY
     async def _add_user_to_company(
         self, action_id: uuid.UUID, user_id: uuid.UUID, company_id: uuid.UUID
     ) -> CompanyMemberSchema:
@@ -80,6 +84,7 @@ class ActionService:
         await self.action_repository.update_one(action_id, update_data)
         return company_member
 
+    # CREATE INVITE
     async def create_invite(
         self, action_data: InviteCreateSchema, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -119,6 +124,7 @@ class ActionService:
             data["type"] = InvitationType.INVITE.value
             return await self.action_repository.create_one(data=data)
 
+    # CANCEL INVITE
     async def cancel_invite(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -132,6 +138,7 @@ class ActionService:
         await self.action_repository.delete_one(action_id)
         return action
 
+    # GET INVITE
     async def _get_invite(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -140,6 +147,7 @@ class ActionService:
         companies_utils.check_invited(action.status)
         return action
 
+    # ACCEPT INVITE
     async def accept_invite(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -149,6 +157,7 @@ class ActionService:
         await self._add_user_to_company(action_id, current_user_id, company_id)
         return action
 
+    # DECLINE INVITE
     async def decline_invite(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -157,6 +166,7 @@ class ActionService:
         await self.action_repository.update_one(action_id, update_data)
         return action
 
+    # CREATE REQUEST
     async def create_request(
         self, action_data: RequestCreateSchema, current_user_id: id
     ) -> ActionSchema:
@@ -196,6 +206,7 @@ class ActionService:
             data["type"] = InvitationType.REQUEST.value
             return await self.action_repository.create_one(data=data)
 
+    # CANCEL REQUEST
     async def cancel_request(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -205,6 +216,7 @@ class ActionService:
         await self.action_repository.delete_one(action.id)
         return action
 
+    # VALIDATE REQUEST
     async def _validate_request(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -217,6 +229,7 @@ class ActionService:
             raise NotPermission()
         return action
 
+    # ACCEPT REQUEST
     async def accept_request(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -226,6 +239,7 @@ class ActionService:
         await self._add_user_to_company(action_id, current_user_id, company.id)
         return action
 
+    # DECLINE REQUEST
     async def decline_request(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -235,6 +249,7 @@ class ActionService:
         await self.action_repository.update_one(action_id, update_data)
         return action
 
+    # LEAVE FROM COMPANY
     async def leave_from_company(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -246,6 +261,7 @@ class ActionService:
         await self.company_repository.delete_company_member(company_id, current_user_id)
         return await self.action_repository.delete_one(action.id)
 
+    # KICK FROM COMPANY
     async def kick_from_company(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
@@ -254,6 +270,7 @@ class ActionService:
         await self.company_repository.delete_company_member(company_id, action.user_id)
         return await self.action_repository.delete_one(action.id)
 
+    # VALIDATE COMPANY GET
     async def _validate_company_get(
         self, current_user_id: uuid.UUID, company_id: Optional[uuid.UUID] = None
     ) -> CompanySchema:
@@ -261,7 +278,9 @@ class ActionService:
         await self.company_repository.is_user_company_owner(current_user_id, company.id)
         return company
 
-    async def _process_query_results(self, results):
+    # PROCESS QUERY RESULTS
+    @staticmethod
+    async def _process_query_results(results):
         actions = []
         for action, user in results.fetchall():
             action_dto = GetActionsResponseSchema(
@@ -270,6 +289,7 @@ class ActionService:
             actions.append(action_dto)
         return actions
 
+    # GET COMPANY INVITES
     async def get_company_invites(
         self, current_user_id: uuid.UUID, company_id: Optional[uuid.UUID] = None
     ) -> List[GetActionsResponseSchema]:
@@ -281,6 +301,7 @@ class ActionService:
         invites = await self._process_query_results(result)
         return invites
 
+    # GET COMPANY REQUEST
     async def get_company_requests(
         self, current_user_id: uuid.UUID, company_id: Optional[uuid.UUID] = None
     ) -> List[GetActionsResponseSchema]:
@@ -292,6 +313,7 @@ class ActionService:
         requests = await self._process_query_results(result)
         return requests
 
+    # GET COMPANY MEMBERS (ACCEPTED)
     async def get_company_members(
         self, current_user_id: uuid.UUID, company_id: Optional[uuid.UUID] = None
     ) -> List[GetActionsResponseSchema]:
@@ -303,6 +325,7 @@ class ActionService:
         members = await self._process_query_results(result)
         return members
 
+    # GET MY REQUESTS
     async def get_my_requests(
         self, current_user_id: uuid.UUID
     ) -> List[GetActionsResponseSchema]:
@@ -313,6 +336,7 @@ class ActionService:
         requests = await self._process_query_results(result)
         return requests
 
+    # GET MY INVITES
     async def get_my_invites(
         self, current_user_id: uuid.UUID
     ) -> List[GetActionsResponseSchema]:
