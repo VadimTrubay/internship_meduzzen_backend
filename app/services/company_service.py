@@ -91,6 +91,7 @@ class CompanyService:
             if user_id != company.owner_id:
                 raise NotPermission()
             return await func(*args, **kwargs)
+
         return wrapper
 
     # CREATE COMPANY
