@@ -84,7 +84,7 @@ async def decline_invite(
 
 
 @router.post("/request", response_model=ActionSchema)
-async def create_invite(
+async def create_request(
     action_data: RequestCreateSchema,
     current_user: UserSchema = Depends(AuthService.get_current_user),
     action_service: ActionService = Depends(get_action_service),
@@ -96,7 +96,7 @@ async def create_invite(
 
 
 @router.delete("/request", response_model=ActionSchema)
-async def request_invite(
+async def delete_request(
     action_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
     action_service: ActionService = Depends(get_action_service),
@@ -131,7 +131,7 @@ async def decline_request(
     )
 
 
-@router.post("/leave", response_model=ActionSchema)
+@router.delete("/leave", response_model=ActionSchema)
 async def leave_from_company(
     action_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
@@ -143,7 +143,7 @@ async def leave_from_company(
     )
 
 
-@router.post("/kick", response_model=ActionSchema)
+@router.delete("/kick", response_model=ActionSchema)
 async def kick_from_company(
     action_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
