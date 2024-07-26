@@ -222,6 +222,7 @@ class ActionService:
     ) -> ActionSchema:
         action = await self._get_action_or_raise(action_id)
         company = await self._get_company_or_raise(action.company_id)
+
         if not await self.company_repository.is_user_company_owner(
             current_user_id, company.id
         ):
@@ -265,7 +266,8 @@ class ActionService:
     async def kick_from_company(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
-        action = await self._validate_request(action_id, current_user_id)
+        action = await self._get_action_or_raise(action_id)
+        # action = await self._validate_request(action_id, current_user_id)
         company_id = action.company_id
         await self.company_repository.delete_company_member(company_id, action.user_id)
         return await self.action_repository.delete_one(action.id)
