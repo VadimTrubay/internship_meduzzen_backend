@@ -104,4 +104,6 @@ pytest
 ```bash
 ERD
 https://github.com/VadimTrubay/internship_meduzzen_backend/blob/BE_9_add_company_actions/ERD_public_companies.png?raw=true
-```
+
+
+![internship_meduzzen_backend](ERD_public_companies.png)
