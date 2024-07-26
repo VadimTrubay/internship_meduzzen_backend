@@ -101,7 +101,7 @@ class ActionService:
         )
         if invite:
             match invite.status:
-                case InvitationStatus.ACCEPTED:
+                case InvitationStatus.INVITED:
                     logger.info(Messages.USER_ALREADY_INVITED)
                     raise UserAlreadyInvited()
                 case InvitationStatus.ACCEPTED:
