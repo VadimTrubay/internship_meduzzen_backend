@@ -101,9 +101,6 @@ To running the tests, run:
 pytest
 ```
 
-```bash
 ERD
-https://github.com/VadimTrubay/internship_meduzzen_backend/blob/BE_9_add_company_actions/ERD_public_companies.png?raw=true
 
-
-![internship_meduzzen_backend](ERD_public_companies.png)
+![ERD_public_companies](https://github.com/user-attachments/assets/557c592b-1697-41fb-8815-5aa49a786f69)
