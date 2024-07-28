@@ -29,6 +29,8 @@ class RequestCreateSchema(BaseModel):
 
 class GetActionsResponseSchema(ActionBaseSchema):
     user_id: uuid.UUID
+    company_id: uuid.UUID
+    company_name: str
     user_username: str
 
 
