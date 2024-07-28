@@ -219,12 +219,6 @@ class ActionService:
     ) -> ActionSchema:
         action = await self._get_action_or_raise(action_id)
         company = await self._get_company_or_raise(action.company_id)
-
-        if not await self.company_repository.is_user_company_owner(
-            current_user_id, company.id
-        ):
-            logger.info(Messages.NOT_PERMISSION)
-            raise NotPermission()
         return action
 
     # ACCEPT REQUEST
