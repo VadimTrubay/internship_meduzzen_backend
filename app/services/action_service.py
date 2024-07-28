@@ -92,9 +92,6 @@ class ActionService:
         company = await self._get_company_or_raise(action_data.company_id)
         await self.company_repository.is_user_company_owner(current_user_id, company.id)
 
-        if action_data.user_id == current_user_id:
-            logger.info(Messages.ACTION_ALREADY_AVAILABLE)
-            raise ActionAlreadyAvailable()
         invite = await self.action_repository.get_one(
             company_id=company.id,
             user_id=action_data.user_id,
