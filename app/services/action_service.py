@@ -164,9 +164,7 @@ class ActionService:
         return action
 
     # CREATE REQUEST
-    async def create_request(
-        self, action_data: RequestCreateSchema
-    ) -> ActionSchema:
+    async def create_request(self, action_data: RequestCreateSchema) -> ActionSchema:
         current_user_id = action_data.user_id
         company = await self._get_company_or_raise(action_data.company_id)
         request = await self.action_repository.get_one(
