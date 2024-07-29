@@ -8,7 +8,13 @@ from app.models.base_model import BaseModel
 class CompanyAction(BaseModel):
     __tablename__ = "actions"
 
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)
+    user_id = Column(
+        UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    company_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     status = Column(Enum(InvitationStatus), nullable=False)
     type = Column(Enum(InvitationType), nullable=False)
