@@ -105,10 +105,8 @@ class ActionService:
                     logger.info(Messages.ALREADY_IN_COMPANY)
                     raise AlreadyInCompany()
                 case InvitationStatus.REQUESTED:
-                    await self._add_user_to_company(
-                        invite.id, current_user_id, company.id
-                    )
-                    return invite
+                    logger.info(Messages.ACTION_ALREADY_AVAILABLE)
+                    raise ActionAlreadyAvailable()
                 case InvitationStatus.DECLINED_BY_USER:
                     logger.info(Messages.NOT_PERMISSION)
                     raise NotPermission()
@@ -185,11 +183,8 @@ class ActionService:
                     logger.info(Messages.ALREADY_IN_COMPANY)
                     raise AlreadyInCompany()
                 case InvitationStatus.INVITED:
-                    await self._add_user_to_company(
-                        request.id, current_user_id, company.id
-                    )
-                    request.status = InvitationStatus.ACCEPTED
-                    return request
+                    logger.info(Messages.USER_ALREADY_INVITED)
+                    raise UserAlreadyInvited()
                 case InvitationStatus.DECLINED_BY_COMPANY:
                     logger.info(Messages.ACTION_ALREADY_AVAILABLE)
                     raise ActionAlreadyAvailable()
