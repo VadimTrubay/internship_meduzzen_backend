@@ -22,7 +22,7 @@ router = APIRouter(prefix="/actions", tags=["actions"])
 
 
 async def get_action_service(
-    session: AsyncSession = Depends(get_session),
+        session: AsyncSession = Depends(get_session),
 ) -> ActionService:
     action_repository = ActionRepository(session)
     company_repository = CompanyRepository(session)
@@ -35,23 +35,28 @@ async def get_action_service(
     )
 
 
-@router.post("/invite", response_model=ActionSchema)
+@router.post("/company/{company_id}/invite/user/{user_id}", response_model=ActionSchema)
 async def create_invite(
-    action_data: InviteCreateSchema,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        company_id: uuid.UUID,
+        user_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
+    action_data = InviteCreateSchema(
+        company_id=company_id,
+        user_id=user_id,
+    )
     return await action_service.create_invite(
         action_data=action_data, current_user_id=current_user_id
     )
 
 
-@router.delete("/invite", response_model=ActionSchema)
+@router.delete("/{action_id}/invite", response_model=ActionSchema)
 async def delete_invite(
-    action_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        action_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
     return await action_service.cancel_invite(
@@ -59,11 +64,11 @@ async def delete_invite(
     )
 
 
-@router.post("/invite/accept", response_model=ActionSchema)
+@router.post("/{action_id}/invite/accept", response_model=ActionSchema)
 async def accept_invite(
-    action_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        action_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
     return await action_service.accept_invite(
@@ -71,11 +76,11 @@ async def accept_invite(
     )
 
 
-@router.post("/invite/decline", response_model=ActionSchema)
+@router.post("/{action_id}/invite/decline", response_model=ActionSchema)
 async def decline_invite(
-    action_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        action_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
     return await action_service.decline_invite(
@@ -83,23 +88,24 @@ async def decline_invite(
     )
 
 
-@router.post("/request", response_model=ActionSchema)
+@router.post("/company/{company_id}/request", response_model=ActionSchema)
 async def create_request(
-    action_data: RequestCreateSchema,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        company_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
+    action_data = RequestCreateSchema(company_id=company_id)
     return await action_service.create_request(
         action_data=action_data, current_user_id=current_user_id
     )
 
 
-@router.delete("/request", response_model=ActionSchema)
+@router.delete("/{action_id}/request", response_model=ActionSchema)
 async def delete_request(
-    action_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        action_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
     return await action_service.cancel_request(
@@ -107,11 +113,11 @@ async def delete_request(
     )
 
 
-@router.post("/request/accept", response_model=ActionSchema)
+@router.post("/{action_id}/request/accept", response_model=ActionSchema)
 async def accept_request(
-    action_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        action_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
     return await action_service.accept_request(
@@ -119,11 +125,11 @@ async def accept_request(
     )
 
 
-@router.post("/request/decline", response_model=ActionSchema)
+@router.post("/{action_id}/request/decline", response_model=ActionSchema)
 async def decline_request(
-    action_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        action_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
     return await action_service.decline_request(
@@ -131,11 +137,11 @@ async def decline_request(
     )
 
 
-@router.delete("/leave", response_model=ActionSchema)
+@router.delete("/{action_id}/leave", response_model=ActionSchema)
 async def leave_from_company(
-    action_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        action_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
     return await action_service.leave_from_company(
@@ -143,11 +149,11 @@ async def leave_from_company(
     )
 
 
-@router.delete("/kick", response_model=ActionSchema)
+@router.delete("/{action_id}/kick", response_model=ActionSchema)
 async def kick_from_company(
-    action_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        action_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
     return await action_service.kick_from_company(
@@ -155,21 +161,21 @@ async def kick_from_company(
     )
 
 
-@router.get("/company/invites", response_model=List[GetActionsResponseSchema])
+@router.get("/company/{company_id}/invites", response_model=List[GetActionsResponseSchema])
 async def get_company_invites(
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    company_id: Optional[uuid.UUID] = Query(None),
-    action_service: ActionService = Depends(get_action_service),
+        company_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> List[GetActionsResponseSchema]:
     current_user_id = current_user.id
     return await action_service.get_company_invites(current_user_id, company_id)
 
 
-@router.get("/company/requests", response_model=List[GetActionsResponseSchema])
+@router.get("/company/{company_id}/requests", response_model=List[GetActionsResponseSchema])
 async def get_company_requests(
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    company_id: Optional[uuid.UUID] = Query(None),
-    action_service: ActionService = Depends(get_action_service),
+        company_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> List[GetActionsResponseSchema]:
     current_user_id = current_user.id
     return await action_service.get_company_requests(current_user_id, company_id)
@@ -177,8 +183,8 @@ async def get_company_requests(
 
 @router.get("/my/requests", response_model=List[GetActionsResponseSchema])
 async def get_my_requests(
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> List[GetActionsResponseSchema]:
     current_user_id = current_user.id
     requests_response = await action_service.get_my_requests(current_user_id)
@@ -187,18 +193,18 @@ async def get_my_requests(
 
 @router.get("/my/invites", response_model=List[GetActionsResponseSchema])
 async def get_my_invites(
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    action_service: ActionService = Depends(get_action_service),
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> List[GetActionsResponseSchema]:
     current_user_id = current_user.id
     return await action_service.get_my_invites(current_user_id)
 
 
-@router.get("/company/members", response_model=List[GetActionsResponseSchema])
+@router.get("/company/{company_id}/members", response_model=List[GetActionsResponseSchema])
 async def get_company_members(
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    company_id: Optional[uuid.UUID] = Query(None),
-    action_service: ActionService = Depends(get_action_service),
+        company_id: uuid.UUID,
+        current_user: UserSchema = Depends(AuthService.get_current_user),
+        action_service: ActionService = Depends(get_action_service),
 ) -> List[GetActionsResponseSchema]:
     current_user_id = current_user.id
     return await action_service.get_company_members(current_user_id, company_id)
