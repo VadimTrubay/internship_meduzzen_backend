@@ -24,6 +24,7 @@ class InviteCreateSchema(BaseModel):
 
 
 class RequestCreateSchema(BaseModel):
+    user_id: uuid.UUID
     company_id: uuid.UUID
 
 
