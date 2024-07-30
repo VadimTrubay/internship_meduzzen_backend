@@ -13,6 +13,7 @@ from app.schemas.actions import (
     InviteCreateSchema,
     RequestCreateSchema,
     GetActionsResponseSchema,
+    CompanyMemberSchema,
 )
 from app.schemas.users import UserSchema
 from app.services.action_service import ActionService
@@ -220,3 +221,42 @@ async def get_company_members(
 ) -> List[GetActionsResponseSchema]:
     current_user_id = current_user.id
     return await action_service.get_company_members(current_user_id, company_id)
+
+
+@router.patch(
+    "/company/{company_id}/add_admin/user/{user_id}", response_model=CompanyMemberSchema
+)
+async def add_admin(
+    company_id: uuid.UUID,
+    user_id: uuid.UUID,
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+    action_service: ActionService = Depends(get_action_service),
+) -> CompanyMemberSchema:
+    current_user_id = current_user.id
+    return await action_service.add_admin(current_user_id, company_id, user_id)
+
+
+@router.patch(
+    "/company/{company_id}/remove_admin/user/{user_id}",
+    response_model=CompanyMemberSchema,
+)
+async def remove_admin(
+    company_id: uuid.UUID,
+    user_id: uuid.UUID,
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+    action_service: ActionService = Depends(get_action_service),
+) -> CompanyMemberSchema:
+    current_user_id = current_user.id
+    return await action_service.remove_admin(current_user_id, company_id, user_id)
+
+
+@router.get(
+    "/company/{company_id}/get_admins", response_model=List[GetActionsResponseSchema]
+)
+async def get_admins(
+    company_id: uuid.UUID,
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+    action_service: ActionService = Depends(get_action_service),
+) -> List[GetActionsResponseSchema]:
+    current_user_id = current_user.id
+    return await action_service.get_admins(current_user_id, company_id)

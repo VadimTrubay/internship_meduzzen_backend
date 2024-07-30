@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 from sqlalchemy import select, delete
 
@@ -55,9 +56,37 @@ class CompanyRepository(BaseRepository):
         await self.session.execute(query)
         await self.session.commit()
 
-    async def delete_company_member(self, company_id: uuid.UUID, user_id) -> None:
+    async def delete_company_member(
+        self, company_id: uuid.UUID, user_id: uuid.UUID
+    ) -> None:
         query = delete(CompanyMember).where(
-            CompanyMember.company_id == company_id, CompanyMember.user_id == user_id
+            CompanyMember.company_id == company_id,
+            CompanyMember.user_id == user_id,
         )
         await self.session.execute(query)
         await self.session.commit()
+
+    async def get_company_member(self, user_id: uuid.UUID, company_id: uuid.UUID):
+        query = select(CompanyMember).filter(
+            CompanyMember.user_id == user_id,
+            CompanyMember.company_id == company_id,
+        )
+        company_member = await self.session.execute(query)
+        return company_member.scalar_one_or_none()
+
+    async def update_company_member(
+        self, company_member: CompanyMemberSchema, role: MemberStatus
+    ) -> None:
+        member = await self.get_company_member(
+            company_member.user_id, company_member.company_id
+        )
+        member.role = role
+        await self.session.commit()
+
+    async def get_admins(self, company_id: uuid.UUID) -> List[CompanyMember]:
+        query = select(CompanyMember).filter(
+            CompanyMember.company_id == company_id,
+            CompanyMember.role == MemberStatus.ADMIN,
+        )
+        result = await self.session.execute(query)
+        return result.scalars().all()

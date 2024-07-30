@@ -33,7 +33,6 @@ class TestAuthService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="testuser",
             password="hashedpassword",
-            is_admin=False,
         )
         self.repository.get_one.return_value = db_user
 
@@ -79,7 +78,6 @@ class TestAuthService(unittest.IsolatedAsyncioTestCase):
             email="existinguser@example.com",
             username="existinguser",
             password="hashedpassword",
-            is_admin=False,
         )
         self.repository.get_one.return_value = existing_user
 

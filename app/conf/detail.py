@@ -31,6 +31,7 @@ class Messages(Enum):
     USER_ALREADY_INVITED = "User is already invited"
     ACTION_ALREADY_AVAILABLE = "Action is already available"
     SUCCESS_GET_CURRENT_USER = "Success get current user"
+    YOU_CAN_NOT_INVITE_YOUR_SELF = "You can't invite yourself"
 
     def __str__(self):
         return self.value

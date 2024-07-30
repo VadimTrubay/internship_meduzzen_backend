@@ -23,6 +23,16 @@ class UserService:
         self.session = session
         self.repository = repository
 
+    # GET USER BY OR RAISE
+    async def _get_user_or_raise(self, user_id: uuid.UUID) -> UserSchema:
+        user = await self.repository.get_one(id=user_id)
+        if not user:
+            logger.info(Messages.NOT_FOUND)
+            raise UserNotFound()
+        logger.info(Messages.SUCCESS_GET_USER)
+
+        return UserSchema.model_validate(user)
+
     # CHECK USER PERMISSION
     @staticmethod
     async def check_user_permission(user_id: uuid.UUID, current_user: UserSchema):
@@ -34,16 +44,6 @@ class UserService:
     async def get_total_count(self):
         count = await self.repository.get_count()
         return count
-
-    # GET USER BY OR RAISE
-    async def _get_user_or_raise(self, user_id: uuid.UUID) -> UserSchema:
-        user = await self.repository.get_one(id=user_id)
-        if not user:
-            logger.info(Messages.NOT_FOUND)
-            raise UserNotFound()
-        logger.info(Messages.SUCCESS_GET_USER)
-
-        return UserSchema.model_validate(user)
 
     # GET USERS
     async def get_users(self, skip, limit) -> List[UserSchema]:

@@ -35,6 +35,11 @@ class GetActionsResponseSchema(ActionBaseSchema):
     user_username: str
 
 
+class GetActionsAdminResponseSchema(ActionBaseSchema):
+    user_id: uuid.UUID
+    user_username: str
+
+
 class CompanyMemberSchema(ActionBaseSchema):
     user_id: uuid.UUID
     company_id: uuid.UUID

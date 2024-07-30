@@ -90,3 +90,8 @@ class UserAlreadyInvited(BaseCustomError):
 class ActionAlreadyAvailable(BaseCustomError):
     def __init__(self, message=Messages.ACTION_ALREADY_AVAILABLE):
         super().__init__(message)
+
+
+class YouCanNotInviteYourSelf(BaseCustomError):
+    def __init__(self, message=Messages.YOU_CAN_NOT_INVITE_YOUR_SELF):
+        super().__init__(message)

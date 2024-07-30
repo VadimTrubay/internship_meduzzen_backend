@@ -2,7 +2,6 @@ import uuid
 
 from sqlalchemy import select
 
-from app.models.company_model import Company
 from app.models.user_model import User
 from app.models.action_model import CompanyAction
 from app.conf.invite import InvitationStatus
@@ -19,9 +18,8 @@ class ActionRepository(BaseRepository):
     ):
         id_column = CompanyAction.company_id if is_company else CompanyAction.user_id
         query = (
-            select(CompanyAction, User, Company)
+            select(CompanyAction, User)
             .join(User, CompanyAction.user_id == User.id)
-            .join(Company, CompanyAction.company_id == Company.id)
             .filter(id_column == id_, CompanyAction.status == status)
         )
         return query
