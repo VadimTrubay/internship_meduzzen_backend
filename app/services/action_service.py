@@ -14,6 +14,7 @@ from app.exept.custom_exceptions import (
     NotPermission,
     UserAlreadyInvited,
     ActionAlreadyAvailable,
+    YouCanNotInviteYourSelf,
 )
 from app.conf.invite import InvitationStatus, InvitationType, MemberStatus
 from app.repository.action_repository import ActionRepository
@@ -25,6 +26,7 @@ from app.schemas.actions import (
     RequestCreateSchema,
     GetActionsResponseSchema,
     CompanyMemberSchema,
+    GetActionsAdminResponseSchema,
 )
 from app.schemas.companies import CompanySchema
 from app.schemas.users import UserSchema
@@ -91,6 +93,10 @@ class ActionService:
         await self._get_user_or_raise(action_data.user_id)
         company = await self._get_company_or_raise(action_data.company_id)
         await self.company_repository.is_user_company_owner(current_user_id, company.id)
+
+        if action_data.user_id == current_user_id:
+            logger.info(Messages.YOU_CAN_NOT_INVITE_YOUR_SELF)
+            raise YouCanNotInviteYourSelf()
 
         invite = await self.action_repository.get_one(
             company_id=company.id,
@@ -338,3 +344,58 @@ class ActionService:
         result = await self.session.execute(query)
         invites = await self._process_query_results(result)
         return invites
+
+    # VALIDATE ADMIN
+    async def _validate_admin(
+        self,
+        current_user_id: uuid.UUID,
+        company_id: uuid.UUID,
+        user_id: uuid.UUID,
+        validate_role: MemberStatus,
+    ) -> CompanyMemberSchema:
+        company = await self._validate_company_get(current_user_id, company_id)
+        member = await self.company_repository.get_company_member(user_id, company.id)
+        current_user = await self.company_repository.get_company_member(
+            current_user_id, current_user_id
+        )
+        if not member:
+            raise UserNotFound()
+        if current_user.role != validate_role:
+            raise NotPermission()
+        return member
+
+    async def add_admin(
+        self, current_user_id: uuid.UUID, company_id: uuid.UUID, user_id: uuid.UUID
+    ) -> CompanyMemberSchema:
+        member = await self._validate_admin(
+            current_user_id, company_id, user_id, MemberStatus.OWNER
+        )
+        await self.company_repository.update_company_member(member, MemberStatus.ADMIN)
+        return member
+
+    async def remove_admin(
+        self, current_user_id: uuid.UUID, company_id: uuid.UUID, user_id: uuid.UUID
+    ) -> CompanyMemberSchema:
+        member = await self._validate_admin(
+            current_user_id, company_id, user_id, MemberStatus.OWNER
+        )
+        await self.company_repository.update_company_member(member, MemberStatus.USER)
+        return member
+
+    async def get_admins(
+        self, current_user_id: uuid.UUID, company_id: uuid.UUID
+    ) -> List[GetActionsAdminResponseSchema]:
+        await self._validate_company_get(current_user_id, company_id)
+
+        admins = await self.company_repository.get_admins(company_id)
+        admins_schemas = [
+            GetActionsResponseSchema(
+                id=admin.id,
+                user_id=admin.user_id,
+                user_username=await self.user_repository.get_user_username(
+                    admin.user_id
+                ),
+            )
+            for admin in admins
+        ]
+        return admins_schemas

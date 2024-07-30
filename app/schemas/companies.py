@@ -4,17 +4,13 @@ from typing import List, Optional
 from pydantic import BaseModel, ConfigDict
 
 
-class BaseCompanySchema(BaseModel):
+class CompanySchema(BaseModel):
     id: uuid.UUID
     name: str
     description: str
     visible: bool
 
     model_config = ConfigDict(from_attributes=True)
-
-
-class CompanySchema(BaseCompanySchema):
-    owner_id: uuid.UUID
 
 
 class CompanyCreateRequest(BaseModel):

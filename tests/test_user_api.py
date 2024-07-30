@@ -27,14 +27,12 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
                 email="testuser1@example.com",
                 username="testuser1",
                 password="testpassword1",
-                is_admin=False,
             ),
             UserSchema(
                 id=uuid4(),
                 email="testuser2@example.com",
                 username="testuser2",
                 password="testpassword2",
-                is_admin=False,
             ),
         ]
         users = await self.user_service.get_users(skip=0, limit=10)
@@ -52,7 +50,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="testuser",
             password="testpassword",
-            is_admin=False,
         )
         user = await self.user_service.get_user_by_id(user_id)
         self.assertEqual(user.id, user_id)
@@ -70,7 +67,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="testuser",
             password="testpassword",
-            is_admin=False,
         )
         update_data = UserUpdateRequest(
             username="updateduser", password="updatedpassword"
@@ -82,7 +78,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="updateduser",
             password="updatedpassword",
-            is_admin=False,
         )
 
         updated_user = await self.user_service.update_user(
@@ -97,7 +92,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="testuser",
             password="testpassword",
-            is_admin=False,
         )
         update_data = UserUpdateRequest(
             username="updateduser", password="updatedpassword"
@@ -113,7 +107,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="testuser",
             password="testpassword",
-            is_admin=False,
         )
         update_data = UserUpdateRequest(
             username="updateduser", password="updatedpassword"
@@ -130,7 +123,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="testuser",
             password="testpassword",
-            is_admin=False,
         )
         update_data = UserUpdateRequest(
             username="updateduser", password="updatedpassword"
@@ -143,7 +135,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
                 email="anotheruser@example.com",
                 username="updateduser",
                 password="testpassword",
-                is_admin=False,
             ),
         ]
         with self.assertRaises(UserAlreadyExists):
@@ -156,7 +147,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="testuser",
             password="testpassword",
-            is_admin=False,
         )
 
         self.repository.get_one.return_value = current_user
@@ -164,7 +154,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             id=user_id,
             email="testuser@example.com",
             username="testuser",
-            is_admin=False,
         )
 
         deleted_user = await self.user_service.delete_user(user_id, current_user)
@@ -177,7 +166,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="testuser",
             password="testpassword",
-            is_admin=False,
         )
 
         with self.assertRaises(NotPermission):
@@ -190,7 +178,6 @@ class TestUserService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="testuser",
             password="testpassword",
-            is_admin=False,
         )
 
         self.repository.get_one.return_value = None

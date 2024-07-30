@@ -7,6 +7,7 @@ from app.services.action_service import (
     ActionNotFound,
     UserAlreadyInvited,
     ActionAlreadyAvailable,
+    YouCanNotInviteYourSelf,
 )
 from app.services.company_service import CompanyNotFound
 from app.services.auth_service import (
@@ -145,6 +146,14 @@ def register_exception_handler(app: FastAPI):
 
     @app.exception_handler(ActionAlreadyAvailable)
     async def action_already_available_exception_handler(
+        request: Request, exc: ActionAlreadyAvailable
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(YouCanNotInviteYourSelf)
+    async def you_can_not_invite_exception_handler(
         request: Request, exc: ActionAlreadyAvailable
     ):
         return JSONResponse(

@@ -70,7 +70,6 @@ class AuthService:
             "username": username,
             "email": email,
             "password": hashed_password.decode("utf-8"),
-            "is_admin": data.get("is_admin", False),
         }
 
         await self.repository.create_one(user_data)
@@ -108,7 +107,6 @@ class AuthService:
                 "username": username,
                 "email": user_email,
                 "password": hashed_password.decode("utf-8"),
-                "is_admin": decoded_token.get("is_admin", False),
             }
 
             await user_repository.create_one(user_data)
