@@ -11,5 +11,6 @@ class Company(BaseModel):
     name = Column(String(50), nullable=False)
     description = Column(String(1500), nullable=False)
     visible = Column(Boolean, default=True)
-
+    owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
+    owner = relationship("User", back_populates="companies_owned")
     actions = relationship("CompanyAction", backref="company", cascade="all, delete")

@@ -32,6 +32,7 @@ class CompanyService:
             raise CompanyNotFound()
         return company
 
+    # VALIDATE COMPANY
     async def validate_company(
         self, current_user_id: uuid.UUID, company_id: uuid.UUID
     ) -> CompanySchema:
@@ -51,7 +52,17 @@ class CompanyService:
     ) -> CompaniesListResponse:
         companies = await self.repository.get_many(skip=skip, limit=limit)
         total_count = await self.get_total_count()
-        return CompaniesListResponse(companies=companies, total_count=total_count)
+        visible_companies = [
+            CompanySchema(
+                id=company.id,
+                name=company.name,
+                description=company.description,
+                visible=company.visible,
+                owner_id=company.owner_id,
+            )
+            for company in companies
+        ]
+        return CompaniesListResponse(companies=visible_companies, total_count=total_count)
 
     # GET COMPANY BY ID
     async def get_company_by_id(
@@ -64,6 +75,7 @@ class CompanyService:
     async def create_company(
         self, data: dict, current_user_id: uuid.UUID
     ) -> CompanySchema:
+        data["owner_id"] = current_user_id
         return await self.repository.create_company_with_owner(
             data=data, owner_id=current_user_id
         )
