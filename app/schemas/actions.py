@@ -33,6 +33,7 @@ class GetActionsResponseSchema(ActionBaseSchema):
     company_id: uuid.UUID
     company_name: str
     user_username: str
+    role: MemberStatus
 
 
 class GetActionsAdminResponseSchema(ActionBaseSchema):

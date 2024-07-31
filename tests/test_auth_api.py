@@ -61,7 +61,7 @@ class TestAuthService(unittest.IsolatedAsyncioTestCase):
         self.repository.get_one.side_effect = [
             None,
             None,
-        ]  # No existing email or username
+        ]
 
         token = await self.auth_service.create_user(user_data)
         self.assertEqual(token.access_token, "test_token")
