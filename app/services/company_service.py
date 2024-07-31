@@ -62,7 +62,9 @@ class CompanyService:
             )
             for company in companies
         ]
-        return CompaniesListResponse(companies=visible_companies, total_count=total_count)
+        return CompaniesListResponse(
+            companies=visible_companies, total_count=total_count
+        )
 
     # GET COMPANY BY ID
     async def get_company_by_id(
