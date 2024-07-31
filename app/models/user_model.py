@@ -10,7 +10,7 @@ class User(BaseModel):
     username = Column(String(50), unique=True, nullable=False)
     email = Column(String(50), unique=True, nullable=False)
     password = Column(String(100), nullable=False)
-
+    companies_owned = relationship("Company", back_populates="owner")
     company_memberships = relationship(
         "CompanyMember", backref="user", cascade="all, delete"
     )
