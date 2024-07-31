@@ -24,10 +24,13 @@ class ActionRepository(BaseRepository):
             .distinct()
             .join(User, CompanyAction.user_id == User.id)
             .join(Company, CompanyAction.company_id == Company.id)
-            .join(CompanyMember, and_(
-                CompanyAction.company_id == CompanyMember.company_id,
-                # CompanyAction.user_id == CompanyMember.user_id
-            ))
+            .join(
+                CompanyMember,
+                and_(
+                    CompanyAction.company_id == CompanyMember.company_id,
+                    # CompanyAction.user_id == CompanyMember.user_id
+                ),
+            )
             .filter(id_column == id_, CompanyAction.status == status)
         )
         return query
