@@ -276,13 +276,14 @@ class ActionService:
     @staticmethod
     async def _process_query_results(results):
         actions = []
-        for action, user, company in results.fetchall():
+        for action, user, company, company_member in results.fetchall():
             action_dto = GetActionsResponseSchema(
                 id=action.id,
                 user_id=user.id,
                 user_username=user.username,
                 company_id=company.id,
                 company_name=company.name,
+                role=company_member.role,
             )
             actions.append(action_dto)
         return actions

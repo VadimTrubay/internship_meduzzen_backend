@@ -6,7 +6,7 @@ from app.schemas.companies import (
     CompanySchema,
 )
 from app.services.company_service import CompanyService
-from app.exept.custom_exceptions import CompanyNotFound, NotOwner
+from app.exept.custom_exceptions import CompanyNotFound
 
 
 class TestCompanyService(unittest.IsolatedAsyncioTestCase):
@@ -24,13 +24,13 @@ class TestCompanyService(unittest.IsolatedAsyncioTestCase):
             "visible": False,
         }
         current_user_id = uuid4()
-        mock_company = CompanySchema(
+        self.repository.create_company_with_owner.return_value = CompanySchema(
             id=uuid4(),
             name="testname",
             description="testdescription",
             visible=False,
+            owner_id=current_user_id,
         )
-        self.repository.create_company_with_owner.return_value = mock_company
 
         company = await self.company_service.create_company(
             company_data, current_user_id
@@ -45,12 +45,14 @@ class TestCompanyService(unittest.IsolatedAsyncioTestCase):
                 name="company1",
                 description="description1",
                 visible=True,
+                owner_id=uuid4(),
             ),
             CompanySchema(
                 id=uuid4(),
                 name="company2",
                 description="description2",
                 visible=False,
+                owner_id=uuid4(),
             ),
         ]
         self.repository.get_many.return_value = companies_data
@@ -58,7 +60,13 @@ class TestCompanyService(unittest.IsolatedAsyncioTestCase):
         user_id = uuid4()
 
         companies = await self.company_service.get_companies(0, 10, user_id)
+
+        self.repository.get_many.assert_called_once_with(skip=0, limit=10)
+        self.repository.get_count.assert_called_once()
         self.assertEqual(companies.total_count, 2)
+        self.assertEqual(len(companies.companies), 2)
+        self.assertEqual(companies.companies[0].name, "company1")
+        self.assertEqual(companies.companies[1].name, "company2")
 
     async def test_get_company_by_id_success(self):
         company_id = uuid4()
@@ -68,6 +76,7 @@ class TestCompanyService(unittest.IsolatedAsyncioTestCase):
             name="company",
             description="description",
             visible=True,
+            owner_id=user_id,
         )
 
         company = await self.company_service.get_company_by_id(company_id, user_id)
@@ -90,12 +99,14 @@ class TestCompanyService(unittest.IsolatedAsyncioTestCase):
             name="company",
             description="description",
             visible=True,
+            owner_id=user_id,
         )
         self.repository.update_one.return_value = CompanySchema(
             id=company_id,
             name="updatedname",
             description="updateddescription",
             visible=True,
+            owner_id=user_id,
         )
 
         company = await self.company_service.update_company(
@@ -111,7 +122,15 @@ class TestCompanyService(unittest.IsolatedAsyncioTestCase):
             name="company",
             description="description",
             visible=True,
+            owner_id=user_id,
         )
-
-        response = await self.company_service.delete_company(company_id, user_id)
-        self.assertEqual(response, {"message": "Company deleted"})
+        self.repository.delete_one.return_value = CompanySchema(
+            id=company_id,
+            name="company",
+            description="description",
+            visible=True,
+            owner_id=user_id,
+        )
+        response = {"message": "Company deleted"}
+        company = await self.company_service.delete_company(company_id, user_id)
+        self.assertEqual(company, response)
