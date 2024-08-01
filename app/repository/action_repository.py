@@ -43,10 +43,7 @@ class ActionRepository(BaseRepository):
                 .join(
                     CompanyMember, CompanyAction.company_id == CompanyMember.company_id
                 )
-                # .join(CompanyMember, CompanyAction.user_id == CompanyMember.user_id)
                 .filter(id_column == id_, CompanyAction.status == status)
             )
         return query
 
-
-# CompanyAction.user_id == CompanyMember.user_id

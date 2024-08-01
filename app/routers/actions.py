@@ -14,6 +14,7 @@ from app.schemas.actions import (
     RequestCreateSchema,
     GetActionsResponseSchema,
     CompanyMemberSchema,
+    GetAdminsResponseSchema,
 )
 from app.schemas.users import UserSchema
 from app.services.action_service import ActionService
@@ -224,7 +225,7 @@ async def get_company_members(
 
 
 @router.patch(
-    "/company/{company_id}/add_admin/user/{user_id}", response_model=CompanyMemberSchema
+    "/company/{company_id}/add/admin/user/{user_id}", response_model=CompanyMemberSchema
 )
 async def add_admin(
     company_id: uuid.UUID,
@@ -237,7 +238,7 @@ async def add_admin(
 
 
 @router.patch(
-    "/company/{company_id}/remove_admin/user/{user_id}",
+    "/company/{company_id}/remove/admin/user/{user_id}",
     response_model=CompanyMemberSchema,
 )
 async def remove_admin(
@@ -251,12 +252,12 @@ async def remove_admin(
 
 
 @router.get(
-    "/company/{company_id}/get_admins", response_model=List[GetActionsResponseSchema]
+    "/company/{company_id}/admins", response_model=List[GetAdminsResponseSchema]
 )
 async def get_admins(
     company_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
     action_service: ActionService = Depends(get_action_service),
-) -> List[GetActionsResponseSchema]:
+) -> List[GetAdminsResponseSchema]:
     current_user_id = current_user.id
     return await action_service.get_admins(current_user_id, company_id)
