@@ -36,6 +36,11 @@ class GetActionsResponseSchema(ActionBaseSchema):
     role: MemberStatus
 
 
+class GetAdminsResponseSchema(ActionBaseSchema):
+    user_id: uuid.UUID
+    user_username: str
+
+
 class GetActionsAdminResponseSchema(ActionBaseSchema):
     user_id: uuid.UUID
     user_username: str

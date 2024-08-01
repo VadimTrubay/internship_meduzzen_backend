@@ -26,7 +26,7 @@ from app.schemas.actions import (
     RequestCreateSchema,
     GetActionsResponseSchema,
     CompanyMemberSchema,
-    GetActionsAdminResponseSchema,
+    GetAdminsResponseSchema,
 )
 from app.schemas.companies import CompanySchema
 from app.schemas.users import UserSchema
@@ -354,10 +354,12 @@ class ActionService:
         user_id: uuid.UUID,
         validate_role: MemberStatus,
     ) -> CompanyMemberSchema:
-        company = await self._validate_company_get(current_user_id, company_id)
+
+        company = await self._validate_company_get(user_id, company_id)
+
         member = await self.company_repository.get_company_member(user_id, company.id)
         current_user = await self.company_repository.get_company_member(
-            current_user_id, current_user_id
+            current_user_id, company_id
         )
         if not member:
             raise UserNotFound()
@@ -385,12 +387,12 @@ class ActionService:
 
     async def get_admins(
         self, current_user_id: uuid.UUID, company_id: uuid.UUID
-    ) -> List[GetActionsAdminResponseSchema]:
+    ) -> List[GetAdminsResponseSchema]:
         await self._validate_company_get(current_user_id, company_id)
 
         admins = await self.company_repository.get_admins(company_id)
         admins_schemas = [
-            GetActionsResponseSchema(
+            GetAdminsResponseSchema(
                 id=admin.id,
                 user_id=admin.user_id,
                 user_username=await self.user_repository.get_user_username(
