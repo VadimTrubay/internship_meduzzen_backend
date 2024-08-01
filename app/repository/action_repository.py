@@ -46,4 +46,3 @@ class ActionRepository(BaseRepository):
                 .filter(id_column == id_, CompanyAction.status == status)
             )
         return query
-
