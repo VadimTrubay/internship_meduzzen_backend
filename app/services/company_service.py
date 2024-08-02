@@ -51,20 +51,11 @@ class CompanyService:
         self, skip, limit, user_id: uuid.UUID = None
     ) -> CompaniesListResponse:
         companies = await self.repository.get_many(skip=skip, limit=limit)
-        total_count = await self.get_total_count()
-        visible_companies = [
-            CompanySchema(
-                id=company.id,
-                name=company.name,
-                description=company.description,
-                visible=company.visible,
-                owner_id=company.owner_id,
-            )
-            for company in companies
-        ]
-        return CompaniesListResponse(
-            companies=visible_companies, total_count=total_count
-        )
+        if not companies:
+            logger.info(Messages.NOT_FOUND)
+            raise NotFound()
+
+        return companies
 
     # GET COMPANY BY ID
     async def get_company_by_id(
