@@ -33,7 +33,16 @@ class GetActionsResponseSchema(ActionBaseSchema):
     company_id: uuid.UUID
     company_name: str
     user_username: str
+
+
+class MembersResponseSchema(ActionBaseSchema):
+    user_id: uuid.UUID
+    user_username: str
+    company_id: uuid.UUID
+    company_name: str
     role: MemberStatus
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GetAdminsResponseSchema(ActionBaseSchema):
