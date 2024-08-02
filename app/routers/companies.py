@@ -32,7 +32,9 @@ async def get_all_companies(
     company_service: CompanyService = Depends(get_company_service),
 ):
     companies = await company_service.get_companies(skip, limit)
-    return companies
+    total_count = await company_service.get_total_count()
+    result = [CompanySchema.from_orm(company) for company in companies]
+    return CompaniesListResponse(companies=result, total_count=total_count)
 
 
 @router.post("/", response_model=CompanySchema)

@@ -52,7 +52,6 @@ class UserService:
             logger.info(Messages.NOT_FOUND)
             raise NotFound()
 
-        logger.info(Messages.SUCCESS_GET_USERS)
         return [UserSchema.model_validate(user) for user in users]
 
     # GET USER BY ID
