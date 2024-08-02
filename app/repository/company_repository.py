@@ -15,6 +15,12 @@ class CompanyRepository(BaseRepository):
     def __init__(self, session):
         super().__init__(session=session, model=Company)
 
+    async def get_company_name(self, company_id: uuid.UUID) -> str:
+        query = select(Company).where(Company.id == company_id)
+        company = await self.session.execute(query)
+        company_obj = company.scalar_one()
+        return company_obj.name
+
     async def create_company_with_owner(
         self, data: dict, owner_id: uuid.UUID
     ) -> CompanySchema:

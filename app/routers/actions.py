@@ -15,6 +15,7 @@ from app.schemas.actions import (
     GetActionsResponseSchema,
     CompanyMemberSchema,
     GetAdminsResponseSchema,
+    MembersResponseSchema,
 )
 from app.schemas.users import UserSchema
 from app.services.action_service import ActionService
@@ -212,14 +213,12 @@ async def get_my_invites(
     return await action_service.get_my_invites(current_user_id)
 
 
-@router.get(
-    "/company/{company_id}/members", response_model=List[GetActionsResponseSchema]
-)
+@router.get("/company/{company_id}/members", response_model=List[MembersResponseSchema])
 async def get_company_members(
     company_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
     action_service: ActionService = Depends(get_action_service),
-) -> List[GetActionsResponseSchema]:
+) -> List[MembersResponseSchema]:
     current_user_id = current_user.id
     return await action_service.get_company_members(current_user_id, company_id)
 

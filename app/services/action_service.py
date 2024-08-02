@@ -27,6 +27,7 @@ from app.schemas.actions import (
     GetActionsResponseSchema,
     CompanyMemberSchema,
     GetAdminsResponseSchema,
+    MembersResponseSchema,
 )
 from app.schemas.companies import CompanySchema
 from app.schemas.users import UserSchema
@@ -273,17 +274,15 @@ class ActionService:
         return company
 
     # PROCESS QUERY RESULTS
-    @staticmethod
-    async def _process_query_results(results):
+    async def process_query_results(self, results):
         actions = []
-        for action, user, company, company_member in results.fetchall():
+        for action, user, company in results.fetchall():
             action_dto = GetActionsResponseSchema(
                 id=action.id,
                 user_id=user.id,
-                user_username=user.username,
                 company_id=company.id,
-                company_name=company.name,
-                role=company_member.role,
+                user_username=await self.user_repository.get_user_username(user.id),
+                company_name=await self.company_repository.get_company_name(company.id),
             )
             actions.append(action_dto)
         return actions
@@ -297,7 +296,7 @@ class ActionService:
             company_id, InvitationStatus.INVITED, True
         )
         result = await self.session.execute(query)
-        invites = await self._process_query_results(result)
+        invites = await self.process_query_results(result)
         return invites
 
     # GET COMPANY REQUEST
@@ -309,20 +308,32 @@ class ActionService:
             company_id, InvitationStatus.REQUESTED, True
         )
         result = await self.session.execute(query)
-        requests = await self._process_query_results(result)
+        requests = await self.process_query_results(result)
         return requests
 
-    # GET COMPANY MEMBERS (ACCEPTED)
+    # GET COMPANY MEMBERS
     async def get_company_members(
         self, current_user_id: uuid.UUID, company_id: Optional[uuid.UUID] = None
-    ) -> List[GetActionsResponseSchema]:
+    ) -> List[MembersResponseSchema]:
         await self._validate_company_get(current_user_id, company_id)
-        query = await self.action_repository.get_relatives_query(
-            company_id, InvitationStatus.ACCEPTED, True
-        )
-        result = await self.session.execute(query)
-        members = await self._process_query_results(result)
-        return members
+
+        members = await self.action_repository.get_members(company_id)
+        members_schemas = [
+            MembersResponseSchema(
+                id=member.id,
+                user_id=member.user_id,
+                company_id=member.company_id,
+                company_name=await self.company_repository.get_company_name(
+                    member.company_id
+                ),
+                user_username=await self.user_repository.get_user_username(
+                    member.user_id
+                ),
+                role=member.role,
+            )
+            for member in members
+        ]
+        return members_schemas
 
     # GET MY REQUESTS
     async def get_my_requests(
@@ -332,7 +343,7 @@ class ActionService:
             current_user_id, InvitationStatus.REQUESTED, False
         )
         result = await self.session.execute(query)
-        requests = await self._process_query_results(result)
+        requests = await self.process_query_results(result)
         return requests
 
     # GET MY INVITES
@@ -343,7 +354,7 @@ class ActionService:
             current_user_id, InvitationStatus.INVITED, False
         )
         result = await self.session.execute(query)
-        invites = await self._process_query_results(result)
+        invites = await self.process_query_results(result)
         return invites
 
     # VALIDATE ADMIN
