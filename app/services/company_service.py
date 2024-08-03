@@ -51,9 +51,9 @@ class CompanyService:
         self, skip, limit, user_id: uuid.UUID = None
     ) -> CompaniesListResponse:
         companies = await self.repository.get_many(skip=skip, limit=limit)
-        if not companies:
-            logger.info(Messages.NOT_FOUND)
-            raise NotFound()
+        # if not companies:
+        #     logger.info(Messages.NOT_FOUND)
+        #     raise NotFound()
 
         return companies
 

@@ -39,6 +39,7 @@ class MembersResponseSchema(ActionBaseSchema):
     user_id: uuid.UUID
     user_username: str
     company_id: uuid.UUID
+    action_id: uuid.UUID
     company_name: str
     role: MemberStatus
 

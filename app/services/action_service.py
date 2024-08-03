@@ -259,8 +259,7 @@ class ActionService:
     async def kick_from_company(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
-        # action = await self._get_action_or_raise(action_id)
-        action = await self._validate_request(action_id, current_user_id)
+        action = await self._get_action_or_raise(action_id)
         company_id = action.company_id
         await self.company_repository.delete_company_member(company_id, action.user_id)
         return await self.action_repository.delete_one(action.id)
@@ -320,17 +319,18 @@ class ActionService:
         members = await self.action_repository.get_members(company_id)
         members_schemas = [
             MembersResponseSchema(
-                id=member.id,
-                user_id=member.user_id,
-                company_id=member.company_id,
+                id=member.CompanyMember.id,
+                user_id=member.CompanyMember.user_id,
+                company_id=member.CompanyMember.company_id,
+                action_id=member.CompanyAction.id,  # Extracting action_id from CompanyAction
                 company_name=await self.company_repository.get_company_name(
-                    member.company_id
+                    member.CompanyMember.company_id
                 ),
                 user_username=await self.user_repository.get_user_username(
-                    member.user_id
+                    member.CompanyMember.user_id
                 ),
                 role=await self.action_repository.get_member_role(
-                    member.user_id, member.company_id
+                    member.CompanyMember.user_id, member.CompanyMember.company_id
                 ),
             )
             for member in members
