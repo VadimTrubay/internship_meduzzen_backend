@@ -329,7 +329,9 @@ class ActionService:
                 user_username=await self.user_repository.get_user_username(
                     member.user_id
                 ),
-                role=await self.action_repository.get_member_role(member.user_id, member.company_id),
+                role=await self.action_repository.get_member_role(
+                    member.user_id, member.company_id
+                ),
             )
             for member in members
         ]
