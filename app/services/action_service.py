@@ -259,8 +259,8 @@ class ActionService:
     async def kick_from_company(
         self, action_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> ActionSchema:
-        action = await self._get_action_or_raise(action_id)
-        # action = await self._validate_request(action_id, current_user_id)
+        # action = await self._get_action_or_raise(action_id)
+        action = await self._validate_request(action_id, current_user_id)
         company_id = action.company_id
         await self.company_repository.delete_company_member(company_id, action.user_id)
         return await self.action_repository.delete_one(action.id)
@@ -329,7 +329,7 @@ class ActionService:
                 user_username=await self.user_repository.get_user_username(
                     member.user_id
                 ),
-                role=member.role,
+                role=await self.action_repository.get_member_role(member.user_id, member.company_id),
             )
             for member in members
         ]
