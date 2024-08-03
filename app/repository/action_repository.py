@@ -19,8 +19,9 @@ class ActionRepository(BaseRepository):
     async def get_members(self, company_id: uuid.UUID) -> List[CompanyMemberSchema]:
         # query = select(CompanyMember).where(CompanyMember.company_id == company_id)
         query = (
-            select(CompanyMember, CompanyAction)
-            .join(CompanyAction, CompanyAction.company_id == CompanyMember.company_id)
+            select(CompanyMember, CompanyAction).join(
+                CompanyAction, CompanyAction.company_id == CompanyMember.company_id
+            )
             # .join(User, User.id == CompanyAction.user_id)
             # .join(Company, Company.id == CompanyAction.company_id)
             .filter(CompanyAction.company_id == company_id)
