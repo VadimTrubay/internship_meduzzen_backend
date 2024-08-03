@@ -1,6 +1,5 @@
-import functools
 import uuid
-from typing import Optional
+from typing import Optional, List
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +14,6 @@ from app.exept.custom_exceptions import (
 from app.repository.company_repository import CompanyRepository
 from app.schemas.companies import (
     CompanySchema,
-    CompaniesListResponse,
 )
 
 
@@ -47,15 +45,9 @@ class CompanyService:
         return count
 
     # GET COMPANIES
-    async def get_companies(
-        self, skip, limit, user_id: uuid.UUID = None
-    ) -> CompaniesListResponse:
+    async def get_companies(self, skip, limit) -> List[CompanySchema]:
         companies = await self.repository.get_many(skip=skip, limit=limit)
-        # if not companies:
-        #     logger.info(Messages.NOT_FOUND)
-        #     raise NotFound()
-
-        return companies
+        return [CompanySchema.model_validate(company) for company in companies]
 
     # GET COMPANY BY ID
     async def get_company_by_id(
