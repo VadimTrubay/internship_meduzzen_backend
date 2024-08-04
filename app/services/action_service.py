@@ -322,20 +322,34 @@ class ActionService:
                 id=member.CompanyMember.id,
                 user_id=member.CompanyMember.user_id,
                 company_id=member.CompanyMember.company_id,
-                action_id=member.CompanyAction.id,  # Extracting action_id from CompanyAction
-                company_name=await self.company_repository.get_company_name(
-                    member.CompanyMember.company_id
-                ),
-                user_username=await self.user_repository.get_user_username(
-                    member.CompanyMember.user_id
-                ),
-                role=await self.action_repository.get_member_role(
-                    member.CompanyMember.user_id, member.CompanyMember.company_id
-                ),
+                action_id=member.CompanyAction.id,
+                company_name=member.Company.name,
+                user_username=member.User.username,
+                role=member.CompanyMember.role,
             )
             for member in members
         ]
         return members_schemas
+
+        # members_schemas = [
+        #     MembersResponseSchema(
+        #         id=member.CompanyMember.id,
+        #         user_id=member.CompanyMember.user_id,
+        #         company_id=member.CompanyMember.company_id,
+        #         action_id=member.CompanyAction.id,  # Extracting action_id from CompanyAction
+        #         company_name=await self.company_repository.get_company_name(
+        #             member.CompanyMember.company_id
+        #         ),
+        #         user_username=await self.user_repository.get_user_username(
+        #             member.CompanyMember.user_id
+        #         ),
+        #         role=await self.action_repository.get_member_role(
+        #             member.CompanyMember.user_id, member.CompanyMember.company_id
+        #         ),
+        #     )
+        #     for member in members
+        # ]
+        # return members_schemas
 
     # GET MY REQUESTS
     async def get_my_requests(
