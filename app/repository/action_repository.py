@@ -21,10 +21,13 @@ class ActionRepository(BaseRepository):
             select(CompanyMember, CompanyAction, User, Company)
             .join(Company, Company.id == CompanyMember.company_id)
             .join(User, User.id == CompanyMember.user_id)
-            .join(CompanyAction, and_(
-                CompanyAction.company_id == Company.id,
-                CompanyAction.user_id == User.id
-            ))
+            .join(
+                CompanyAction,
+                and_(
+                    CompanyAction.company_id == Company.id,
+                    CompanyAction.user_id == User.id,
+                ),
+            )
             .filter(CompanyMember.company_id == company_id)
         )
 
@@ -41,7 +44,7 @@ class ActionRepository(BaseRepository):
 
     @staticmethod
     async def get_relatives_query(
-            id_: uuid.UUID, status: InvitationStatus, is_company: bool
+        id_: uuid.UUID, status: InvitationStatus, is_company: bool
     ):
         id_column = CompanyAction.company_id if is_company else CompanyAction.user_id
 
