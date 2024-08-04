@@ -16,6 +16,7 @@ from app.schemas.quizzes import (
     QuizUpdateSchema,
     QuestionSchema,
     QuizResponseSchema,
+    QuizzesListResponse,
 )
 
 
@@ -37,6 +38,11 @@ class QuizService:
         if not company:
             raise NotFound()
         return company
+
+    # GET TOTAL COUNT
+    async def get_total_count(self):
+        count = await self.quiz_repository.get_count()
+        return count
 
     @staticmethod
     async def _validate_quiz_data(quiz_data: QuizSchema) -> None:
@@ -160,10 +166,11 @@ class QuizService:
         )
         return question_schema
 
-    async def get_quizzes(self, company_id: uuid.UUID) -> List[QuizResponseSchema]:
+    async def get_quizzes(self, company_id: uuid.UUID) -> QuizzesListResponse:
         quizzes = await self.quiz_repository.get_many(company_id=company_id)
         quiz_responses = [
             QuizResponseSchema(
+                id=quiz.id,
                 name=quiz.name,
                 description=quiz.description,
                 frequency_days=quiz.frequency_days,

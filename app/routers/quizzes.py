@@ -13,6 +13,7 @@ from app.schemas.quizzes import (
     QuizUpdateSchema,
     QuestionSchema,
     QuizResponseSchema,
+    QuizzesListResponse,
 )
 from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
@@ -35,17 +36,17 @@ async def get_quizzes_service(
     )
 
 
-@router.get("/{company_id}", response_model=List[QuizResponseSchema])
+@router.get("/company/{company_id}", response_model=QuizzesListResponse)
 async def get_quizzes(
     company_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
     quiz_service: QuizService = Depends(get_quizzes_service),
-) -> List[QuizResponseSchema]:
-    current_user_id = current_user.id
-    return await quiz_service.get_quizzes(company_id)
+) -> QuizzesListResponse:
+    quizzes = await quiz_service.get_quizzes(company_id)
+    total_count = await quiz_service.get_total_count()
+    return QuizzesListResponse(quizzes=quizzes, total_count=total_count)
 
 
-@router.post("/{company_id}/create", response_model=QuizSchema)
+@router.post("/company/{company_id}/create", response_model=QuizSchema)
 async def create_quiz(
     quiz_data: QuizSchema,
     company_id: uuid.UUID,
@@ -58,7 +59,7 @@ async def create_quiz(
     )
 
 
-@router.patch("/{quiz_id}/update", response_model=QuizUpdateSchema)
+@router.patch("/quiz/{quiz_id}/update", response_model=QuizUpdateSchema)
 async def update_quiz(
     quiz_data: QuizUpdateSchema,
     quiz_id: uuid.UUID,
@@ -71,7 +72,7 @@ async def update_quiz(
     )
 
 
-@router.delete("/{quiz_id}/delete", response_model=QuizResponseSchema)
+@router.delete("/quiz/{quiz_id}/delete", response_model=QuizResponseSchema)
 async def delete_quiz(
     quiz_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
@@ -83,7 +84,7 @@ async def delete_quiz(
     )
 
 
-@router.post("/{quiz_id}/question/create", response_model=QuestionSchema)
+@router.post("/quiz/{quiz_id}/question/create", response_model=QuestionSchema)
 async def create_question(
     question_data: QuestionSchema,
     quiz_id: uuid.UUID,
