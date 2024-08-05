@@ -1,12 +1,9 @@
 import uuid
-from typing import List
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
 
 from app.conf.invite import MemberStatus
-from app.exept.custom_exceptions import NotFound, NotPermission
+from app.exept.custom_exceptions import NotFound, NotPermission, BadRequest
 from app.repository.action_repository import ActionRepository
 from app.repository.company_repository import CompanyRepository
 from app.repository.quizzes_repository import QuizRepository
@@ -33,6 +30,7 @@ class QuizService:
         self.action_repository = action_repository
         self.company_repository = company_repository
 
+    # GET COMPANY OR RAISE
     async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
         company = await self.company_repository.get_one(id=company_id)
         if not company:
@@ -44,6 +42,21 @@ class QuizService:
         count = await self.quiz_repository.get_count()
         return count
 
+    # GET QUIZZES
+    async def get_quizzes(self, company_id: uuid.UUID) -> QuizzesListResponse:
+        quizzes = await self.quiz_repository.get_many(company_id=company_id)
+        quiz_responses = [
+            QuizResponseSchema(
+                id=quiz.id,
+                name=quiz.name,
+                description=quiz.description,
+                frequency_days=quiz.frequency_days,
+            )
+            for quiz in quizzes
+        ]
+        return quiz_responses
+
+    # GET VALIDATE QUIZ DATA
     @staticmethod
     async def _validate_quiz_data(quiz_data: QuizSchema) -> None:
         min_questions = 2
@@ -51,26 +64,17 @@ class QuizService:
         if len(quiz_data.questions) < min_questions or any(
             len(question.options) < min_options for question in quiz_data.questions
         ):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Quiz must have at least {min_questions} "
-                f"questions and each question must have at least {min_options} options",
-            )
+            raise BadRequest()
+
         for question in quiz_data.questions:
             if not question.correct_answer:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"At least one correct answer is required for question '{question.question_text}'",
-                )
+                raise BadRequest()
 
             for answer in question.correct_answer:
                 if answer not in question.options:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=f"Correct answer '{answer}' "
-                        f"for question '{question.question_text}' is not in the options.",
-                    )
+                    raise BadRequest()
 
+    # CREATE QUIZ
     async def create_quiz(
         self, quiz_data: QuizSchema, company_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> QuizSchema:
@@ -90,6 +94,7 @@ class QuizService:
         )
         return created_quiz_schema
 
+    # VALIDATE QUIZ
     async def _validate_quiz(
         self, quiz_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> QuizSchema:
@@ -101,17 +106,13 @@ class QuizService:
         await self.company_repository.is_user_company_owner(current_user_id, company_id)
         return quiz
 
-    async def delete_quiz(
-        self, quiz_id: uuid.UUID, current_user_id: uuid.UUID
-    ) -> QuizResponseSchema:
-        quiz = await self._validate_quiz(quiz_id, current_user_id)
+    # DELETE QUIZ
+    async def delete_quiz(self, quiz_id: uuid.UUID, current_user_id: uuid.UUID) -> dict:
+        await self._validate_quiz(quiz_id, current_user_id)
         await self.quiz_repository.delete_quiz(quiz_id)
-        return QuizResponseSchema(
-            name=quiz.name,
-            description=quiz.description,
-            frequency_days=quiz.frequency_days,
-        )
+        return {"message": "Quiz deleted"}
 
+    # UPDATE QUIZ
     async def update_quiz(
         self,
         quiz_id: uuid.UUID,
@@ -123,6 +124,7 @@ class QuizService:
         updated_quiz = await self.quiz_repository.update_one(quiz_id, quiz_data_dict)
         return updated_quiz
 
+    # HANDLE IS ACTIVE
     async def _handle_is_active(self, quiz_id: uuid.UUID) -> None:
         questions = await self.quiz_repository.get_questions_by_quiz_id(quiz_id)
         if len(questions) < 2:
@@ -130,25 +132,7 @@ class QuizService:
         else:
             await self.quiz_repository.toggle_quiz_active_status(quiz_id, True)
 
-    async def delete_question(
-        self, question_id: uuid.UUID, current_user_id: uuid.UUID
-    ) -> QuestionSchema:
-        question = await self.quiz_repository.get_question_by_id(question_id)
-        if not question:
-            raise NotFound()
-        quiz_id = question.quiz_id
-        await self._validate_quiz(quiz_id, current_user_id)
-        await self.quiz_repository.delete_question(question_id)
-        await self._handle_is_active(quiz_id)
-
-        question_schema = QuestionSchema(
-            question_text=question.question_text,
-            correct_answer=question.correct_answer,
-            options=question.options,
-        )
-
-        return question_schema
-
+    # ADD QUESTION
     async def add_question(
         self,
         question_data: QuestionSchema,
@@ -166,15 +150,21 @@ class QuizService:
         )
         return question_schema
 
-    async def get_quizzes(self, company_id: uuid.UUID) -> QuizzesListResponse:
-        quizzes = await self.quiz_repository.get_many(company_id=company_id)
-        quiz_responses = [
-            QuizResponseSchema(
-                id=quiz.id,
-                name=quiz.name,
-                description=quiz.description,
-                frequency_days=quiz.frequency_days,
-            )
-            for quiz in quizzes
-        ]
-        return quiz_responses
+    # DELETE QUESTION
+    async def delete_question(
+        self, question_id: uuid.UUID, current_user_id: uuid.UUID
+    ) -> QuestionSchema:
+        question = await self.quiz_repository.get_question_by_id(question_id)
+        if not question:
+            raise NotFound()
+        quiz_id = question.quiz_id
+        await self._validate_quiz(quiz_id, current_user_id)
+        await self.quiz_repository.delete_question(question_id)
+        await self._handle_is_active(quiz_id)
+
+        question_schema = QuestionSchema(
+            question_text=question.question_text,
+            correct_answer=question.correct_answer,
+            options=question.options,
+        )
+        return question_schema

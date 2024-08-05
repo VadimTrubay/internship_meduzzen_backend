@@ -18,14 +18,15 @@ class ActionRepository(BaseRepository):
 
     async def get_members(self, company_id: uuid.UUID) -> List[CompanyMemberSchema]:
         query = (
-            select(CompanyMember, CompanyAction, User, Company)
-            .join(Company, Company.id == CompanyMember.company_id)
-            .join(User, User.id == CompanyMember.user_id)
+            select(CompanyAction, User, Company, CompanyMember)
+            .distinct()
+            .join(User, CompanyAction.user_id == User.id)
+            .join(Company, CompanyAction.company_id == Company.id)
             .join(
-                CompanyAction,
+                CompanyMember,
                 and_(
-                    CompanyAction.company_id == Company.id,
-                    CompanyAction.user_id == User.id,
+                    CompanyAction.company_id == CompanyMember.company_id,
+                    CompanyAction.user_id == CompanyMember.user_id,
                 ),
             )
             .filter(CompanyMember.company_id == company_id)

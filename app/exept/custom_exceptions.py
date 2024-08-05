@@ -95,3 +95,8 @@ class ActionAlreadyAvailable(BaseCustomError):
 class YouCanNotInviteYourSelf(BaseCustomError):
     def __init__(self, message=Messages.YOU_CAN_NOT_INVITE_YOUR_SELF):
         super().__init__(message)
+
+
+class BadRequest(BaseCustomError):
+    def __init__(self, message=Messages.BAD_REQUEST):
+        super().__init__(message)
