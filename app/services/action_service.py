@@ -230,7 +230,8 @@ class ActionService:
         action = await self._validate_request(action_id, current_user_id)
         companies_utils.check_requested(action.status)
         company = await self._get_company_or_raise(action.company_id)
-        await self._add_user_to_company(action_id, current_user_id, company.id)
+        user_id = action.user_id
+        await self._add_user_to_company(action_id, user_id, company.id)
         return action
 
     # DECLINE REQUEST
@@ -330,26 +331,6 @@ class ActionService:
             for member in members
         ]
         return members_schemas
-
-        # members_schemas = [
-        #     MembersResponseSchema(
-        #         id=member.CompanyMember.id,
-        #         user_id=member.CompanyMember.user_id,
-        #         company_id=member.CompanyMember.company_id,
-        #         action_id=member.CompanyAction.id,  # Extracting action_id from CompanyAction
-        #         company_name=await self.company_repository.get_company_name(
-        #             member.CompanyMember.company_id
-        #         ),
-        #         user_username=await self.user_repository.get_user_username(
-        #             member.CompanyMember.user_id
-        #         ),
-        #         role=await self.action_repository.get_member_role(
-        #             member.CompanyMember.user_id, member.CompanyMember.company_id
-        #         ),
-        #     )
-        #     for member in members
-        # ]
-        # return members_schemas
 
     # GET MY REQUESTS
     async def get_my_requests(

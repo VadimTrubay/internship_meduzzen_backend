@@ -46,7 +46,7 @@ async def get_quizzes(
     return QuizzesListResponse(quizzes=quizzes, total_count=total_count)
 
 
-@router.post("/company/{company_id}/create", response_model=QuizSchema)
+@router.post("/company/{company_id}", response_model=QuizSchema)
 async def create_quiz(
     quiz_data: QuizSchema,
     company_id: uuid.UUID,
@@ -59,7 +59,7 @@ async def create_quiz(
     )
 
 
-@router.patch("/quiz/{quiz_id}/update", response_model=QuizUpdateSchema)
+@router.patch("/quiz/{quiz_id}", response_model=QuizUpdateSchema)
 async def update_quiz(
     quiz_data: QuizUpdateSchema,
     quiz_id: uuid.UUID,
@@ -72,19 +72,19 @@ async def update_quiz(
     )
 
 
-@router.delete("/quiz/{quiz_id}/delete", response_model=QuizResponseSchema)
+@router.delete("/quiz/{quiz_id}", response_model=QuizResponseSchema)
 async def delete_quiz(
     quiz_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
     quiz_service: QuizService = Depends(get_quizzes_service),
-) -> QuizResponseSchema:
+) -> dict:
     current_user_id = current_user.id
     return await quiz_service.delete_quiz(
         quiz_id=quiz_id, current_user_id=current_user_id
     )
 
 
-@router.post("/quiz/{quiz_id}/question/create", response_model=QuestionSchema)
+@router.post("/quiz/{quiz_id}/question", response_model=QuestionSchema)
 async def create_question(
     question_data: QuestionSchema,
     quiz_id: uuid.UUID,
@@ -97,7 +97,7 @@ async def create_question(
     )
 
 
-@router.delete("/question/{question_id}/delete", response_model=QuestionSchema)
+@router.delete("/question/{question_id}", response_model=QuestionSchema)
 async def delete_quiz_question(
     question_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),

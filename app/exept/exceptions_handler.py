@@ -22,6 +22,7 @@ from app.services.user_service import (
     NotFound,
     NotPermission,
 )
+from app.services.quiz_service import BadRequest
 from app.utils.companies_utils import (
     UserNotRequested,
     UserNotInvited,
@@ -154,8 +155,14 @@ def register_exception_handler(app: FastAPI):
 
     @app.exception_handler(YouCanNotInviteYourSelf)
     async def you_can_not_invite_exception_handler(
-        request: Request, exc: ActionAlreadyAvailable
+        request: Request, exc: YouCanNotInviteYourSelf
     ):
         return JSONResponse(
             status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(BadRequest)
+    async def bad_request_exception_handler(request: Request, exc: BadRequest):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exc)}
         )
