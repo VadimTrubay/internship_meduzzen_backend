@@ -5,14 +5,12 @@ from pydantic import BaseModel, ConfigDict
 
 
 class QuestionSchema(BaseModel):
-    id: uuid.UUID
     question_text: str
     correct_answer: List[str]
     options: List[str]
 
 
 class QuizSchema(BaseModel):
-    id: uuid.UUID
     name: str
     description: str
     frequency_days: int
@@ -26,7 +24,6 @@ class QuizUpdateSchema(BaseModel):
 
 
 class QuizResponseSchema(BaseModel):
-    id: uuid.UUID
     name: str
     description: str
     frequency_days: int
