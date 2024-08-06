@@ -24,6 +24,6 @@ class Question(BaseModel):
 
     question_text = Column(String(1000), nullable=False)
     correct_answer = Column(ARRAY(String(255)), nullable=False)
-    options = Column(ARRAY(String(255)), nullable=False)
+    answer_options = Column(ARRAY(String(255)), nullable=False)
     quiz_id = Column(UUID(as_uuid=True), ForeignKey("quizzes.id"), nullable=False)
     quiz = relationship("Quiz", back_populates="questions")

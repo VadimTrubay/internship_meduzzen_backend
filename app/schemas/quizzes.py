@@ -1,3 +1,4 @@
+import uuid
 from typing import List
 
 from pydantic import BaseModel, ConfigDict
@@ -6,7 +7,7 @@ from pydantic import BaseModel, ConfigDict
 class QuestionSchema(BaseModel):
     question_text: str
     correct_answer: List[str]
-    options: List[str]
+    answer_options: List[str]
 
 
 class QuizSchema(BaseModel):
@@ -23,6 +24,7 @@ class QuizUpdateSchema(BaseModel):
 
 
 class QuizResponseSchema(BaseModel):
+    id: uuid.UUID
     name: str
     description: str
     frequency_days: int

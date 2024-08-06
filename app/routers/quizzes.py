@@ -72,7 +72,7 @@ async def update_quiz(
     )
 
 
-@router.delete("/quiz/{quiz_id}", response_model=QuizResponseSchema)
+@router.delete("/quiz/{quiz_id}", response_model=dict)
 async def delete_quiz(
     quiz_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),

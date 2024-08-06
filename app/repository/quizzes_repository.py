@@ -23,7 +23,7 @@ class QuizRepository(BaseRepository):
                 quiz_id=quiz.id,
                 question_text=question_data.question_text,
                 correct_answer=question_data.correct_answer,
-                options=question_data.options,
+                answer_options=question_data.answer_options,
             )
             for question_data in quiz_data.questions
         ]
@@ -52,7 +52,7 @@ class QuizRepository(BaseRepository):
             quiz_id=quiz_id,
             question_text=question_data.question_text,
             correct_answer=question_data.correct_answer,
-            options=question_data.options,
+            answer_options=question_data.answer_options,
         )
         self.session.add(question)
         await self.session.commit()
