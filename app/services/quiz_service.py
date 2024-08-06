@@ -59,10 +59,11 @@ class QuizService:
     # GET VALIDATE QUIZ DATA
     @staticmethod
     async def _validate_quiz_data(quiz_data: QuizSchema) -> None:
-        min_questions = 2
-        min_options = 2
-        if len(quiz_data.questions) < min_questions or any(
-            len(question.options) < min_options for question in quiz_data.questions
+        MIN_QUESTIONS = 2
+        MIN_ANSWER_OPTIONS = 2
+        if len(quiz_data.questions) < MIN_QUESTIONS or any(
+            len(question.answer_options) < MIN_ANSWER_OPTIONS
+            for question in quiz_data.questions
         ):
             raise BadRequest()
 
@@ -71,7 +72,7 @@ class QuizService:
                 raise BadRequest()
 
             for answer in question.correct_answer:
-                if answer not in question.options:
+                if answer not in question.answer_options:
                     raise BadRequest()
 
     # CREATE QUIZ
@@ -146,7 +147,7 @@ class QuizService:
         question_schema = QuestionSchema(
             question_text=question.question_text,
             correct_answer=question.correct_answer,
-            options=question.options,
+            answer_options=question.answer_options,
         )
         return question_schema
 
@@ -165,6 +166,6 @@ class QuizService:
         question_schema = QuestionSchema(
             question_text=question.question_text,
             correct_answer=question.correct_answer,
-            options=question.options,
+            answer_options=question.answer_options,
         )
         return question_schema
