@@ -39,7 +39,9 @@ class QuizRepository(BaseRepository):
         await self.delete_one(quiz_id)
 
     async def quiz_by_id(self, quiz_id: uuid.UUID):
-        query = select(Quiz).options(joinedload(Quiz.questions)).filter(Quiz.id == quiz_id)
+        query = (
+            select(Quiz).options(joinedload(Quiz.questions)).filter(Quiz.id == quiz_id)
+        )
         result = await self.session.execute(query)
         return result.scalars().unique().one_or_none()
 
