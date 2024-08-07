@@ -1,10 +1,12 @@
 import uuid
 from typing import Optional
 
+from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.conf.invite import MemberStatus
 from app.exept.custom_exceptions import NotFound, NotPermission, BadRequest
+from app.models.quiz_model import Question
 from app.repository.action_repository import ActionRepository
 from app.repository.company_repository import CompanyRepository
 from app.repository.quizzes_repository import QuizRepository
@@ -115,11 +117,39 @@ class QuizService:
         quiz_id: uuid.UUID,
         quiz_data: QuizUpdateSchema,
         current_user_id: uuid.UUID,
-    ) -> QuizUpdateSchema:
-        await self._validate_quiz(quiz_id, current_user_id)
-        quiz_data_dict = quiz_data.dict(exclude_unset=True)
-        updated_quiz = await self.quiz_repository.update_one(quiz_id, quiz_data_dict)
-        return updated_quiz
+    ) -> QuizByIdSchema:
+        quiz = await self._validate_quiz(quiz_id, current_user_id)
+
+        if quiz_data.name is not None:
+            quiz.name = quiz_data.name
+        if quiz_data.description is not None:
+            quiz.description = quiz_data.description
+        if quiz_data.frequency_days is not None:
+            quiz.frequency_days = quiz_data.frequency_days
+
+        if quiz_data.questions is not None:
+            await self.session.execute(
+                delete(Question).where(Question.quiz_id == quiz_id)
+            )
+            await self.session.commit()
+
+            questions = [
+                Question(
+                    quiz_id=quiz_id,
+                    question_text=q.question_text,
+                    correct_answer=q.correct_answer,
+                    answer_options=q.answer_options,
+                )
+                for q in quiz_data.questions
+            ]
+            self.session.add_all(questions)
+
+        await self.session.commit()
+        await self.session.refresh(quiz)
+
+        updated_quiz = await self.quiz_repository.quiz_by_id(quiz_id)
+
+        return QuizByIdSchema.from_orm(updated_quiz)
 
     # DELETE QUIZ
     async def delete_quiz(self, quiz_id: uuid.UUID, current_user_id: uuid.UUID) -> dict:
@@ -146,7 +176,6 @@ class QuizService:
                 )
                 for question in quiz.questions
             ],
-            company_id=quiz.company_id,
         )
         return quiz_schema
 
