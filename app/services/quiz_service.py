@@ -155,7 +155,7 @@ class QuizService:
     async def delete_quiz(self, quiz_id: uuid.UUID, current_user_id: uuid.UUID) -> dict:
         await self._validate_quiz(quiz_id, current_user_id)
         await self.quiz_repository.delete_quiz(quiz_id)
-        return {"message": "Quiz deleted"}
+        return {"message": "Quiz deleted", "id": quiz_id}
 
     # GET QUIZ BY ID
     async def get_quiz_by_id(self, quiz_id: uuid.UUID) -> Optional[QuizByIdSchema]:
