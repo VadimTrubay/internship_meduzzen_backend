@@ -76,4 +76,4 @@ class CompanyService:
     ) -> dict:
         await self.validate_company(current_user_id, company_id)
         await self.repository.delete_company(company_id)
-        return {"message": "Company deleted"}
+        return {"message": "Company deleted", "id": company_id}
