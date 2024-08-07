@@ -17,6 +17,15 @@ class QuizSchema(BaseModel):
     questions: List[QuestionSchema]
 
 
+class QuizByIdSchema(BaseModel):
+    id: uuid.UUID
+    name: str
+    description: str
+    frequency_days: int
+    questions: List[QuestionSchema]
+    company_id: uuid.UUID
+
+
 class QuizUpdateSchema(BaseModel):
     name: str
     description: str

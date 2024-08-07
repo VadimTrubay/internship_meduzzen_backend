@@ -1,5 +1,4 @@
 import uuid
-from typing import List
 
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,9 +10,7 @@ from app.repository.quizzes_repository import QuizRepository
 from app.schemas.quizzes import (
     QuizSchema,
     QuizUpdateSchema,
-    QuestionSchema,
-    QuizResponseSchema,
-    QuizzesListResponse,
+    QuizzesListResponse, QuizByIdSchema,
 )
 from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
@@ -84,26 +81,9 @@ async def delete_quiz(
     )
 
 
-@router.post("/quiz/{quiz_id}/question", response_model=QuestionSchema)
-async def create_question(
-    question_data: QuestionSchema,
+@router.get("/quiz/{quiz_id}", response_model=QuizByIdSchema)
+async def get_quiz_by_id(
     quiz_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
     quiz_service: QuizService = Depends(get_quizzes_service),
-) -> QuestionSchema:
-    current_user_id = current_user.id
-    return await quiz_service.add_question(
-        question_data, quiz_id, current_user_id=current_user_id
-    )
-
-
-@router.delete("/question/{question_id}", response_model=QuestionSchema)
-async def delete_quiz_question(
-    question_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-    quiz_service: QuizService = Depends(get_quizzes_service),
-) -> QuestionSchema:
-    current_user_id = current_user.id
-    return await quiz_service.delete_question(
-        question_id, current_user_id=current_user_id
-    )
+) -> QuizByIdSchema:
+    return await quiz_service.get_quiz_by_id(quiz_id)

@@ -75,8 +75,6 @@ async def delete_company(
 @router.get("/{company_id}/", response_model=CompanySchema)
 async def get_company_by_id(
     company_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
     company_service: CompanyService = Depends(get_company_service),
 ):
-    current_user_id = current_user.id
-    return await company_service.get_company_by_id(company_id, current_user_id)
+    return await company_service.get_company_by_id(company_id)
