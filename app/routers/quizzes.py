@@ -10,7 +10,8 @@ from app.repository.quizzes_repository import QuizRepository
 from app.schemas.quizzes import (
     QuizSchema,
     QuizUpdateSchema,
-    QuizzesListResponse, QuizByIdSchema,
+    QuizzesListResponse,
+    QuizByIdSchema,
 )
 from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
