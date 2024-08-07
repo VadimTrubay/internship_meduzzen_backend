@@ -1,4 +1,5 @@
 import uuid
+from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +14,7 @@ from app.schemas.quizzes import (
     QuizUpdateSchema,
     QuestionSchema,
     QuizResponseSchema,
-    QuizzesListResponse,
+    QuizzesListResponse, QuizByIdSchema,
 )
 
 
@@ -107,12 +108,6 @@ class QuizService:
         await self.company_repository.is_user_company_owner(current_user_id, company_id)
         return quiz
 
-    # DELETE QUIZ
-    async def delete_quiz(self, quiz_id: uuid.UUID, current_user_id: uuid.UUID) -> dict:
-        await self._validate_quiz(quiz_id, current_user_id)
-        await self.quiz_repository.delete_quiz(quiz_id)
-        return {"message": "Quiz deleted"}
-
     # UPDATE QUIZ
     async def update_quiz(
         self,
@@ -125,6 +120,35 @@ class QuizService:
         updated_quiz = await self.quiz_repository.update_one(quiz_id, quiz_data_dict)
         return updated_quiz
 
+    # DELETE QUIZ
+    async def delete_quiz(self, quiz_id: uuid.UUID, current_user_id: uuid.UUID) -> dict:
+        await self._validate_quiz(quiz_id, current_user_id)
+        await self.quiz_repository.delete_quiz(quiz_id)
+        return {"message": "Quiz deleted"}
+
+    # GET QUIZ BY ID
+    async def get_quiz_by_id(self, quiz_id: uuid.UUID) -> Optional[QuizByIdSchema]:
+        quiz = await self.quiz_repository.quiz_by_id(quiz_id)
+        if not quiz:
+            raise NotFound()
+
+        quiz_schema = QuizByIdSchema(
+            id=quiz.id,
+            name=quiz.name,
+            description=quiz.description,
+            frequency_days=quiz.frequency_days,
+            questions=[
+                QuestionSchema(
+                    question_text=question.question_text,
+                    correct_answer=question.correct_answer,
+                    answer_options=question.answer_options,
+                )
+                for question in quiz.questions
+            ],
+            company_id=quiz.company_id,
+        )
+        return quiz_schema
+
     # HANDLE IS ACTIVE
     async def _handle_is_active(self, quiz_id: uuid.UUID) -> None:
         questions = await self.quiz_repository.get_questions_by_quiz_id(quiz_id)
@@ -132,40 +156,3 @@ class QuizService:
             await self.quiz_repository.toggle_quiz_active_status(quiz_id, False)
         else:
             await self.quiz_repository.toggle_quiz_active_status(quiz_id, True)
-
-    # ADD QUESTION
-    async def add_question(
-        self,
-        question_data: QuestionSchema,
-        quiz_id: uuid.UUID,
-        current_user_id: uuid.UUID,
-    ) -> QuestionSchema:
-        await self._validate_quiz(quiz_id, current_user_id)
-        question = await self.quiz_repository.create_question(question_data, quiz_id)
-        await self._handle_is_active(quiz_id)
-
-        question_schema = QuestionSchema(
-            question_text=question.question_text,
-            correct_answer=question.correct_answer,
-            answer_options=question.answer_options,
-        )
-        return question_schema
-
-    # DELETE QUESTION
-    async def delete_question(
-        self, question_id: uuid.UUID, current_user_id: uuid.UUID
-    ) -> QuestionSchema:
-        question = await self.quiz_repository.get_question_by_id(question_id)
-        if not question:
-            raise NotFound()
-        quiz_id = question.quiz_id
-        await self._validate_quiz(quiz_id, current_user_id)
-        await self.quiz_repository.delete_question(question_id)
-        await self._handle_is_active(quiz_id)
-
-        question_schema = QuestionSchema(
-            question_text=question.question_text,
-            correct_answer=question.correct_answer,
-            answer_options=question.answer_options,
-        )
-        return question_schema

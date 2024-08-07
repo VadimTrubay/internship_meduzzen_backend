@@ -50,9 +50,7 @@ class CompanyService:
         return [CompanySchema.model_validate(company) for company in companies]
 
     # GET COMPANY BY ID
-    async def get_company_by_id(
-        self, company_id: uuid.UUID, user_id: uuid.UUID
-    ) -> Optional[CompanySchema]:
+    async def get_company_by_id(self, company_id: uuid.UUID) -> Optional[CompanySchema]:
         company = await self._get_company_or_raise(company_id)
         return company
 
