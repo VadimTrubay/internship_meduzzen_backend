@@ -1,5 +1,5 @@
 import uuid
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -9,12 +9,16 @@ class QuestionSchema(BaseModel):
     correct_answer: List[str]
     answer_options: List[str]
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class QuizSchema(BaseModel):
     name: str
     description: str
     frequency_days: int
     questions: List[QuestionSchema]
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class QuizByIdSchema(BaseModel):
@@ -23,13 +27,18 @@ class QuizByIdSchema(BaseModel):
     description: str
     frequency_days: int
     questions: List[QuestionSchema]
-    company_id: uuid.UUID
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class QuizUpdateSchema(BaseModel):
-    name: str
-    description: str
-    frequency_days: int
+    id: uuid.UUID
+    name: Optional[str] = None
+    description: Optional[str] = None
+    frequency_days: Optional[int] = None
+    questions: Optional[List[QuestionSchema]] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class QuizResponseSchema(BaseModel):

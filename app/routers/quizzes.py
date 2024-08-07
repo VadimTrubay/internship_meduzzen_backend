@@ -63,7 +63,7 @@ async def update_quiz(
     quiz_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
     quiz_service: QuizService = Depends(get_quizzes_service),
-) -> QuizUpdateSchema:
+) -> QuizByIdSchema:
     current_user_id = current_user.id
     return await quiz_service.update_quiz(
         quiz_data=quiz_data, quiz_id=quiz_id, current_user_id=current_user_id
