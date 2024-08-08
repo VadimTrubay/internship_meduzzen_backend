@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class QuestionSchema(BaseModel):
+    id: uuid.UUID
     question_text: str
     correct_answer: List[str]
     answer_options: List[str]

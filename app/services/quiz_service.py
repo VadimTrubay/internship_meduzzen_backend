@@ -170,6 +170,7 @@ class QuizService:
             frequency_days=quiz.frequency_days,
             questions=[
                 QuestionSchema(
+                    id=question.id,
                     question_text=question.question_text,
                     correct_answer=question.correct_answer,
                     answer_options=question.answer_options,
