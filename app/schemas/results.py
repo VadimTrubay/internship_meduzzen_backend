@@ -13,4 +13,4 @@ class ResultSchema(BaseModel):
 
 
 class QuizRequest(BaseModel):
-    answers: Dict[int, List[str]]
+    answers: Dict[uuid.UUID, List[str]]
