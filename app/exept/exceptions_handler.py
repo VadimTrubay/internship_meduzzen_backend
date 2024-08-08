@@ -31,7 +31,7 @@ from app.utils.companies_utils import (
 
 
 def register_exception_handler(app: FastAPI):
-    @app.exception_handler(UserNotFound)
+    @app.exception_handler(NotFound)
     async def not_found_exception_handler(request: Request, exc: NotFound):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
@@ -51,7 +51,7 @@ def register_exception_handler(app: FastAPI):
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
         )
 
-    @app.exception_handler(CompanyNotFound)
+    @app.exception_handler(ActionNotFound)
     async def action_not_found_exception_handler(request: Request, exc: ActionNotFound):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}

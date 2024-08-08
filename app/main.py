@@ -14,6 +14,7 @@ from app.routers import (
     companies,
     actions,
     quizzes,
+    results,
 )
 from app.exept.exceptions_handler import register_exception_handler
 
@@ -55,6 +56,7 @@ app.include_router(auth.router)
 app.include_router(companies.router)
 app.include_router(actions.router)
 app.include_router(quizzes.router)
+app.include_router(results.router)
 
 if __name__ == "__main__":
     uvicorn.run(

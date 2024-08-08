@@ -1,4 +1,5 @@
 import uuid
+from typing import List
 
 from sqlalchemy import delete, select
 from sqlalchemy.orm import joinedload
@@ -44,6 +45,11 @@ class QuizRepository(BaseRepository):
         )
         result = await self.session.execute(query)
         return result.scalars().unique().one_or_none()
+
+    async def get_questions_by_quiz_id(self, quiz_id: uuid.UUID) -> List[Question]:
+        query = select(Question).filter(Question.quiz_id == quiz_id)
+        result = await self.session.execute(query)
+        return result.scalars().all()
 
     async def toggle_quiz_active_status(
         self, quiz_id: uuid.UUID, new_status: bool
