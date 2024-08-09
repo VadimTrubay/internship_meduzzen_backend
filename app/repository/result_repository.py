@@ -1,4 +1,4 @@
-from app.models.result import Result
+from app.models.result_model import Result
 from app.repository.base_repository import BaseRepository
 
 

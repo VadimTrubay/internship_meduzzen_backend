@@ -5,7 +5,6 @@ from pydantic import BaseModel, ConfigDict
 
 
 class QuestionSchema(BaseModel):
-    id: uuid.UUID
     question_text: str
     correct_answer: List[str]
     answer_options: List[str]
@@ -22,12 +21,21 @@ class QuizSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class QuestionByIdSchema(BaseModel):
+    id: uuid.UUID
+    question_text: str
+    correct_answer: List[str]
+    answer_options: List[str]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class QuizByIdSchema(BaseModel):
     id: uuid.UUID
     name: str
     description: str
     frequency_days: int
-    questions: List[QuestionSchema]
+    questions: List[QuestionByIdSchema]
 
     model_config = ConfigDict(from_attributes=True)
 
