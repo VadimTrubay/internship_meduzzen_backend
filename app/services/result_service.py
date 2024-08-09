@@ -1,8 +1,6 @@
 import uuid
 
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
 
 from app.exept.custom_exceptions import NotFound, NotPermission
 from app.repository.company_repository import CompanyRepository

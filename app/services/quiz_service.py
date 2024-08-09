@@ -17,7 +17,7 @@ from app.schemas.quizzes import (
     QuestionSchema,
     QuizResponseSchema,
     QuizzesListResponse,
-    QuizByIdSchema,
+    QuizByIdSchema, QuestionByIdSchema,
 )
 
 
@@ -169,7 +169,7 @@ class QuizService:
             description=quiz.description,
             frequency_days=quiz.frequency_days,
             questions=[
-                QuestionSchema(
+                QuestionByIdSchema(
                     id=question.id,
                     question_text=question.question_text,
                     correct_answer=question.correct_answer,
