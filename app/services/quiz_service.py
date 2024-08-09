@@ -17,7 +17,8 @@ from app.schemas.quizzes import (
     QuestionSchema,
     QuizResponseSchema,
     QuizzesListResponse,
-    QuizByIdSchema, QuestionByIdSchema,
+    QuizByIdSchema,
+    QuestionByIdSchema,
 )
 
 
