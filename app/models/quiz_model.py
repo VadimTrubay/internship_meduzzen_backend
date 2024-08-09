@@ -11,7 +11,11 @@ class Quiz(BaseModel):
     name = Column(String(255), nullable=False)
     description = Column(String(1000), nullable=False)
     frequency_days = Column(Integer, nullable=False)
-    company_id = Column(UUID(as_uuid=True), ForeignKey("companies.id"), nullable=False)
+    company_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("companies.id", ondelete="CASCADE"),
+        nullable=False,
+    )
     is_active = Column(Boolean, default=True)
 
     questions = relationship(
@@ -25,5 +29,7 @@ class Question(BaseModel):
     question_text = Column(String(1000), nullable=False)
     correct_answer = Column(ARRAY(String(255)), nullable=False)
     answer_options = Column(ARRAY(String(255)), nullable=False)
-    quiz_id = Column(UUID(as_uuid=True), ForeignKey("quizzes.id"), nullable=False)
+    quiz_id = Column(
+        UUID(as_uuid=True), ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False
+    )
     quiz = relationship("Quiz", back_populates="questions")
