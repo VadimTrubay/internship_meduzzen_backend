@@ -1,7 +1,7 @@
 import uuid
 from typing import List
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, func
 from sqlalchemy.orm import joinedload
 
 from app.repository.base_repository import BaseRepository
@@ -12,6 +12,12 @@ from app.schemas.quizzes import QuizSchema
 class QuizRepository(BaseRepository):
     def __init__(self, session):
         super().__init__(session=session, model=Quiz)
+
+    async def get_count_quizzes(self, company_id: uuid.UUID) -> int:
+        query = select(func.count()).select_from(Quiz).where(Quiz.company_id == company_id)
+        result = await self.session.execute(query)
+        quiz_count = result.scalar()
+        return quiz_count
 
     async def create_quiz(
         self, quiz_data: QuizSchema, company_id: uuid.UUID

@@ -40,7 +40,7 @@ async def get_quizzes(
     quiz_service: QuizService = Depends(get_quizzes_service),
 ) -> QuizzesListResponse:
     quizzes = await quiz_service.get_quizzes(company_id)
-    total_count = await quiz_service.get_total_count()
+    total_count = await quiz_service.get_total_count(company_id)
     return QuizzesListResponse(quizzes=quizzes, total_count=total_count)
 
 

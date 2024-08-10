@@ -43,8 +43,8 @@ class QuizService:
         return company
 
     # GET TOTAL COUNT
-    async def get_total_count(self):
-        count = await self.quiz_repository.get_count()
+    async def get_total_count(self, company_id: uuid.UUID) -> int:
+        count = await self.quiz_repository.get_count_quizzes(company_id)
         return count
 
     # GET QUIZZES
