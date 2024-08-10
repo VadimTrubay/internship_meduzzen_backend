@@ -14,7 +14,9 @@ class QuizRepository(BaseRepository):
         super().__init__(session=session, model=Quiz)
 
     async def get_count_quizzes(self, company_id: uuid.UUID) -> int:
-        query = select(func.count()).select_from(Quiz).where(Quiz.company_id == company_id)
+        query = (
+            select(func.count()).select_from(Quiz).where(Quiz.company_id == company_id)
+        )
         result = await self.session.execute(query)
         quiz_count = result.scalar()
         return quiz_count
