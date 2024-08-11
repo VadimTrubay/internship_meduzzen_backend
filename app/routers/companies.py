@@ -1,10 +1,7 @@
 import uuid
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.connection import get_session
-from app.repository.company_repository import CompanyRepository
 from app.schemas.companies import (
     CompanySchema,
     CompanyCreateRequest,
@@ -14,15 +11,9 @@ from app.schemas.companies import (
 from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
 from app.services.company_service import CompanyService
+from app.utils.call_services import get_company_service
 
 router = APIRouter(prefix="/companies", tags=["companies"])
-
-
-async def get_company_service(
-    session: AsyncSession = Depends(get_session),
-) -> CompanyService:
-    company_repository = CompanyRepository(session)
-    return CompanyService(session=session, repository=company_repository)
 
 
 @router.get("/", response_model=CompaniesListResponse)

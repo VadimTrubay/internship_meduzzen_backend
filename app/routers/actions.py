@@ -1,13 +1,8 @@
 import uuid
-from typing import Optional, List
+from typing import List
 
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import APIRouter, Depends
 
-from app.db.connection import get_session
-from app.repository.action_repository import ActionRepository
-from app.repository.company_repository import CompanyRepository
-from app.repository.user_repository import UserRepository
 from app.schemas.actions import (
     ActionSchema,
     InviteCreateSchema,
@@ -20,22 +15,9 @@ from app.schemas.actions import (
 from app.schemas.users import UserSchema
 from app.services.action_service import ActionService
 from app.services.auth_service import AuthService
+from app.utils.call_services import get_action_service
 
 router = APIRouter(prefix="/actions", tags=["actions"])
-
-
-async def get_action_service(
-    session: AsyncSession = Depends(get_session),
-) -> ActionService:
-    action_repository = ActionRepository(session)
-    company_repository = CompanyRepository(session)
-    user_repository = UserRepository(session)
-    return ActionService(
-        session=session,
-        action_repository=action_repository,
-        company_repository=company_repository,
-        user_repository=user_repository,
-    )
 
 
 @router.post("/company/{company_id}/invite/user/{user_id}", response_model=ActionSchema)
