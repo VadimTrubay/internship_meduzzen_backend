@@ -16,3 +16,14 @@ class ResultSchema(BaseModel):
 
 class QuizRequest(BaseModel):
     answers: Dict[uuid.UUID, List[str]]
+
+
+class CompanyRating(BaseModel):
+    company_member_id: uuid.UUID
+    company_id: uuid.UUID
+    rating: int
+
+
+class ExportedFile(BaseModel):
+    file: bytes
+    filename: str

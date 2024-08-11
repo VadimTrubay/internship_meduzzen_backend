@@ -1,18 +1,27 @@
 import json
 import uuid
 from datetime import timedelta
+from typing import List, Optional
 
+import pytz
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.exept.custom_exceptions import NotFound, NotPermission
+from app.exept.custom_exceptions import (
+    NotFound,
+    NotPermission,
+    BadRequest,
+    UserNotFound,
+)
 from app.models.result_model import Result
 from app.repository.company_repository import CompanyRepository
 from app.repository.quizzes_repository import QuizRepository
 from app.repository.result_repository import ResultRepository
 from app.repository.user_repository import UserRepository
 from app.schemas.actions import CompanyMemberSchema
-from app.schemas.results import ResultSchema, QuizRequest
+from app.schemas.companies import CompanySchema
+from app.schemas.results import ResultSchema, QuizRequest, ExportedFile
 from app.services.redis_service import redis_service
+from app.utils.export_data import export_redis_data
 
 
 class ResultService:
@@ -37,6 +46,14 @@ class ResultService:
         if not member:
             raise NotPermission()
         return member
+
+    @staticmethod
+    async def get_last_result(results: List[Result]) -> Optional[Result]:
+        if results:
+            utc = pytz.UTC
+            return max(results, key=lambda x: x.created_date.astimezone(utc))
+        else:
+            return None
 
     async def create_result(
         self, quiz_id: uuid.UUID, current_user_id: uuid.UUID, quiz_request: QuizRequest
@@ -131,3 +148,47 @@ class ResultService:
             raise NotFound()
         global_average_score = total_average_score / total_count
         return global_average_score
+
+    async def _validate_export(
+        self, company_id: uuid.UUID, current_user_id: uuid.UUID
+    ) -> CompanySchema:
+        company = await self.company_repository.get_one(id=company_id)
+        if not await self.company_repository.is_user_company_owner(
+            current_user_id, company.id
+        ):
+            raise NotPermission()
+        if not company:
+            raise NotFound()
+        return company
+
+    @staticmethod
+    async def _check_export_format(file_format: str) -> None:
+        if file_format not in ["json", "csv"]:
+            raise BadRequest()
+
+    async def company_answers_list(
+        self, company_id: uuid.UUID, file_format: str, current_user_id: uuid.UUID
+    ) -> ExportedFile:
+        await self._validate_export(company_id, current_user_id)
+        query = f"quiz_result:*:{company_id}:*"
+        return await export_redis_data(query=query, file_format=file_format)
+
+    async def user_answers_list(
+        self,
+        company_id: uuid.UUID,
+        user_id: uuid.UUID,
+        file_format: str,
+        current_user_id: uuid.UUID,
+    ) -> ExportedFile:
+        await self._validate_export(company_id, current_user_id)
+        user = await self.user_repository.get_one(id=user_id)
+        if not user:
+            raise UserNotFound()
+        query = f"quiz_result:{user_id}:{company_id}:*"
+        return await export_redis_data(query=query, file_format=file_format)
+
+    async def my_answers_list(self, current_user_id, file_format) -> ExportedFile:
+        await self._check_export_format(file_format)
+        await self.user_repository.get_one(id=current_user_id)
+        query = f"quiz_result:{current_user_id}:*:*"
+        return await export_redis_data(query=query, file_format=file_format)
