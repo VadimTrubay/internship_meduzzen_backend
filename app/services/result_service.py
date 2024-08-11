@@ -6,6 +6,7 @@ from typing import List, Optional
 import pytz
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.conf.file_format import FileFormat
 from app.exept.custom_exceptions import (
     NotFound,
     NotPermission,
@@ -162,12 +163,12 @@ class ResultService:
         return company
 
     @staticmethod
-    async def _check_export_format(file_format: str) -> None:
-        if file_format not in ["json", "csv"]:
+    async def _check_export_format(file_format: FileFormat) -> None:
+        if file_format not in [FileFormat.JSON, FileFormat.CSV]:
             raise BadRequest()
 
     async def company_answers_list(
-        self, company_id: uuid.UUID, file_format: str, current_user_id: uuid.UUID
+        self, company_id: uuid.UUID, file_format: FileFormat, current_user_id: uuid.UUID
     ) -> ExportedFile:
         await self._validate_export(company_id, current_user_id)
         query = f"quiz_result:*:{company_id}:*"
@@ -177,7 +178,7 @@ class ResultService:
         self,
         company_id: uuid.UUID,
         user_id: uuid.UUID,
-        file_format: str,
+        file_format: FileFormat,
         current_user_id: uuid.UUID,
     ) -> ExportedFile:
         await self._validate_export(company_id, current_user_id)
