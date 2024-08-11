@@ -1,5 +1,5 @@
 from app.conf.config import settings
-from app.db.redis_db import redis_connection
+from app.db.redis import redis_connection
 
 
 class RedisService:
