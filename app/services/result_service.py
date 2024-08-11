@@ -48,14 +48,6 @@ class ResultService:
             raise NotPermission()
         return member
 
-    @staticmethod
-    async def get_last_result(results: List[Result]) -> Optional[Result]:
-        if results:
-            utc = pytz.UTC
-            return max(results, key=lambda x: x.created_date.astimezone(utc))
-        else:
-            return None
-
     async def create_result(
         self, quiz_id: uuid.UUID, current_user_id: uuid.UUID, quiz_request: QuizRequest
     ) -> ResultSchema:
