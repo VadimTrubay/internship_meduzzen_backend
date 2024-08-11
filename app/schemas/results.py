@@ -1,7 +1,7 @@
 import uuid
 from typing import List, Dict
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class ResultSchema(BaseModel):
@@ -10,6 +10,8 @@ class ResultSchema(BaseModel):
     score: float
     total_questions: int
     correct_answers: int
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class QuizRequest(BaseModel):
