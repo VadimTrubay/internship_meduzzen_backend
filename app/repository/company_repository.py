@@ -1,14 +1,16 @@
 import uuid
-from typing import List
+from typing import List, Dict
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, join
 
 from app.conf.invite import MemberStatus
 from app.models.company_member import CompanyMember
+from app.models.result_model import Result
 from app.repository.base_repository import BaseRepository
 from app.models.company_model import Company
 from app.schemas.actions import CompanyMemberSchema
 from app.schemas.companies import CompanySchema
+from app.schemas.results import ResultSchema
 
 
 class CompanyRepository(BaseRepository):
@@ -22,7 +24,7 @@ class CompanyRepository(BaseRepository):
         return company_obj.name
 
     async def create_company_with_owner(
-        self, data: dict, owner_id: uuid.UUID
+        self, data: Dict, owner_id: uuid.UUID
     ) -> CompanySchema:
         company = await self.create_one(data=data)
         company_member_data = {
@@ -34,7 +36,7 @@ class CompanyRepository(BaseRepository):
 
         return company
 
-    async def create_company_member(self, data: dict) -> CompanyMemberSchema:
+    async def create_company_member(self, data: Dict) -> CompanyMemberSchema:
         company_member = CompanyMember(**data)
         self.session.add(company_member)
         await self.session.commit()
@@ -94,5 +96,21 @@ class CompanyRepository(BaseRepository):
             CompanyMember.company_id == company_id,
             CompanyMember.role == MemberStatus.ADMIN,
         )
+        result = await self.session.execute(query)
+        return result.scalars().all()
+
+    async def get_company_members_result_data(
+        self, company_id: uuid.UUID
+    ) -> List[ResultSchema]:
+        query = (
+            select(Result)
+            .select_from(
+                join(
+                    CompanyMember, Result, CompanyMember.id == Result.company_member_id
+                )
+            )
+            .where(CompanyMember.company_id == company_id)
+        )
+
         result = await self.session.execute(query)
         return result.scalars().all()

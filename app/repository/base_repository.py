@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from datetime import datetime
 
 from sqlalchemy import update, delete, select, func
@@ -11,14 +11,14 @@ class BaseRepository:
         self.session = session
         self.model = model
 
-    async def create_one(self, data: dict) -> Base:
+    async def create_one(self, data: Dict) -> Base:
         row = self.model(**data)
         self.session.add(row)
         await self.session.commit()
         await self.session.refresh(row)
         return row
 
-    async def create_many(self, data: List[dict]) -> List[Base]:
+    async def create_many(self, data: List[Dict]) -> List[Base]:
         rows = [self.model(**row) for row in data]
         self.session.bulk_save_objects(rows)
         await self.session.commit()
@@ -43,7 +43,7 @@ class BaseRepository:
         user_count = result.scalar()
         return user_count
 
-    async def update_one(self, model_id: int, data: dict) -> Base:
+    async def update_one(self, model_id: int, data: Dict) -> Base:
         query = (
             update(self.model)
             .where(self.model.id == model_id)

@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional, List
+from typing import Optional, List, Dict
 
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -56,7 +56,7 @@ class CompanyService:
 
     # CREATE COMPANY
     async def create_company(
-        self, data: dict, current_user_id: uuid.UUID
+        self, data: Dict, current_user_id: uuid.UUID
     ) -> CompanySchema:
         data["owner_id"] = current_user_id
         return await self.repository.create_company_with_owner(
@@ -65,7 +65,7 @@ class CompanyService:
 
     # EDIT COMPANY
     async def update_company(
-        self, data: dict, current_user_id: uuid.UUID, company_id: uuid.UUID
+        self, data: Dict, current_user_id: uuid.UUID, company_id: uuid.UUID
     ) -> CompanySchema:
         await self.validate_company(current_user_id, company_id)
         return await self.repository.update_one(company_id, data)
@@ -73,7 +73,7 @@ class CompanyService:
     # DELETE COMPANY
     async def delete_company(
         self, company_id: uuid.UUID, current_user_id: uuid.UUID
-    ) -> dict:
+    ) -> Dict:
         await self.validate_company(current_user_id, company_id)
         await self.repository.delete_company(company_id)
         return {"message": "Company deleted", "id": company_id}

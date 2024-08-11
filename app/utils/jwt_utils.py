@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Dict
 
 import jwt
 from jwt import PyJWKClient
@@ -9,7 +9,7 @@ from app.conf.config import settings
 
 
 async def encode_jwt(
-    payload: dict,
+    payload: Dict,
     client_secret: str = settings.API_SECRET,
     algorithm: str = settings.API_ALGORITHM,
     audience: str = settings.API_AUDIENCE,
@@ -35,7 +35,7 @@ async def encode_jwt(
     return encoded_jwt
 
 
-def decode_jwt_token(token: str) -> dict:
+def decode_jwt_token(token: str) -> Dict:
     decoded = jwt.decode(
         token,
         settings.API_SECRET,
@@ -73,7 +73,7 @@ def decode_auth0_token(token: str) -> Any | None:
         return None
 
 
-def decode_jwt(token: str) -> dict:
+def decode_jwt(token: str) -> Dict:
     try:
         return decode_jwt_token(token)
     except Exception as e:
