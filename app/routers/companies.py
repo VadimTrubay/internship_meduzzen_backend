@@ -1,4 +1,5 @@
 import uuid
+from typing import Dict
 
 from fastapi import APIRouter, Depends
 
@@ -53,12 +54,12 @@ async def update_company(
     )
 
 
-@router.delete("/{company_id}", response_model=dict)
+@router.delete("/{company_id}", response_model=Dict)
 async def delete_company(
     company_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
     company_service: CompanyService = Depends(get_company_service),
-) -> dict:
+) -> Dict:
     current_user_id = current_user.id
     return await company_service.delete_company(company_id, current_user_id)
 

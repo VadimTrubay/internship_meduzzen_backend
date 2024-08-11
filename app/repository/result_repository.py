@@ -39,7 +39,7 @@ class ResultRepository(BaseRepository):
             select(Result)
             .join(CompanyMember)
             .filter(CompanyMember.user_id == company_member_id)
-            .order_by(desc(Result.created_date))
+            .order_by(desc(Result.created_at))
             .limit(1)
         )
         result = await self.session.execute(query)
@@ -49,9 +49,7 @@ class ResultRepository(BaseRepository):
         self, user_id: uuid.UUID
     ) -> List[Result]:
         subquery = (
-            select(
-                Result.quiz_id, func.max(Result.created_date).label("max_created_date")
-            )
+            select(Result.quiz_id, func.max(Result.created_at).label("max_created_at"))
             .join(CompanyMember)
             .join(User)
             .filter(User.id == user_id)
@@ -62,7 +60,7 @@ class ResultRepository(BaseRepository):
             subquery,
             and_(
                 Result.quiz_id == subquery.c.quiz_id,
-                Result.created_date == subquery.c.max_created_date,
+                Result.created_at == subquery.c.created_at,
             ),
         )
 
@@ -76,7 +74,7 @@ class ResultRepository(BaseRepository):
             select(
                 CompanyMember.id.label("company_member_id"),
                 Result.quiz_id,
-                func.max(Result.created_date).label("max_created_date"),
+                func.max(Result.created_at).label("max_created_at"),
             )
             .join(Result, Result.company_member_id == CompanyMember.id)
             .join(User, CompanyMember.user_id == User.id)
@@ -89,7 +87,7 @@ class ResultRepository(BaseRepository):
             and_(
                 Result.company_member_id == subquery.c.company_member_id,
                 Result.quiz_id == subquery.c.quiz_id,
-                Result.created_date == subquery.c.max_created_date,
+                Result.created_at == subquery.c.created_at,
             ),
         )
 
