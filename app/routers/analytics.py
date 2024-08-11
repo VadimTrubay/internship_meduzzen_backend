@@ -43,7 +43,9 @@ async def get_company_results(
     return await result_service.company_members_results(current_user_id, company_id)
 
 
-@router.get("/company/{company_id}/member/{company_member_id}/results", response_model=dict)
+@router.get(
+    "/company/{company_id}/member/{company_member_id}/results", response_model=dict
+)
 async def get_company_results_one_user(
     company_id: uuid.UUID,
     company_member_id: uuid.UUID,

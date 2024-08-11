@@ -15,7 +15,7 @@ from app.routers import (
     actions,
     quizzes,
     results,
-    analytics
+    analytics,
 )
 from app.exept.exceptions_handler import register_exception_handler
 
