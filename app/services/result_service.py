@@ -92,7 +92,6 @@ class ResultService:
         key = f"quiz_result:{current_user_id}:{company_id}:{quiz_id}:{result_id}"
         serialized_result = json.dumps(redis_result)
         expiration_time_seconds = int(timedelta(hours=48).total_seconds())
-        print(key)
         await redis_service.redis_set(key, serialized_result, expiration_time_seconds)
 
         return ResultSchema.from_orm(result)
