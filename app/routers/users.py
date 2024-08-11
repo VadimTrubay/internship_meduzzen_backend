@@ -2,12 +2,9 @@ import uuid
 
 from fastapi import APIRouter, Depends
 from loguru import logger
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.conf.detail import Messages
-from app.db.connection import get_session
 from app.exept.custom_exceptions import NotPermission
-from app.repository.user_repository import UserRepository
 from app.schemas.users import (
     UserSchema,
     UsersListResponse,
@@ -15,7 +12,7 @@ from app.schemas.users import (
     BaseUserSchema,
 )
 from app.services.auth_service import AuthService
-from app.services.user_service import UserService
+from app.utils.call_services import get_user_service
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -28,16 +25,11 @@ async def verify_user_permission(
         raise NotPermission()
 
 
-async def get_user_service(session: AsyncSession = Depends(get_session)) -> UserService:
-    user_repository = UserRepository(session)
-    return UserService(session=session, repository=user_repository)
-
-
 @router.get("/", response_model=UsersListResponse)
 async def get_all_users(
     skip: int = 1,
     limit: int = 10,
-    user_service: UserService = Depends(get_user_service),
+    user_service=Depends(get_user_service),
 ):
     users = await user_service.get_users(skip, limit)
     total_count = await user_service.get_total_count()
@@ -46,9 +38,7 @@ async def get_all_users(
 
 
 @router.get("/{user_id}", response_model=UserSchema)
-async def get_user_by_id(
-    user_id: uuid.UUID, user_service: UserService = Depends(get_user_service)
-):
+async def get_user_by_id(user_id: uuid.UUID, user_service=Depends(get_user_service)):
     user = await user_service.get_user_by_id(user_id)
     return user
 
@@ -61,7 +51,7 @@ async def get_user_by_id(
 async def update_user(
     user_id: uuid.UUID,
     update_data: UserUpdateRequest,
-    user_service: UserService = Depends(get_user_service),
+    user_service=Depends(get_user_service),
     current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
 
@@ -76,7 +66,7 @@ async def update_user(
 )
 async def delete_user(
     user_id: uuid.UUID,
-    user_service: UserService = Depends(get_user_service),
+    user_service=Depends(get_user_service),
     current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
 

@@ -10,13 +10,9 @@ from app.schemas.users import (
     SignUpRequest,
     UserSchema,
 )
+from app.utils.call_services import get_auth_service
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-
-
-async def get_auth_service(session: AsyncSession = Depends(get_session)) -> AuthService:
-    user_repository = UserRepository(session)
-    return AuthService(session=session, repository=user_repository)
 
 
 @router.post("/login", response_model=TokenModel)
