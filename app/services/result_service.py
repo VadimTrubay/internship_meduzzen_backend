@@ -124,7 +124,9 @@ class ResultService:
             raise NotFound()
 
         total_score = sum(result.score for result in results)
-        average_score = (round(total_score / len(results)), 2) if len(results) > 0 else 0.0
+        average_score = (
+            (round(total_score / len(results)), 2) if len(results) > 0 else 0.0
+        )
 
         return average_score
 
