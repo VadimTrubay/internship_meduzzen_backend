@@ -201,8 +201,8 @@ class ResultService:
         for result in results:
             current_total_questions += result.total_questions
             current_correct_answers += result.correct_answers
-            chart_data[result.created_at] = (
-                round((current_correct_answers / current_total_questions), 2)
+            chart_data[result.created_at] = round(
+                (current_correct_answers / current_total_questions), 2
             )
 
         return chart_data
@@ -253,7 +253,9 @@ class ResultService:
         self, current_user_id: uuid.UUID, company_id: uuid.UUID
     ) -> Dict:
         await self._get_company_or_raise(company_id)
-        await self._validate_company_owner_or_admin_analytics(current_user_id, company_id)
+        await self._validate_company_owner_or_admin_analytics(
+            current_user_id, company_id
+        )
         company = await self.company_repository.get_one(id=company_id)
         if not company:
             raise CompanyNotFound()
