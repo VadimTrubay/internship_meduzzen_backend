@@ -32,7 +32,9 @@ async def get_all_companies(
     company_service: CompanyService = Depends(get_company_service),
 ):
     companies = await company_service.get_companies(skip, limit)
-    return companies
+    total_count = await company_service.get_total_count()
+    result = [CompanySchema.from_orm(company) for company in companies]
+    return CompaniesListResponse(companies=result, total_count=total_count)
 
 
 @router.post("/", response_model=CompanySchema)
@@ -47,7 +49,7 @@ async def create_company(
     )
 
 
-@router.patch("/{company_id}/", response_model=CompanySchema)
+@router.patch("/{company_id}", response_model=CompanySchema)
 async def update_company(
     company_id: uuid.UUID,
     company_data: CompanyUpdateRequest,
@@ -60,21 +62,19 @@ async def update_company(
     )
 
 
-@router.delete("/{company_id}/", response_model=CompanySchema)
+@router.delete("/{company_id}", response_model=dict)
 async def delete_company(
     company_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
     company_service: CompanyService = Depends(get_company_service),
-):
+) -> dict:
     current_user_id = current_user.id
     return await company_service.delete_company(company_id, current_user_id)
 
 
-@router.get("/{company_id}/", response_model=CompanySchema)
+@router.get("/{company_id}", response_model=CompanySchema)
 async def get_company_by_id(
     company_id: uuid.UUID,
-    current_user: UserSchema = Depends(AuthService.get_current_user),
     company_service: CompanyService = Depends(get_company_service),
 ):
-    current_user_id = current_user.id
-    return await company_service.get_company_by_id(company_id, current_user_id)
+    return await company_service.get_company_by_id(company_id)

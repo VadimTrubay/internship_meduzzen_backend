@@ -35,7 +35,6 @@ try:
         email VARCHAR(255) NOT NULL,
         username VARCHAR(255) NOT NULL,
         password VARCHAR(255) NOT NULL,
-        is_admin BOOLEAN DEFAULT FALSE,
         UNIQUE (email),
         UNIQUE (username)
     );
@@ -46,15 +45,14 @@ try:
     print("Table created successfully.")
 
     insert_query = """
-    INSERT INTO users (id, email, username, password, is_admin) VALUES (%s, %s, %s, %s, %s);
+    INSERT INTO users (id, email, username, password) VALUES (%s, %s, %s, %s, %s);
     """
     for _ in range(NUM_FAKE_RECORDS):
         id = fake.uuid4()
         email = fake.email()
         username = fake.user_name()
         password = hash_password(fake.password())
-        is_admin = fake.boolean()
-        cursor.execute(insert_query, (id, email, username, password, is_admin))
+        cursor.execute(insert_query, (id, email, username, password))
 
     conn.commit()
     logger.info(f"{NUM_FAKE_RECORDS} fake records inserted successfully.")

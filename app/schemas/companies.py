@@ -54,7 +54,7 @@ class CompaniesListResponse(BaseModel):
         from_attributes=True,
         json_schema_extra={
             "example": {
-                "users": [
+                "companies": [
                     {
                         "id": "123e4567-e89b-12d3-a456-426614174000",
                         "name": "Company name",

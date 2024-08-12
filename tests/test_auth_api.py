@@ -33,7 +33,6 @@ class TestAuthService(unittest.IsolatedAsyncioTestCase):
             email="testuser@example.com",
             username="testuser",
             password="hashedpassword",
-            is_admin=False,
         )
         self.repository.get_one.return_value = db_user
 
@@ -62,7 +61,7 @@ class TestAuthService(unittest.IsolatedAsyncioTestCase):
         self.repository.get_one.side_effect = [
             None,
             None,
-        ]  # No existing email or username
+        ]
 
         token = await self.auth_service.create_user(user_data)
         self.assertEqual(token.access_token, "test_token")
@@ -79,7 +78,6 @@ class TestAuthService(unittest.IsolatedAsyncioTestCase):
             email="existinguser@example.com",
             username="existinguser",
             password="hashedpassword",
-            is_admin=False,
         )
         self.repository.get_one.return_value = existing_user
 

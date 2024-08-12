@@ -30,7 +30,7 @@ class BaseRepository:
         db_row = result.scalar_one_or_none()
         return db_row
 
-    async def get_many(self, skip: int, limit: int, **params) -> List[Base]:
+    async def get_many(self, skip: int = 1, limit: int = 50, **params) -> List[Base]:
         offset = (skip - 1) * limit
         query = select(self.model).filter_by(**params).offset(offset).limit(limit)
         result = await self.session.execute(query)

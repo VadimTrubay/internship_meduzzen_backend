@@ -23,19 +23,6 @@ class UserService:
         self.session = session
         self.repository = repository
 
-    # CHECK USER PERMISSION
-    @staticmethod
-    async def check_user_permission(user_id: uuid.UUID, current_user: UserSchema):
-        if user_id != current_user.id:
-            logger.info(Messages.NOT_PERMISSION)
-            raise NotPermission()
-
-    # GET TOTAL COUNT
-    async def get_total_count(self):
-        count = await self.repository.get_count()
-        logger.info(Messages.SUCCESS_GET_TOTAL_COUNT)
-        return count
-
     # GET USER BY OR RAISE
     async def _get_user_or_raise(self, user_id: uuid.UUID) -> UserSchema:
         user = await self.repository.get_one(id=user_id)
@@ -46,15 +33,21 @@ class UserService:
 
         return UserSchema.model_validate(user)
 
+    # CHECK USER PERMISSION
+    @staticmethod
+    async def check_user_permission(user_id: uuid.UUID, current_user: UserSchema):
+        if user_id != current_user.id:
+            logger.info(Messages.NOT_PERMISSION)
+            raise NotPermission()
+
+    # GET TOTAL COUNT
+    async def get_total_count(self):
+        count = await self.repository.get_count()
+        return count
+
     # GET USERS
     async def get_users(self, skip, limit) -> List[UserSchema]:
         users = await self.repository.get_many(skip=skip, limit=limit)
-        if not users:
-            logger.info(Messages.NOT_FOUND)
-            raise NotFound()
-
-        logger.info(Messages.SUCCESS_GET_USERS)
-
         return [UserSchema.model_validate(user) for user in users]
 
     # GET USER BY ID
@@ -88,7 +81,7 @@ class UserService:
             if not password_utils.validate_password(
                 update_data.password, user.password
             ):
-                logger.info(Messages.INVALID_PASSWORD)
+                logger.info(Messages.INCORRECT_PASSWORD)
                 raise IncorrectPassword()
 
             hashed_password = password_utils.hash_password(update_data.new_password)
@@ -99,7 +92,6 @@ class UserService:
             raise NotFound()
 
         updated_user = await self.repository.update_one(user_id, update_dict)
-        logger.info(Messages.SUCCESS_UPDATE_USER)
         return UserSchema.model_validate(updated_user)
 
     # DELETE USER
@@ -108,5 +100,4 @@ class UserService:
     ) -> BaseUserSchema:
         await self.check_user_permission(user_id, current_user)
         await self._get_user_or_raise(user_id)
-        logger.info(Messages.SUCCESS_DELETE_USER)
         return await self.repository.delete_one(user_id)

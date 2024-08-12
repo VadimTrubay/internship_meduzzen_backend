@@ -1,13 +1,20 @@
 from fastapi import status, Request, FastAPI
 from fastapi.responses import JSONResponse
 
+from app.services.action_service import (
+    AlreadyInCompany,
+    NotOwner,
+    ActionNotFound,
+    UserAlreadyInvited,
+    ActionAlreadyAvailable,
+    YouCanNotInviteYourSelf,
+)
 from app.services.company_service import CompanyNotFound
 from app.services.auth_service import (
     UserWithEmailNotFound,
     IncorrectPassword,
     UnAuthorized,
 )
-
 from app.services.user_service import (
     UserNotFound,
     UserAlreadyExists,
@@ -15,10 +22,16 @@ from app.services.user_service import (
     NotFound,
     NotPermission,
 )
+from app.services.quiz_service import BadRequest
+from app.utils.companies_utils import (
+    UserNotRequested,
+    UserNotInvited,
+    UserNotInteractWithActions,
+)
 
 
 def register_exception_handler(app: FastAPI):
-    @app.exception_handler(UserNotFound)
+    @app.exception_handler(NotFound)
     async def not_found_exception_handler(request: Request, exc: NotFound):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
@@ -34,6 +47,12 @@ def register_exception_handler(app: FastAPI):
     async def company_not_found_exception_handler(
         request: Request, exc: CompanyNotFound
     ):
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(ActionNotFound)
+    async def action_not_found_exception_handler(request: Request, exc: ActionNotFound):
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
         )
@@ -80,4 +99,70 @@ def register_exception_handler(app: FastAPI):
     async def not_permission_exception_handler(request: Request, exc: NotPermission):
         return JSONResponse(
             status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(AlreadyInCompany)
+    async def already_in_company_exception_handler(
+        request: Request, exc: AlreadyInCompany
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(NotOwner)
+    async def not_owner_exception_handler(request: Request, exc: NotOwner):
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(UserNotRequested)
+    async def user_not_requested_exception_handler(
+        request: Request, exc: UserNotRequested
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(UserNotInvited)
+    async def user_not_invited_exception_handler(request: Request, exc: UserNotInvited):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(UserNotInteractWithActions)
+    async def user_not_interact_with_actions_exception_handler(
+        request: Request, exc: UserNotInteractWithActions
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(UserAlreadyInvited)
+    async def user_already_invited_exception_handler(
+        request: Request, exc: UserAlreadyInvited
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(ActionAlreadyAvailable)
+    async def action_already_available_exception_handler(
+        request: Request, exc: ActionAlreadyAvailable
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(YouCanNotInviteYourSelf)
+    async def you_can_not_invite_exception_handler(
+        request: Request, exc: YouCanNotInviteYourSelf
+    ):
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT, content={"detail": str(exc)}
+        )
+
+    @app.exception_handler(BadRequest)
+    async def bad_request_exception_handler(request: Request, exc: BadRequest):
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST, content={"detail": str(exc)}
         )

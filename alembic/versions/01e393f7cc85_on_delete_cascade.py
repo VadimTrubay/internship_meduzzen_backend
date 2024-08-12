@@ -1,8 +1,8 @@
-"""add company model
+"""on delete cascade
 
-Revision ID: fb992ab1a128
-Revises: 80b6e6887b4b
-Create Date: 2024-07-18 12:38:49.766993
+Revision ID: 01e393f7cc85
+Revises: b767db3824d1
+Create Date: 2024-07-31 13:09:35.371755
 
 """
 
@@ -13,8 +13,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "fb992ab1a128"
-down_revision: Union[str, None] = "80b6e6887b4b"
+revision: str = "01e393f7cc85"
+down_revision: Union[str, None] = "b767db3824d1"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

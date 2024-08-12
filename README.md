@@ -100,3 +100,7 @@ To running the tests, run:
 ```bash
 pytest
 ```
+
+ERD
+
+![ERD_public_companies](https://github.com/user-attachments/assets/557c592b-1697-41fb-8815-5aa49a786f69)
