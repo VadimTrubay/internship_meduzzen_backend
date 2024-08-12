@@ -1,9 +1,8 @@
 import json
 import uuid
 from datetime import timedelta
-from typing import List, Optional, Dict
+from typing import List, Dict
 
-import pytz
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.conf.file_format import FileFormat
@@ -125,7 +124,7 @@ class ResultService:
             raise NotFound()
 
         total_score = sum(result.score for result in results)
-        average_score = total_score / len(results) if len(results) > 0 else 0.0
+        average_score = (round(total_score / len(results)), 2) if len(results) > 0 else 0.0
 
         return average_score
 
@@ -146,7 +145,7 @@ class ResultService:
                 total_count += 1
         if total_count == 0:
             raise NotFound()
-        global_average_score = total_average_score / total_count
+        global_average_score = round((total_average_score / total_count), 2)
         return global_average_score
 
     async def _validate_export(
