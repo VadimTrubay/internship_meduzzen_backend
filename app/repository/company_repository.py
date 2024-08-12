@@ -6,6 +6,7 @@ from sqlalchemy import select, delete, join
 from app.conf.invite import MemberStatus
 from app.models.company_member import CompanyMember
 from app.models.result_model import Result
+from app.models.user_model import User
 from app.repository.base_repository import BaseRepository
 from app.models.company_model import Company
 from app.schemas.actions import CompanyMemberSchema
@@ -55,6 +56,17 @@ class CompanyRepository(BaseRepository):
         company_owner = await self.session.execute(query)
         return company_owner.scalar()
 
+    async def is_user_company_admin(
+        self, user_id: uuid.UUID, company_id: uuid.UUID
+    ) -> bool:
+        query = select(CompanyMember).filter(
+            CompanyMember.user_id == user_id,
+            CompanyMember.company_id == company_id,
+            CompanyMember.role == MemberStatus.ADMIN,
+        )
+        company_admin = await self.session.execute(query)
+        return company_admin.scalar()
+
     async def delete_company(self, company_id: uuid.UUID) -> None:
         await self._delete_company_members(company_id)
         await self.delete_one(model_id=company_id)
@@ -103,14 +115,16 @@ class CompanyRepository(BaseRepository):
         self, company_id: uuid.UUID
     ) -> List[ResultSchema]:
         query = (
-            select(Result)
+            select(Result, User.username)
             .select_from(
                 join(
-                    CompanyMember, Result, CompanyMember.id == Result.company_member_id
-                )
+                    CompanyMember,
+                    Result,
+                    CompanyMember.id == Result.company_member_id,
+                ).join(User, CompanyMember.user_id == User.id)
             )
             .where(CompanyMember.company_id == company_id)
         )
 
         result = await self.session.execute(query)
-        return result.scalars().all()
+        return result.all()
