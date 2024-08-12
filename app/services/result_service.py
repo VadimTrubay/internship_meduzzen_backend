@@ -202,7 +202,7 @@ class ResultService:
             current_total_questions += result.total_questions
             current_correct_answers += result.correct_answers
             chart_data[result.created_at] = (
-                current_correct_answers / current_total_questions
+                round((current_correct_answers / current_total_questions), 2)
             )
 
         return chart_data
@@ -231,33 +231,46 @@ class ResultService:
     async def _validate_company_owner_analytics(
         self, current_user_id: uuid.UUID, company_id: uuid.UUID
     ) -> None:
-        if not await self.company_repository.is_user_company_owner(
+        owner = await self.company_repository.is_user_company_owner(
             current_user_id, company_id
-        ):
+        )
+        if not owner:
+            raise NotPermission()
+
+    async def _validate_company_owner_or_admin_analytics(
+        self, current_user_id: uuid.UUID, company_id: uuid.UUID
+    ) -> None:
+        owner = await self.company_repository.is_user_company_owner(
+            current_user_id, company_id
+        )
+        admin = await self.company_repository.is_user_company_admin(
+            current_user_id, company_id
+        )
+        if not (owner or admin):
             raise NotPermission()
 
     async def company_members_results(
         self, current_user_id: uuid.UUID, company_id: uuid.UUID
     ) -> Dict:
         await self._get_company_or_raise(company_id)
-        await self._validate_company_owner_analytics(current_user_id, company_id)
+        await self._validate_company_owner_or_admin_analytics(current_user_id, company_id)
         company = await self.company_repository.get_one(id=company_id)
         if not company:
             raise CompanyNotFound()
+
         results = await self.company_repository.get_company_members_result_data(
             company_id
         )
 
         member_results = {}
-        for result in results:
-            member_id = result.company_member_id
-            if member_id not in member_results:
-                member_results[member_id] = []
-            member_results[member_id].append(result)
+        for result, username in results:
+            if username not in member_results:
+                member_results[username] = []
+            member_results[username].append(result)
 
         chart_data = {}
-        for member_id, member_result in member_results.items():
-            chart_data[member_id] = await self._make_chart_data(member_result)
+        for username, member_result in member_results.items():
+            chart_data[username] = await self._make_chart_data(member_result)
 
         return chart_data
 

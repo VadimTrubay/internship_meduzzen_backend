@@ -60,7 +60,7 @@ class ResultRepository(BaseRepository):
             subquery,
             and_(
                 Result.quiz_id == subquery.c.quiz_id,
-                Result.created_at == subquery.c.created_at,
+                Result.created_at == subquery.c.max_created_at,
             ),
         )
 
@@ -87,7 +87,7 @@ class ResultRepository(BaseRepository):
             and_(
                 Result.company_member_id == subquery.c.company_member_id,
                 Result.quiz_id == subquery.c.quiz_id,
-                Result.created_at == subquery.c.created_at,
+                Result.created_at == subquery.c.max_created_at,
             ),
         )
 
