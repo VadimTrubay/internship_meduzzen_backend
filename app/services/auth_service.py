@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Dict
 
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from loguru import logger
@@ -29,7 +30,7 @@ class AuthService:
         self.repository = repository
 
     # VALIDATE AUTH USER
-    async def validate_auth_user(self, data: dict) -> TokenModel:
+    async def validate_auth_user(self, data: Dict) -> TokenModel:
         email = data.get("email")
         password = data.get("password")
         db_user = await self.repository.get_one(email=email)
@@ -50,7 +51,7 @@ class AuthService:
         return token_info
 
     # CREATE USER
-    async def create_user(self, data: dict) -> TokenModel:
+    async def create_user(self, data: Dict) -> TokenModel:
         email = data.get("email")
         existing_user_email = await self.repository.get_one(email=email)
         if existing_user_email:

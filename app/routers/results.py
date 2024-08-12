@@ -1,35 +1,14 @@
 import uuid
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.connection import get_session
-from app.repository.company_repository import CompanyRepository
-from app.repository.quizzes_repository import QuizRepository
-from app.repository.result_repository import ResultRepository
-from app.repository.user_repository import UserRepository
 from app.schemas.results import ResultSchema, QuizRequest, ExportedFile
 from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
 from app.services.result_service import ResultService
+from app.utils.call_services import get_result_service
 
 router = APIRouter(prefix="/results", tags=["result"])
-
-
-async def get_result_service(
-    session: AsyncSession = Depends(get_session),
-) -> ResultService:
-    result_repository = ResultRepository(session)
-    company_repository = CompanyRepository(session)
-    user_repository = UserRepository(session)
-    quizzes_repository = QuizRepository(session)
-    return ResultService(
-        session=session,
-        result_repository=result_repository,
-        company_repository=company_repository,
-        user_repository=user_repository,
-        quiz_repository=quizzes_repository,
-    )
 
 
 @router.post("/create/{quiz_id}", response_model=ResultSchema)

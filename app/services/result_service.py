@@ -1,9 +1,8 @@
 import json
 import uuid
 from datetime import timedelta
-from typing import List, Optional
+from typing import List, Dict
 
-import pytz
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.conf.file_format import FileFormat
@@ -12,6 +11,7 @@ from app.exept.custom_exceptions import (
     NotPermission,
     BadRequest,
     UserNotFound,
+    CompanyNotFound,
 )
 from app.models.result_model import Result
 from app.repository.company_repository import CompanyRepository
@@ -47,6 +47,12 @@ class ResultService:
         if not member:
             raise NotPermission()
         return member
+
+    async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
+        company = await self.company_repository.get_one(id=company_id)
+        if not company:
+            raise CompanyNotFound()
+        return company
 
     async def create_result(
         self, quiz_id: uuid.UUID, current_user_id: uuid.UUID, quiz_request: QuizRequest
@@ -118,7 +124,9 @@ class ResultService:
             raise NotFound()
 
         total_score = sum(result.score for result in results)
-        average_score = total_score / len(results) if len(results) > 0 else 0.0
+        average_score = (
+            (round(total_score / len(results)), 2) if len(results) > 0 else 0.0
+        )
 
         return average_score
 
@@ -139,7 +147,7 @@ class ResultService:
                 total_count += 1
         if total_count == 0:
             raise NotFound()
-        global_average_score = total_average_score / total_count
+        global_average_score = round((total_average_score / total_count), 2)
         return global_average_score
 
     async def _validate_export(
@@ -185,3 +193,119 @@ class ResultService:
         await self.user_repository.get_one(id=current_user_id)
         query = f"quiz_result:{current_user_id}:*:*"
         return await export_redis_data(query=query, file_format=file_format)
+
+    @staticmethod
+    async def _make_chart_data(results: List) -> Dict:
+        chart_data = {}
+        current_total_questions = 0
+        current_correct_answers = 0
+        for result in results:
+            current_total_questions += result.total_questions
+            current_correct_answers += result.correct_answers
+            chart_data[result.created_at] = round(
+                (current_correct_answers / current_total_questions), 2
+            )
+
+        return chart_data
+
+    async def my_quiz_results(self, current_user_id, quiz_id: uuid.UUID) -> Dict:
+        quiz = await self.quiz_repository.get_one(id=quiz_id)
+        company_id = quiz.company_id
+        if not quiz:
+            raise NotFound()
+        member = await self._validate_is_company_member(current_user_id, company_id)
+        results = await self.result_repository.get_many(
+            company_member_id=member.id, quiz_id=quiz_id
+        )
+        chart_data = await self._make_chart_data(results)
+        return chart_data
+
+    async def my_quizzes_latest_results(self, current_user_id: uuid.UUID) -> Dict:
+        results = await self.result_repository.get_latest_results_for_company_member(
+            current_user_id
+        )
+        latest_results = {}
+        for result in results:
+            latest_results[result.quiz_id] = result.created_at.isoformat()
+        return latest_results
+
+    async def _validate_company_owner_analytics(
+        self, current_user_id: uuid.UUID, company_id: uuid.UUID
+    ) -> None:
+        owner = await self.company_repository.is_user_company_owner(
+            current_user_id, company_id
+        )
+        if not owner:
+            raise NotPermission()
+
+    async def _validate_company_owner_or_admin_analytics(
+        self, current_user_id: uuid.UUID, company_id: uuid.UUID
+    ) -> None:
+        owner = await self.company_repository.is_user_company_owner(
+            current_user_id, company_id
+        )
+        admin = await self.company_repository.is_user_company_admin(
+            current_user_id, company_id
+        )
+        if not (owner or admin):
+            raise NotPermission()
+
+    async def company_members_results(
+        self, current_user_id: uuid.UUID, company_id: uuid.UUID
+    ) -> Dict:
+        await self._get_company_or_raise(company_id)
+        await self._validate_company_owner_or_admin_analytics(
+            current_user_id, company_id
+        )
+        company = await self.company_repository.get_one(id=company_id)
+        if not company:
+            raise CompanyNotFound()
+
+        results = await self.company_repository.get_company_members_result_data(
+            company_id
+        )
+
+        member_results = {}
+        for result, username in results:
+            if username not in member_results:
+                member_results[username] = []
+            member_results[username].append(result)
+
+        chart_data = {}
+        for username, member_result in member_results.items():
+            chart_data[username] = await self._make_chart_data(member_result)
+
+        return chart_data
+
+    async def company_member_results(
+        self, company_id: uuid.UUID, company_member_id, current_user_id: uuid.UUID
+    ) -> Dict:
+        await self._get_company_or_raise(company_id)
+        await self._validate_company_owner_analytics(current_user_id, company_id)
+        member = await self.company_repository.get_company_member(
+            company_member_id, company_id
+        )
+        if not member:
+            raise NotFound
+        results = await self.result_repository.get_many(company_member_id=member.id)
+        chart_data = await self._make_chart_data(results)
+        return chart_data
+
+    async def company_members_result_last(
+        self, company_id: uuid.UUID, current_user_id: uuid.UUID
+    ) -> Dict:
+        await self._get_company_or_raise(company_id)
+        await self._validate_company_owner_analytics(current_user_id, company_id)
+
+        latest_results = await self.result_repository.get_latest_results_for_company(
+            company_id
+        )
+        results_dict = {}
+
+        for result in latest_results:
+            user_id = result.company_member_id
+            if user_id not in results_dict:
+                results_dict[user_id] = {}
+            results_dict[user_id][result.quiz_id] = result.created_at
+
+        return results_dict

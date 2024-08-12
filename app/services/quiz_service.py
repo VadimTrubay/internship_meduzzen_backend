@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional
+from typing import Optional, Dict
 
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -153,7 +153,7 @@ class QuizService:
         return QuizByIdSchema.from_orm(updated_quiz)
 
     # DELETE QUIZ
-    async def delete_quiz(self, quiz_id: uuid.UUID, current_user_id: uuid.UUID) -> dict:
+    async def delete_quiz(self, quiz_id: uuid.UUID, current_user_id: uuid.UUID) -> Dict:
         await self._validate_quiz(quiz_id, current_user_id)
         await self.quiz_repository.delete_quiz(quiz_id)
         return {"message": "Quiz deleted", "id": quiz_id}
