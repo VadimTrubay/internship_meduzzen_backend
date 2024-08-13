@@ -20,7 +20,12 @@ from app.repository.result_repository import ResultRepository
 from app.repository.user_repository import UserRepository
 from app.schemas.actions import CompanyMemberSchema
 from app.schemas.companies import CompanySchema
-from app.schemas.results import ResultSchema, QuizRequest, ExportedFile
+from app.schemas.results import (
+    ResultSchema,
+    QuizRequest,
+    ExportedFile,
+    UserQuizResultSchema,
+)
 from app.services.redis_service import redis_service
 from app.utils.export_data import export_redis_data
 
@@ -228,6 +233,25 @@ class ResultService:
         for result in results:
             latest_results[result.quiz_id] = result.created_at.isoformat()
         return latest_results
+
+    async def get_my_quizzes(
+        self, current_user_id: uuid.UUID
+    ) -> List[UserQuizResultSchema]:
+        quizzes = await self.result_repository.get_quizzes_from_me(current_user_id)
+
+        result = []
+        for quiz in quizzes:
+            quiz_data = UserQuizResultSchema(
+                quiz_id=quiz["quiz_id"],
+                quiz_name=quiz["quiz_name"],
+                company_id=quiz["company_id"],
+                company_name=quiz["company_name"],
+                last_attempt=quiz["last_attempt"].strftime("%Y-%m-%dT%H:%M:%SZ"),
+                average_score=round(quiz["average_score"], 2),
+            )
+            result.append(quiz_data)
+
+        return result
 
     async def _validate_company_owner_analytics(
         self, current_user_id: uuid.UUID, company_id: uuid.UUID
