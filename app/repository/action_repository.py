@@ -21,7 +21,7 @@ class ActionRepository(BaseRepository):
         subquery = (
             select(
                 Result.company_member_id,
-                func.max(Result.created_at).label("last_quiz_attempt")
+                func.max(Result.created_at).label("last_quiz_attempt"),
             )
             .join(CompanyMember, Result.company_member_id == CompanyMember.id)
             .group_by(Result.company_member_id)
@@ -34,7 +34,7 @@ class ActionRepository(BaseRepository):
                 User,
                 Company,
                 CompanyMember,
-                subquery.c.last_quiz_attempt
+                subquery.c.last_quiz_attempt,
             )
             .distinct()
             .join(User, CompanyAction.user_id == User.id)
@@ -46,10 +46,7 @@ class ActionRepository(BaseRepository):
                     CompanyAction.user_id == CompanyMember.user_id,
                 ),
             )
-            .outerjoin(
-                subquery,
-                subquery.c.company_member_id == CompanyMember.id
-            )
+            .outerjoin(subquery, subquery.c.company_member_id == CompanyMember.id)
             .filter(CompanyMember.company_id == company_id)
         )
 
