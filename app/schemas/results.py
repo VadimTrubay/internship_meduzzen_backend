@@ -14,6 +14,15 @@ class ResultSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class UserQuizResultSchema(BaseModel):
+    quiz_id: uuid.UUID
+    quiz_name: str
+    company_id: uuid.UUID
+    company_name: str
+    last_attempt: str
+    average_score: float
+
+
 class QuizRequest(BaseModel):
     answers: Dict[uuid.UUID, List[str]]
 
