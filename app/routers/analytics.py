@@ -13,9 +13,9 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 @router.get("/company/{company_id}/members_results", response_model=Dict)
 async def get_company_results(
-        company_id: uuid.UUID,
-        current_user: UserSchema = Depends(AuthService.get_current_user),
-        result_service: ResultService = Depends(get_result_service),
+    company_id: uuid.UUID,
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+    result_service: ResultService = Depends(get_result_service),
 ) -> Dict:
     current_user_id = current_user.id
     return await result_service.company_members_results(current_user_id, company_id)
@@ -23,8 +23,8 @@ async def get_company_results(
 
 @router.get("/my/quiz/latest_results", response_model=Dict)
 async def get_my_quizzes_latest_results(
-        current_user: UserSchema = Depends(AuthService.get_current_user),
-        result_service: ResultService = Depends(get_result_service),
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+    result_service: ResultService = Depends(get_result_service),
 ) -> Dict:
     current_user_id = current_user.id
     return await result_service.my_quizzes_latest_results(
@@ -34,9 +34,9 @@ async def get_my_quizzes_latest_results(
 
 @router.get("/my/quiz/{quiz_id}", response_model=Dict)
 async def get_my_quiz_results(
-        quiz_id: uuid.UUID,
-        current_user: UserSchema = Depends(AuthService.get_current_user),
-        result_service: ResultService = Depends(get_result_service),
+    quiz_id: uuid.UUID,
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+    result_service: ResultService = Depends(get_result_service),
 ) -> Dict:
     current_user_id = current_user.id
     return await result_service.my_quiz_results(
@@ -48,10 +48,10 @@ async def get_my_quiz_results(
     "/company/{company_id}/member/{company_member_id}/results", response_model=Dict
 )
 async def get_company_results_one_user(
-        company_id: uuid.UUID,
-        company_member_id: uuid.UUID,
-        current_user: UserSchema = Depends(AuthService.get_current_user),
-        result_service: ResultService = Depends(get_result_service),
+    company_id: uuid.UUID,
+    company_member_id: uuid.UUID,
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+    result_service: ResultService = Depends(get_result_service),
 ) -> Dict:
     current_user_id = current_user.id
     return await result_service.company_member_results(
@@ -61,9 +61,9 @@ async def get_company_results_one_user(
 
 @router.get("/company/{company_id}/member_result_last", response_model=Dict)
 async def get_company_result_last(
-        company_id: uuid.UUID,
-        current_user: UserSchema = Depends(AuthService.get_current_user),
-        result_service: ResultService = Depends(get_result_service),
+    company_id: uuid.UUID,
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+    result_service: ResultService = Depends(get_result_service),
 ) -> Dict:
     current_user_id = current_user.id
     return await result_service.company_members_result_last(company_id, current_user_id)
