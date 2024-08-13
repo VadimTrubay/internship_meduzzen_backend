@@ -1,4 +1,6 @@
 import uuid
+from datetime import datetime
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -42,6 +44,7 @@ class MembersResponseSchema(ActionBaseSchema):
     action_id: uuid.UUID
     company_name: str
     role: MemberStatus
+    last_quiz_attempt: Optional[datetime]
 
     model_config = ConfigDict(from_attributes=True)
 
