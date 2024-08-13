@@ -327,6 +327,7 @@ class ActionService:
                 company_name=member.Company.name,
                 user_username=member.User.username,
                 role=member.CompanyMember.role,
+                last_quiz_attempt=member.last_quiz_attempt
             )
             for member in members
         ]
