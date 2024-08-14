@@ -26,6 +26,7 @@ async def get_all_companies(
     companies = await company_service.get_companies(skip, limit)
     total_count = await company_service.get_total_count()
     result = [CompanySchema.from_orm(company) for company in companies]
+
     return CompaniesListResponse(companies=result, total_count=total_count)
 
 
@@ -36,6 +37,7 @@ async def create_company(
     company_service: CompanyService = Depends(get_company_service),
 ):
     current_user_id = current_user.id
+
     return await company_service.create_company(
         company_data.model_dump(), current_user_id
     )
@@ -49,6 +51,7 @@ async def update_company(
     company_service: CompanyService = Depends(get_company_service),
 ):
     current_user_id = current_user.id
+
     return await company_service.update_company(
         company_data.model_dump(), current_user_id, company_id
     )
@@ -61,6 +64,7 @@ async def delete_company(
     company_service: CompanyService = Depends(get_company_service),
 ) -> Dict:
     current_user_id = current_user.id
+
     return await company_service.delete_company(company_id, current_user_id)
 
 

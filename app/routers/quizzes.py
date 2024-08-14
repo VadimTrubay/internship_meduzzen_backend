@@ -24,6 +24,7 @@ async def get_quizzes(
 ) -> QuizzesListResponse:
     quizzes = await quiz_service.get_quizzes(company_id)
     total_count = await quiz_service.get_total_count(company_id)
+
     return QuizzesListResponse(quizzes=quizzes, total_count=total_count)
 
 
@@ -35,6 +36,7 @@ async def create_quiz(
     quiz_service: QuizService = Depends(get_quizzes_service),
 ) -> QuizSchema:
     current_user_id = current_user.id
+
     return await quiz_service.create_quiz(
         quiz_data=quiz_data, current_user_id=current_user_id, company_id=company_id
     )
@@ -48,6 +50,7 @@ async def update_quiz(
     quiz_service: QuizService = Depends(get_quizzes_service),
 ) -> QuizByIdSchema:
     current_user_id = current_user.id
+
     return await quiz_service.update_quiz(
         quiz_data=quiz_data, quiz_id=quiz_id, current_user_id=current_user_id
     )
@@ -60,6 +63,7 @@ async def delete_quiz(
     quiz_service: QuizService = Depends(get_quizzes_service),
 ) -> Dict:
     current_user_id = current_user.id
+
     return await quiz_service.delete_quiz(
         quiz_id=quiz_id, current_user_id=current_user_id
     )

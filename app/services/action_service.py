@@ -53,6 +53,7 @@ class ActionService:
         if not company:
             logger.info(Messages.COMPANY_NOT_FOUND)
             raise CompanyNotFound()
+
         return company
 
     # GET USER OR RAISE
@@ -61,6 +62,7 @@ class ActionService:
         if not user:
             logger.info(Messages.USER_NOT_FOUND)
             raise UserNotFound()
+
         return user
 
     # GET ACTION OR RAISE
@@ -69,6 +71,7 @@ class ActionService:
         if not action:
             logger.info(Messages.ACTION_NOT_FOUND)
             raise ActionNotFound()
+
         return action
 
     # ADD USER TO COMPANY
@@ -85,6 +88,7 @@ class ActionService:
         )
         update_data = {"status": InvitationStatus.ACCEPTED.value}
         await self.action_repository.update_one(action_id, update_data)
+
         return company_member
 
     # CREATE INVITE
@@ -119,11 +123,13 @@ class ActionService:
                     raise NotPermission()
                 case InvitationStatus.DECLINED_BY_COMPANY:
                     invite.status = InvitationStatus.REQUESTED
+
                     return invite
         else:
             data = action_data.dict()
             data["status"] = InvitationStatus.INVITED.value
             data["type"] = InvitationType.INVITE.value
+
             return await self.action_repository.create_one(data=data)
 
     # CANCEL INVITE
@@ -138,6 +144,7 @@ class ActionService:
             logger.info(Messages.NOT_OWNER_COMPANY)
             raise NotOwner()
         await self.action_repository.delete_one(action_id)
+
         return action
 
     # GET INVITE
@@ -147,6 +154,7 @@ class ActionService:
         action = await self._get_action_or_raise(action_id)
         await companies_utils.check_correct_user(action.user_id, current_user_id)
         companies_utils.check_invited(action.status)
+
         return action
 
     # ACCEPT INVITE
@@ -157,6 +165,7 @@ class ActionService:
         company_id = action.company_id
         await companies_utils.check_correct_user(action.user_id, current_user_id)
         await self._add_user_to_company(action_id, current_user_id, company_id)
+
         return action
 
     # DECLINE INVITE
@@ -166,6 +175,7 @@ class ActionService:
         action = await self._get_invite(action_id, current_user_id)
         update_data = {"status": InvitationStatus.DECLINED_BY_USER}
         await self.action_repository.update_one(action_id, update_data)
+
         return action
 
     # CREATE REQUEST
@@ -181,6 +191,7 @@ class ActionService:
         ):
             logger.info(Messages.ALREADY_IN_COMPANY)
             raise AlreadyInCompany()
+
         if request:
             match request.status:
                 case InvitationStatus.REQUESTED:
@@ -197,12 +208,14 @@ class ActionService:
                     raise ActionAlreadyAvailable()
                 case InvitationStatus.DECLINED_BY_USER:
                     request.status = InvitationStatus.REQUESTED
+
                     return request
         else:
             data = action_data.dict()
             data["status"] = InvitationStatus.REQUESTED.value
             data["user_id"] = current_user_id
             data["type"] = InvitationType.REQUEST.value
+
             return await self.action_repository.create_one(data=data)
 
     # CANCEL REQUEST
@@ -213,6 +226,7 @@ class ActionService:
         companies_utils.check_requested(action.status)
         await companies_utils.check_correct_user(action.user_id, current_user_id)
         await self.action_repository.delete_one(action.id)
+
         return action
 
     # VALIDATE REQUEST
@@ -221,6 +235,7 @@ class ActionService:
     ) -> ActionSchema:
         action = await self._get_action_or_raise(action_id)
         company = await self._get_company_or_raise(action.company_id)
+
         return action
 
     # ACCEPT REQUEST
@@ -232,6 +247,7 @@ class ActionService:
         company = await self._get_company_or_raise(action.company_id)
         user_id = action.user_id
         await self._add_user_to_company(action_id, user_id, company.id)
+
         return action
 
     # DECLINE REQUEST
@@ -242,6 +258,7 @@ class ActionService:
         companies_utils.check_requested(action.status)
         update_data = {"status": InvitationStatus.DECLINED_BY_COMPANY}
         await self.action_repository.update_one(action_id, update_data)
+
         return action
 
     # LEAVE FROM COMPANY
@@ -253,7 +270,9 @@ class ActionService:
         if current_user_id != action.user_id:
             logger.info(Messages.ACTION_ALREADY_AVAILABLE)
             raise ActionAlreadyAvailable()
+
         await self.company_repository.delete_company_member(company_id, current_user_id)
+
         return await self.action_repository.delete_one(action.id)
 
     # KICK FROM COMPANY
@@ -263,6 +282,7 @@ class ActionService:
         action = await self._get_action_or_raise(action_id)
         company_id = action.company_id
         await self.company_repository.delete_company_member(company_id, action.user_id)
+
         return await self.action_repository.delete_one(action.id)
 
     # VALIDATE COMPANY GET
@@ -271,6 +291,7 @@ class ActionService:
     ) -> CompanySchema:
         company = await self._get_company_or_raise(company_id)
         await self.company_repository.is_user_company_owner(current_user_id, company.id)
+
         return company
 
     # PROCESS QUERY RESULTS
@@ -285,6 +306,7 @@ class ActionService:
                 company_name=await self.company_repository.get_company_name(company.id),
             )
             actions.append(action_dto)
+
         return actions
 
     # GET COMPANY INVITES
@@ -297,6 +319,7 @@ class ActionService:
         )
         result = await self.session.execute(query)
         invites = await self.process_query_results(result)
+
         return invites
 
     # GET COMPANY REQUEST
@@ -309,6 +332,7 @@ class ActionService:
         )
         result = await self.session.execute(query)
         requests = await self.process_query_results(result)
+
         return requests
 
     # GET COMPANY MEMBERS
@@ -331,6 +355,7 @@ class ActionService:
             )
             for member in members
         ]
+
         return members_schemas
 
     # GET MY REQUESTS
@@ -342,6 +367,7 @@ class ActionService:
         )
         result = await self.session.execute(query)
         requests = await self.process_query_results(result)
+
         return requests
 
     # GET MY INVITES
@@ -353,6 +379,7 @@ class ActionService:
         )
         result = await self.session.execute(query)
         invites = await self.process_query_results(result)
+
         return invites
 
     # VALIDATE ADMIN
@@ -371,9 +398,13 @@ class ActionService:
             current_user_id, company_id
         )
         if not member:
+            logger.info(Messages.USER_NOT_FOUND)
             raise UserNotFound()
+
         if current_user.role != validate_role:
+            logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
+
         return member
 
     async def add_admin(
@@ -383,6 +414,7 @@ class ActionService:
             current_user_id, company_id, user_id, MemberStatus.OWNER
         )
         await self.company_repository.update_company_member(member, MemberStatus.ADMIN)
+
         return member
 
     async def remove_admin(
@@ -392,6 +424,7 @@ class ActionService:
             current_user_id, company_id, user_id, MemberStatus.OWNER
         )
         await self.company_repository.update_company_member(member, MemberStatus.USER)
+
         return member
 
     async def get_admins(
@@ -410,4 +443,5 @@ class ActionService:
             )
             for admin in admins
         ]
+
         return admins_schemas

@@ -3,8 +3,10 @@ import uuid
 from datetime import timedelta
 from typing import List, Dict
 
+from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.conf.detail import Messages
 from app.conf.file_format import FileFormat
 from app.exept.custom_exceptions import (
     NotFound,
@@ -50,13 +52,17 @@ class ResultService:
     ) -> CompanyMemberSchema:
         member = await self.company_repository.get_company_member(user_id, company_id)
         if not member:
+            logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
+
         return member
 
     async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
         company = await self.company_repository.get_one(id=company_id)
         if not company:
+            logger.info(Messages.COMPANY_NOT_FOUND)
             raise CompanyNotFound()
+
         return company
 
     async def create_result(
@@ -65,6 +71,7 @@ class ResultService:
         quiz = await self.quiz_repository.get_one(id=quiz_id)
         company_id = quiz.company_id
         if quiz is None:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
 
         member = await self._validate_is_company_member(current_user_id, company_id)
@@ -122,10 +129,12 @@ class ResultService:
     ) -> float:
         company = await self.company_repository.get_one(id=company_id)
         if not company:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
         member = await self._validate_is_company_member(current_user_id, company.id)
         results = await self.result_repository.get_many(company_member_id=member.id)
         if not results:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
 
         total_score = sum(result.score for result in results)
@@ -140,6 +149,7 @@ class ResultService:
             current_user_id
         )
         if not members:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
         total_average_score = 0
         total_count = 0
@@ -151,8 +161,10 @@ class ResultService:
                 total_average_score += average_score
                 total_count += 1
         if total_count == 0:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
         global_average_score = round((total_average_score / total_count), 2)
+
         return global_average_score
 
     async def _validate_export(
@@ -162,14 +174,19 @@ class ResultService:
         if not await self.company_repository.is_user_company_owner(
             current_user_id, company.id
         ):
+            logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
+
         if not company:
+            logger.info(Messages.COMPANY_NOT_FOUND)
             raise NotFound()
+
         return company
 
     @staticmethod
     async def _check_export_format(file_format: FileFormat) -> None:
         if file_format not in [FileFormat.JSON, FileFormat.CSV]:
+            logger.info(Messages.BAD_REQUEST)
             raise BadRequest()
 
     async def company_answers_list(
@@ -177,6 +194,7 @@ class ResultService:
     ) -> ExportedFile:
         await self._validate_export(company_id, current_user_id)
         query = f"quiz_result:*:{company_id}:*"
+
         return await export_redis_data(query=query, file_format=file_format)
 
     async def user_answers_list(
@@ -189,14 +207,17 @@ class ResultService:
         await self._validate_export(company_id, current_user_id)
         user = await self.user_repository.get_one(id=user_id)
         if not user:
+            logger.info(Messages.USER_NOT_FOUND)
             raise UserNotFound()
         query = f"quiz_result:{user_id}:{company_id}:*"
+
         return await export_redis_data(query=query, file_format=file_format)
 
     async def my_answers_list(self, current_user_id, file_format) -> ExportedFile:
         await self._check_export_format(file_format)
         await self.user_repository.get_one(id=current_user_id)
         query = f"quiz_result:{current_user_id}:*:*"
+
         return await export_redis_data(query=query, file_format=file_format)
 
     @staticmethod
@@ -217,12 +238,15 @@ class ResultService:
         quiz = await self.quiz_repository.get_one(id=quiz_id)
         company_id = quiz.company_id
         if not quiz:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
+
         member = await self._validate_is_company_member(current_user_id, company_id)
         results = await self.result_repository.get_many(
             company_member_id=member.id, quiz_id=quiz_id
         )
         chart_data = await self._make_chart_data(results)
+
         return chart_data
 
     async def my_quizzes_latest_results(self, current_user_id: uuid.UUID) -> Dict:
@@ -232,6 +256,7 @@ class ResultService:
         latest_results = {}
         for result in results:
             latest_results[result.quiz_id] = result.created_at.isoformat()
+
         return latest_results
 
     async def get_my_quizzes(
@@ -260,6 +285,7 @@ class ResultService:
             current_user_id, company_id
         )
         if not owner:
+            logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
 
     async def _validate_company_owner_or_admin_analytics(
@@ -272,6 +298,7 @@ class ResultService:
             current_user_id, company_id
         )
         if not (owner or admin):
+            logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
 
     async def company_members_results(
@@ -283,6 +310,7 @@ class ResultService:
         )
         company = await self.company_repository.get_one(id=company_id)
         if not company:
+            logger.info(Messages.COMPANY_NOT_FOUND)
             raise CompanyNotFound()
 
         results = await self.company_repository.get_company_members_result_data(
@@ -310,9 +338,12 @@ class ResultService:
             company_member_id, company_id
         )
         if not member:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound
+
         results = await self.result_repository.get_many(company_member_id=member.id)
         chart_data = await self._make_chart_data(results)
+
         return chart_data
 
     async def company_members_result_last(

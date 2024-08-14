@@ -19,6 +19,7 @@ class QuizRepository(BaseRepository):
         )
         result = await self.session.execute(query)
         quiz_count = result.scalar()
+
         return quiz_count
 
     async def create_quiz(
@@ -39,6 +40,7 @@ class QuizRepository(BaseRepository):
 
         self.session.add_all(questions)
         await self.session.commit()
+
         return quiz
 
     async def delete_quiz(self, quiz_id: uuid.UUID) -> None:
@@ -52,11 +54,13 @@ class QuizRepository(BaseRepository):
             select(Quiz).options(joinedload(Quiz.questions)).filter(Quiz.id == quiz_id)
         )
         result = await self.session.execute(query)
+
         return result.scalars().unique().one_or_none()
 
     async def get_questions_by_quiz_id(self, quiz_id: uuid.UUID) -> List[Question]:
         query = select(Question).filter(Question.quiz_id == quiz_id)
         result = await self.session.execute(query)
+
         return result.scalars().all()
 
     async def toggle_quiz_active_status(

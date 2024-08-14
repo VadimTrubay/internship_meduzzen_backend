@@ -19,6 +19,7 @@ async def get_company_results(
     result_service: ResultService = Depends(get_result_service),
 ) -> Dict:
     current_user_id = current_user.id
+
     return await result_service.company_members_results(current_user_id, company_id)
 
 
@@ -28,6 +29,7 @@ async def get_my_quizzes_latest_results(
     result_service: ResultService = Depends(get_result_service),
 ) -> List[UserQuizResultSchema]:
     current_user_id = current_user.id
+
     return await result_service.get_my_quizzes(current_user_id)
 
 
@@ -38,6 +40,7 @@ async def get_my_quiz_results(
     result_service: ResultService = Depends(get_result_service),
 ) -> Dict:
     current_user_id = current_user.id
+
     return await result_service.my_quiz_results(
         current_user_id=current_user_id, quiz_id=quiz_id
     )
@@ -53,6 +56,7 @@ async def get_company_results_one_user(
     result_service: ResultService = Depends(get_result_service),
 ) -> Dict:
     current_user_id = current_user.id
+
     return await result_service.company_member_results(
         company_id, company_member_id, current_user_id
     )
@@ -65,4 +69,5 @@ async def get_company_result_last(
     result_service: ResultService = Depends(get_result_service),
 ) -> Dict:
     current_user_id = current_user.id
+
     return await result_service.company_members_result_last(company_id, current_user_id)

@@ -16,12 +16,13 @@ from app.routers import (
     quizzes,
     results,
     analytics,
+    notifications,
 )
 from app.exept.exceptions_handler import register_exception_handler
 
 app = FastAPI()
 
-logger.add("app.log", rotation="250 MB", compression="zip", level="INFO")
+logger.add("app.log", rotation="50 MB", compression="zip", level="INFO")
 
 register_exception_handler(app)
 
@@ -32,6 +33,7 @@ async def add_process_time_header(request: Request, call_next):
     response = await call_next(request)
     process_time = time.time() - start_time
     response.headers["X-Process-Time"] = str(process_time)
+
     return response
 
 
@@ -59,6 +61,7 @@ app.include_router(actions.router)
 app.include_router(quizzes.router)
 app.include_router(results.router)
 app.include_router(analytics.router)
+app.include_router(notifications.router)
 
 if __name__ == "__main__":
     uvicorn.run(

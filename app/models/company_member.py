@@ -1,5 +1,6 @@
 from sqlalchemy import Column, ForeignKey, Enum
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 
 from app.conf.invite import MemberStatus
 from app.models.base_model import BaseModel
@@ -17,3 +18,8 @@ class CompanyMember(BaseModel):
         nullable=False,
     )
     role = Column(Enum(MemberStatus), nullable=False)
+
+    notifications = relationship(
+        "CompanyMemberNotification",
+        back_populates="company_member",
+    )

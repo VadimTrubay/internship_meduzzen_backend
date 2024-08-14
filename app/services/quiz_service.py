@@ -1,14 +1,17 @@
 import uuid
 from typing import Optional, Dict
 
+from loguru import logger
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.conf.detail import Messages
 from app.conf.invite import MemberStatus
 from app.exept.custom_exceptions import NotFound, NotPermission, BadRequest
 from app.models.quiz_model import Question
 from app.repository.action_repository import ActionRepository
 from app.repository.company_repository import CompanyRepository
+from app.repository.notification_repository import NotificationRepository
 from app.repository.quizzes_repository import QuizRepository
 from app.schemas.companies import CompanySchema
 from app.schemas.quizzes import (
@@ -29,22 +32,27 @@ class QuizService:
         quiz_repository: QuizRepository,
         action_repository: ActionRepository,
         company_repository: CompanyRepository,
+        notification_repository: NotificationRepository,
     ):
         self.session = session
         self.quiz_repository = quiz_repository
         self.action_repository = action_repository
         self.company_repository = company_repository
+        self.notification_repository = notification_repository
 
     # GET COMPANY OR RAISE
     async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
         company = await self.company_repository.get_one(id=company_id)
         if not company:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
+
         return company
 
     # GET TOTAL COUNT
     async def get_total_count(self, company_id: uuid.UUID) -> int:
         count = await self.quiz_repository.get_count_quizzes(company_id)
+
         return count
 
     # GET QUIZZES
@@ -59,6 +67,7 @@ class QuizService:
             )
             for quiz in quizzes
         ]
+
         return quiz_responses
 
     # GET VALIDATE QUIZ DATA
@@ -70,34 +79,51 @@ class QuizService:
             len(question.answer_options) < MIN_ANSWER_OPTIONS
             for question in quiz_data.questions
         ):
+            logger.info(Messages.BAD_REQUEST)
             raise BadRequest()
 
         for question in quiz_data.questions:
             if not question.correct_answer:
+                logger.info(Messages.BAD_REQUEST)
                 raise BadRequest()
 
             for answer in question.correct_answer:
                 if answer not in question.answer_options:
+                    logger.info(Messages.BAD_REQUEST)
                     raise BadRequest()
 
     # CREATE QUIZ
     async def create_quiz(
         self, quiz_data: QuizSchema, company_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> QuizSchema:
+
+        company = await self._get_company_or_raise(company_id)
         member = await self.company_repository.get_company_member(
             current_user_id, company_id
         )
+
         if not member:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
+
         if member.role not in [MemberStatus.OWNER, MemberStatus.ADMIN]:
+            logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
+
         await self._validate_quiz_data(quiz_data)
         await self.quiz_repository.create_quiz(quiz_data, company_id=company_id)
+
+        members = await self.company_repository.get_all_company_members(company_id)
+        await self.notification_repository.create_notifications_for_members(
+            members, quiz_data.name, company.name
+        )
+
         quiz_dict = quiz_data.dict(exclude={"questions"})
         question_dicts = [question.dict() for question in quiz_data.questions]
         created_quiz_schema = QuizSchema(
             **quiz_dict, questions=question_dicts, company_id=company_id
         )
+
         return created_quiz_schema
 
     # VALIDATE QUIZ
@@ -106,10 +132,13 @@ class QuizService:
     ) -> QuizSchema:
         quiz = await self.quiz_repository.get_one(id=quiz_id)
         if not quiz:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
+
         company_id = quiz.company_id
         await self._get_company_or_raise(company_id)
         await self.company_repository.is_user_company_owner(current_user_id, company_id)
+
         return quiz
 
     # UPDATE QUIZ
@@ -162,6 +191,7 @@ class QuizService:
     async def get_quiz_by_id(self, quiz_id: uuid.UUID) -> Optional[QuizByIdSchema]:
         quiz = await self.quiz_repository.quiz_by_id(quiz_id)
         if not quiz:
+            logger.info(Messages.NOT_FOUND)
             raise NotFound()
 
         quiz_schema = QuizByIdSchema(
@@ -179,6 +209,7 @@ class QuizService:
                 for question in quiz.questions
             ],
         )
+
         return quiz_schema
 
     # HANDLE IS ACTIVE
