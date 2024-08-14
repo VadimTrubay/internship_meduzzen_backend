@@ -12,6 +12,7 @@ from app.exept.custom_exceptions import (
 async def check_company_owner(user_id: uuid.UUID, company_owner_id) -> None:
     if user_id != company_owner_id:
         raise UnAuthorized()
+
     return
 
 

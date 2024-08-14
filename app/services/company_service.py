@@ -28,6 +28,7 @@ class CompanyService:
         if not company:
             logger.info(Messages.COMPANY_NOT_FOUND)
             raise CompanyNotFound()
+
         return company
 
     # VALIDATE COMPANY
@@ -36,22 +37,27 @@ class CompanyService:
     ) -> CompanySchema:
         company = await self._get_company_or_raise(company_id)
         if not await self.repository.is_user_company_owner(current_user_id, company_id):
+            logger.info(Messages.NOT_OWNER_COMPANY)
             raise NotOwner()
+
         return company
 
     # GET TOTAL COUNT
     async def get_total_count(self):
         count = await self.repository.get_count()
+
         return count
 
     # GET COMPANIES
     async def get_companies(self, skip, limit) -> List[CompanySchema]:
         companies = await self.repository.get_many(skip=skip, limit=limit)
+
         return [CompanySchema.model_validate(company) for company in companies]
 
     # GET COMPANY BY ID
     async def get_company_by_id(self, company_id: uuid.UUID) -> Optional[CompanySchema]:
         company = await self._get_company_or_raise(company_id)
+
         return company
 
     # CREATE COMPANY
@@ -59,6 +65,7 @@ class CompanyService:
         self, data: Dict, current_user_id: uuid.UUID
     ) -> CompanySchema:
         data["owner_id"] = current_user_id
+
         return await self.repository.create_company_with_owner(
             data=data, owner_id=current_user_id
         )
@@ -68,6 +75,7 @@ class CompanyService:
         self, data: Dict, current_user_id: uuid.UUID, company_id: uuid.UUID
     ) -> CompanySchema:
         await self.validate_company(current_user_id, company_id)
+
         return await self.repository.update_one(company_id, data)
 
     # DELETE COMPANY
@@ -76,4 +84,5 @@ class CompanyService:
     ) -> Dict:
         await self.validate_company(current_user_id, company_id)
         await self.repository.delete_company(company_id)
+
         return {"message": "Company deleted", "id": company_id}

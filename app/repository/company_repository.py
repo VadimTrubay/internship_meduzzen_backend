@@ -22,6 +22,7 @@ class CompanyRepository(BaseRepository):
         query = select(Company).where(Company.id == company_id)
         company = await self.session.execute(query)
         company_obj = company.scalar_one()
+
         return company_obj.name
 
     async def create_company_with_owner(
@@ -54,6 +55,7 @@ class CompanyRepository(BaseRepository):
             CompanyMember.role == MemberStatus.OWNER,
         )
         company_owner = await self.session.execute(query)
+
         return company_owner.scalar()
 
     async def is_user_company_admin(
@@ -65,6 +67,7 @@ class CompanyRepository(BaseRepository):
             CompanyMember.role == MemberStatus.ADMIN,
         )
         company_admin = await self.session.execute(query)
+
         return company_admin.scalar()
 
     async def delete_company(self, company_id: uuid.UUID) -> None:
@@ -92,6 +95,7 @@ class CompanyRepository(BaseRepository):
             CompanyMember.company_id == company_id,
         )
         company_member = await self.session.execute(query)
+
         return company_member.scalar_one_or_none()
 
     async def update_company_member(
@@ -109,6 +113,7 @@ class CompanyRepository(BaseRepository):
             CompanyMember.role == MemberStatus.ADMIN,
         )
         result = await self.session.execute(query)
+
         return result.scalars().all()
 
     async def get_company_members_result_data(
@@ -127,4 +132,21 @@ class CompanyRepository(BaseRepository):
         )
 
         result = await self.session.execute(query)
+
         return result.all()
+
+    async def get_all_company_members(
+        self, company_id: uuid.UUID
+    ) -> List[CompanyMember]:
+        query = select(CompanyMember).filter(CompanyMember.company_id == company_id)
+        result = await self.session.execute(query)
+
+        return result.scalars().all()
+
+    async def get_company_member_by_id(
+        self, company_member_id: uuid.UUID
+    ) -> CompanyMember:
+        query = select(CompanyMember).filter(CompanyMember.id == company_member_id)
+        result = await self.session.execute(query)
+
+        return result.scalar_one_or_none()

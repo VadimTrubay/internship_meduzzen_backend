@@ -13,11 +13,14 @@ async def check_postgres():
     try:
         await check_postgres_connection()
         logger.info("Postgres connection test successful")
+
         return JSONResponse(
             content={"postgres_status": "Postgres connection test successful"}
         )
+
     except Exception as error:
         logger.error("Postgres connection test failed")
+
         return error
 
 
@@ -26,9 +29,12 @@ async def check_redis():
     try:
         await check_redis_connection()
         logger.info("Redis connection test successful")
+
         return JSONResponse(
             content={"redis_status": "Redis connection test successful"}
         )
+
     except Exception as error:
         logger.error("Redis connection test failed")
+
         return error

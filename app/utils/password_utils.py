@@ -6,6 +6,7 @@ def hash_password(
 ) -> bytes:
     salt = bcrypt.gensalt()
     pwd_bytes: bytes = password.encode("utf-8")
+
     return bcrypt.hashpw(pwd_bytes, salt)
 
 

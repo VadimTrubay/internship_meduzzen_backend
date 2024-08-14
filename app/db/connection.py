@@ -17,8 +17,10 @@ async def get_session() -> AsyncSession:
         try:
             yield session
             await session.commit()
+
         except SQLAlchemyError:
             await session.rollback()
             raise
+
         finally:
             await session.close()

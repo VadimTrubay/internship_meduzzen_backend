@@ -34,12 +34,14 @@ async def get_all_users(
     users = await user_service.get_users(skip, limit)
     total_count = await user_service.get_total_count()
     result = [UserSchema.from_orm(user) for user in users]
+
     return UsersListResponse(users=result, total_count=total_count)
 
 
 @router.get("/{user_id}", response_model=UserSchema)
 async def get_user_by_id(user_id: uuid.UUID, user_service=Depends(get_user_service)):
     user = await user_service.get_user_by_id(user_id)
+
     return user
 
 
@@ -54,8 +56,8 @@ async def update_user(
     user_service=Depends(get_user_service),
     current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
-
     updated_user = await user_service.update_user(user_id, update_data, current_user)
+
     return updated_user
 
 
@@ -69,6 +71,6 @@ async def delete_user(
     user_service=Depends(get_user_service),
     current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
-
     deleted_user = await user_service.delete_user(user_id, current_user)
+
     return deleted_user

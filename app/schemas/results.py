@@ -30,7 +30,7 @@ class QuizRequest(BaseModel):
 class CompanyRating(BaseModel):
     company_member_id: uuid.UUID
     company_id: uuid.UUID
-    rating: int
+    rating: float
 
 
 class ExportedFile(BaseModel):

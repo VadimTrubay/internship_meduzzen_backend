@@ -29,7 +29,6 @@ class UserService:
         if not user:
             logger.info(Messages.NOT_FOUND)
             raise UserNotFound()
-        logger.info(Messages.SUCCESS_GET_USER)
 
         return UserSchema.model_validate(user)
 
@@ -43,11 +42,13 @@ class UserService:
     # GET TOTAL COUNT
     async def get_total_count(self):
         count = await self.repository.get_count()
+
         return count
 
     # GET USERS
     async def get_users(self, skip, limit) -> List[UserSchema]:
         users = await self.repository.get_many(skip=skip, limit=limit)
+
         return [UserSchema.model_validate(user) for user in users]
 
     # GET USER BY ID
@@ -92,6 +93,7 @@ class UserService:
             raise NotFound()
 
         updated_user = await self.repository.update_one(user_id, update_dict)
+
         return UserSchema.model_validate(updated_user)
 
     # DELETE USER
@@ -100,4 +102,5 @@ class UserService:
     ) -> BaseUserSchema:
         await self.check_user_permission(user_id, current_user)
         await self._get_user_or_raise(user_id)
+
         return await self.repository.delete_one(user_id)

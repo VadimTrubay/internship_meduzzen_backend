@@ -33,6 +33,7 @@ class ResultRepository(BaseRepository):
         average_score = (
             total_score_value / total_results_value if total_results_value > 0 else 0.0
         )
+
         return average_score
 
     async def get_last_result_for_user(
@@ -68,6 +69,7 @@ class ResultRepository(BaseRepository):
         )
 
         result = await self.session.execute(query)
+
         return result.scalars().all()
 
     async def get_quizzes_from_me(
@@ -101,6 +103,7 @@ class ResultRepository(BaseRepository):
         )
 
         result = await self.session.execute(query)
+
         return result.mappings().all()
 
     async def get_latest_results_for_company(
@@ -128,4 +131,5 @@ class ResultRepository(BaseRepository):
         )
 
         result = await self.session.execute(query)
+
         return result.scalars().all()

@@ -49,8 +49,8 @@ class ActionRepository(BaseRepository):
             .outerjoin(subquery, subquery.c.company_member_id == CompanyMember.id)
             .filter(CompanyMember.company_id == company_id)
         )
-
         result = await self.session.execute(query)
+
         return result.all()
 
     async def get_member_role(self, user_id: uuid.UUID, company_id: uuid.UUID) -> str:
@@ -59,6 +59,7 @@ class ActionRepository(BaseRepository):
         )
         member_role = await self.session.execute(query)
         role = member_role.scalar_one()
+
         return role.role
 
     @staticmethod
@@ -73,4 +74,5 @@ class ActionRepository(BaseRepository):
             .join(Company, CompanyAction.company_id == Company.id)
             .filter(id_column == id_, CompanyAction.status == status)
         )
+
         return query
