@@ -13,11 +13,11 @@ class NotificationRepository(BaseRepository):
         super().__init__(session=session, model=CompanyMemberNotification)
 
     async def create_notifications_for_members(
-        self, members: List[CompanyMember], quiz_name: str, company_name: str
+        self, members: List[CompanyMember], message: str
     ) -> None:
         notifications = [
             CompanyMemberNotification(
-                text=f"In {company_name} company, a new quiz '{quiz_name}' has been created. Take it now!",
+                text=message,
                 company_member_id=member.id,
             )
             for member in members

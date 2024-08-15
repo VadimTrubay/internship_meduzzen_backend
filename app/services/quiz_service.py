@@ -114,8 +114,9 @@ class QuizService:
         await self.quiz_repository.create_quiz(quiz_data, company_id=company_id)
 
         members = await self.company_repository.get_all_company_members(company_id)
+        message = f"In {company.name} company, a new quiz '{ quiz_data.name}' has been created. Take it now!"
         await self.notification_repository.create_notifications_for_members(
-            members, quiz_data.name, company.name
+            members, message
         )
 
         quiz_dict = quiz_data.dict(exclude={"questions"})
