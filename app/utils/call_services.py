@@ -83,12 +83,14 @@ async def get_action_service(
     action_repository = ActionRepository(session)
     company_repository = CompanyRepository(session)
     user_repository = UserRepository(session)
+    notification_repository = NotificationRepository(session)
 
     return ActionService(
         session=session,
         action_repository=action_repository,
         company_repository=company_repository,
         user_repository=user_repository,
+        notification_repository=notification_repository,
     )
 
 
