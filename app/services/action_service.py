@@ -148,12 +148,24 @@ class ActionService:
     ) -> ActionSchema:
         action = await self._get_action_or_raise(action_id)
         company = await self._get_company_or_raise(action.company_id)
+        company_id = action.company_id
+
         if not self.company_repository.is_user_company_owner(
             current_user_id, company.id
         ):
             logger.info(Messages.NOT_OWNER_COMPANY)
             raise NotOwner()
         await self.action_repository.delete_one(action_id)
+
+        company_name = await self.company_repository.get_company_name(company_id)
+        company_owner = await self.company_repository.get_company_owner(company_id)
+
+        message = (
+            f"owner {company_owner.username} removed company invitation {company_name}"
+        )
+        await self.notification_repository.create_notification_for_user(
+            company_owner.user_id, message
+        )
 
         return action
 
@@ -176,6 +188,17 @@ class ActionService:
         await companies_utils.check_correct_user(action.user_id, current_user_id)
         await self._add_user_to_company(action_id, current_user_id, company_id)
 
+        company_name = await self.company_repository.get_company_name(company_id)
+        company_owner = await self.company_repository.get_company_owner(company_id)
+        username = await self.user_repository.get_user_username(current_user_id)
+
+        message = (
+            f"user {username} accepted the invitation to the company {company_name}"
+        )
+        await self.notification_repository.create_notification_for_user(
+            company_owner.user_id, message
+        )
+
         return action
 
     # DECLINE INVITE
@@ -184,7 +207,20 @@ class ActionService:
     ) -> ActionSchema:
         action = await self._get_invite(action_id, current_user_id)
         update_data = {"status": InvitationStatus.DECLINED_BY_USER}
+        company_id = action.company_id
+
         await self.action_repository.update_one(action_id, update_data)
+
+        company_name = await self.company_repository.get_company_name(company_id)
+        company_owner = await self.company_repository.get_company_owner(company_id)
+        username = await self.user_repository.get_user_username(current_user_id)
+
+        message = (
+            f"user {username} declined the invitation to the company {company_name}"
+        )
+        await self.notification_repository.create_notification_for_user(
+            company_owner.user_id, message
+        )
 
         return action
 
@@ -196,6 +232,7 @@ class ActionService:
         request = await self.action_repository.get_one(
             company_id=company.id, user_id=current_user_id
         )
+        company_id = company.id
         if await self.company_repository.is_user_company_owner(
             current_user_id, company.id
         ):
@@ -226,6 +263,17 @@ class ActionService:
             data["user_id"] = current_user_id
             data["type"] = InvitationType.REQUEST.value
 
+            company_name = await self.company_repository.get_company_name(company_id)
+            company_owner = await self.company_repository.get_company_owner(company_id)
+            username = await self.user_repository.get_user_username(current_user_id)
+
+            message = (
+                f"user {username} created the request to the company {company_name}"
+            )
+            await self.notification_repository.create_notification_for_user(
+                company_owner.user_id, message
+            )
+
             return await self.action_repository.create_one(data=data)
 
     # CANCEL REQUEST
@@ -234,8 +282,19 @@ class ActionService:
     ) -> ActionSchema:
         action = await self._get_action_or_raise(action_id)
         companies_utils.check_requested(action.status)
+        company_id = action.company_id
+
         await companies_utils.check_correct_user(action.user_id, current_user_id)
         await self.action_repository.delete_one(action.id)
+
+        company_name = await self.company_repository.get_company_name(company_id)
+        company_owner = await self.company_repository.get_company_owner(company_id)
+        username = await self.user_repository.get_user_username(current_user_id)
+
+        message = f"user {username} canceled the request to the company {company_name}"
+        await self.notification_repository.create_notification_for_user(
+            company_owner.user_id, message
+        )
 
         return action
 
@@ -255,8 +314,17 @@ class ActionService:
         action = await self._validate_request(action_id, current_user_id)
         companies_utils.check_requested(action.status)
         company = await self._get_company_or_raise(action.company_id)
+        company_id = action.company_id
         user_id = action.user_id
         await self._add_user_to_company(action_id, user_id, company.id)
+
+        company_name = await self.company_repository.get_company_name(company_id)
+        message = (
+            f"company {company_name} accepted your request"
+        )
+        await self.notification_repository.create_notification_for_user(
+            user_id, message
+        )
 
         return action
 
@@ -266,8 +334,17 @@ class ActionService:
     ) -> ActionSchema:
         action = await self._validate_request(action_id, current_user_id)
         companies_utils.check_requested(action.status)
+        company_id = action.company_id
         update_data = {"status": InvitationStatus.DECLINED_BY_COMPANY}
         await self.action_repository.update_one(action_id, update_data)
+        user_id = action.user_id
+        company_name = await self.company_repository.get_company_name(company_id)
+        message = (
+            f"company {company_name} declined your request"
+        )
+        await self.notification_repository.create_notification_for_user(
+            user_id, message
+        )
 
         return action
 
@@ -285,11 +362,10 @@ class ActionService:
 
         company_name = await self.company_repository.get_company_name(company_id)
         company_owner = await self.company_repository.get_company_owner(company_id)
-        owner_username = company_owner.username
-        owner_id = company_owner.user_id
-        message = f"user {owner_username} has left your company {company_name}"
+
+        message = f"user {company_owner.username} has left your company {company_name}"
         await self.notification_repository.create_notification_for_user(
-            owner_id, message
+            company_owner.user_id, message
         )
 
         return await self.action_repository.delete_one(action.id)
