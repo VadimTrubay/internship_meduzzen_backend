@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     API_AUDIENCE: str
     API_SECRET: str
 
+    CELERY_BROKER_URL: str
+    CELERY_RESULT_BACKEND: str
+
     model_config = SettingsConfigDict(
         env_file=find_dotenv(filename=".env", usecwd=True),
         env_file_encoding="utf-8",
