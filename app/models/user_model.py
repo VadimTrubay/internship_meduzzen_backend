@@ -17,3 +17,6 @@ class User(BaseModel):
     company_memberships = relationship(
         "CompanyMember", backref="user", cascade="all, delete"
     )
+    notifications = relationship(
+        "UserNotification", back_populates="user", cascade="all, delete"
+    )
