@@ -29,9 +29,8 @@ async def notifications_quiz_task():
                 user_notifications[user.id] = []
 
             if quiz.id not in user_notifications[user.id]:
-                query_quiz_frequency = (
-                    select(Quiz.frequency_days)
-                    .where(Quiz.id == quiz.id)
+                query_quiz_frequency = select(Quiz.frequency_days).where(
+                    Quiz.id == quiz.id
                 )
                 result_quiz_frequency = await session.execute(query_quiz_frequency)
                 quiz_frequency_days = result_quiz_frequency.scalar()
