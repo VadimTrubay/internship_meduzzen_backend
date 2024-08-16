@@ -8,6 +8,7 @@ from app.conf.detail import Messages
 from app.exept.custom_exceptions import NotFound, NotPermission
 from app.repository.company_repository import CompanyRepository
 from app.repository.notification_repository import NotificationRepository
+from app.repository.user_repository import UserRepository
 from app.schemas.notifications import NotificationSchema
 
 
@@ -17,10 +18,12 @@ class NotificationService:
         session: AsyncSession,
         notification_repository: NotificationRepository,
         company_repository: CompanyRepository,
+        user_repository: UserRepository,
     ):
         self.session = session
         self.notification_repository = notification_repository
         self.company_repository = company_repository
+        self.user_repository = user_repository
 
     async def get_my_notifications(
         self, current_user_id: uuid.UUID
@@ -36,7 +39,7 @@ class NotificationService:
                 id=field.id,
                 text=field.text,
                 is_read=field.is_read,
-                company_member_id=field.company_member_id,
+                user_id=field.user_id,
             )
             for field in unread_notifications
         ]
@@ -52,10 +55,9 @@ class NotificationService:
             logger.info(Messages.NOT_FOUND)
             raise NotFound()
 
-        member_id = notification.company_member_id
-        member = await self.company_repository.get_company_member_by_id(member_id)
-
-        if member.user_id != current_user_id:
+        user_id = notification.user_id
+        user = await self.user_repository.get_one(id=user_id)
+        if user.id != current_user_id:
             logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
 

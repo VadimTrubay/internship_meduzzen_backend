@@ -7,4 +7,4 @@ class NotificationSchema(BaseModel):
     id: uuid.UUID
     text: str
     is_read: bool
-    company_member_id: uuid.UUID
+    user_id: uuid.UUID

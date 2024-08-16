@@ -13,6 +13,7 @@ from app.repository.action_repository import ActionRepository
 from app.repository.company_repository import CompanyRepository
 from app.repository.notification_repository import NotificationRepository
 from app.repository.quizzes_repository import QuizRepository
+from app.repository.user_repository import UserRepository
 from app.schemas.companies import CompanySchema
 from app.schemas.quizzes import (
     QuizSchema,
@@ -33,12 +34,14 @@ class QuizService:
         action_repository: ActionRepository,
         company_repository: CompanyRepository,
         notification_repository: NotificationRepository,
+        user_repository: UserRepository,
     ):
         self.session = session
         self.quiz_repository = quiz_repository
         self.action_repository = action_repository
         self.company_repository = company_repository
         self.notification_repository = notification_repository
+        self.user_repository = user_repository
 
     # GET COMPANY OR RAISE
     async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
@@ -114,9 +117,12 @@ class QuizService:
         await self.quiz_repository.create_quiz(quiz_data, company_id=company_id)
 
         members = await self.company_repository.get_all_company_members(company_id)
-        message = f"In {company.name} company, a new quiz '{ quiz_data.name}' has been created. Take it now!"
-        await self.notification_repository.create_notifications_for_members(
-            members, message
+        user_ids = [member.user_id for member in members]
+        users = await self.user_repository.get_users_by_ids(user_ids)
+        message = f"In {company.name} company, a new quiz '{quiz_data.name}' has been created. Take it now!"
+
+        await self.notification_repository.create_notifications_for_users(
+            users, message
         )
 
         quiz_dict = quiz_data.dict(exclude={"questions"})

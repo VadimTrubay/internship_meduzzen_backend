@@ -49,6 +49,7 @@ async def get_quizzes_service(
     company_repository = CompanyRepository(session)
     quiz_repository = QuizRepository(session)
     notification_repository = NotificationRepository(session)
+    user_repository = UserRepository(session)
 
     return QuizService(
         session=session,
@@ -56,6 +57,7 @@ async def get_quizzes_service(
         action_repository=action_repository,
         company_repository=company_repository,
         notification_repository=notification_repository,
+        user_repository=user_repository,
     )
 
 
@@ -95,9 +97,11 @@ async def get_notification_service(
 ) -> NotificationService:
     notification_repository = NotificationRepository(session)
     company_repository = CompanyRepository(session)
+    user_repository = UserRepository(session)
 
     return NotificationService(
         session=session,
         notification_repository=notification_repository,
         company_repository=company_repository,
+        user_repository=user_repository,
     )
