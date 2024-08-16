@@ -358,8 +358,9 @@ class ActionService:
 
         company_name = await self.company_repository.get_company_name(company_id)
         company_owner = await self.company_repository.get_company_owner(company_id)
+        username = await self.user_repository.get_user_username(current_user_id)
 
-        message = f"user {company_owner.username} has left your company {company_name}"
+        message = f"user {username} has left your company {company_name}"
         await self.notification_repository.create_notification_for_user(
             company_owner.user_id, message
         )
