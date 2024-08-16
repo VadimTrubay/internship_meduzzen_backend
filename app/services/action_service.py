@@ -319,9 +319,7 @@ class ActionService:
         await self._add_user_to_company(action_id, user_id, company.id)
 
         company_name = await self.company_repository.get_company_name(company_id)
-        message = (
-            f"company {company_name} accepted your request"
-        )
+        message = f"company {company_name} accepted your request"
         await self.notification_repository.create_notification_for_user(
             user_id, message
         )
@@ -339,9 +337,7 @@ class ActionService:
         await self.action_repository.update_one(action_id, update_data)
         user_id = action.user_id
         company_name = await self.company_repository.get_company_name(company_id)
-        message = (
-            f"company {company_name} declined your request"
-        )
+        message = f"company {company_name} declined your request"
         await self.notification_repository.create_notification_for_user(
             user_id, message
         )
