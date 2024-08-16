@@ -28,8 +28,12 @@ class NotificationRepository(BaseRepository):
             self.session.add_all(notifications)
             await self.session.commit()
 
-    async def create_notification_for_user(self, user: User) -> None:
-        pass
+    async def create_notification_for_user(
+        self, user_id: uuid.UUID, message: str
+    ) -> None:
+        notification = UserNotification(text=message, user_id=user_id)
+        self.session.add(notification)
+        await self.session.commit()
 
     async def get_unread_notifications_for_user(
         self, user_id: uuid.UUID
@@ -38,6 +42,7 @@ class NotificationRepository(BaseRepository):
             UserNotification.is_read == False, UserNotification.user_id == user_id
         )
         result = await self.session.execute(query)
+
         return result.scalars().all()
 
     async def mark_notifications_as_read(

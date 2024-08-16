@@ -19,6 +19,7 @@ from app.exept.custom_exceptions import (
 from app.conf.invite import InvitationStatus, InvitationType, MemberStatus
 from app.repository.action_repository import ActionRepository
 from app.repository.company_repository import CompanyRepository
+from app.repository.notification_repository import NotificationRepository
 from app.repository.user_repository import UserRepository
 from app.schemas.actions import (
     ActionSchema,
@@ -41,11 +42,13 @@ class ActionService:
         action_repository: ActionRepository,
         company_repository: CompanyRepository,
         user_repository: UserRepository,
+        notification_repository: NotificationRepository,
     ):
         self.session = session
         self.action_repository = action_repository
         self.company_repository = company_repository
         self.user_repository = user_repository
+        self.notification_repository = notification_repository
 
     # GET COMPANY OR RAISE
     async def _get_company_or_raise(self, company_id: uuid.UUID) -> CompanySchema:
@@ -129,6 +132,13 @@ class ActionService:
             data = action_data.dict()
             data["status"] = InvitationStatus.INVITED.value
             data["type"] = InvitationType.INVITE.value
+
+            message = (
+                f"You have received an invitation to join the company {company.name}"
+            )
+            await self.notification_repository.create_notification_for_user(
+                action_data.user_id, message
+            )
 
             return await self.action_repository.create_one(data=data)
 
@@ -273,6 +283,15 @@ class ActionService:
 
         await self.company_repository.delete_company_member(company_id, current_user_id)
 
+        company_name = await self.company_repository.get_company_name(company_id)
+        company_owner = await self.company_repository.get_company_owner(company_id)
+        owner_username = company_owner.username
+        owner_id = company_owner.user_id
+        message = f"user {owner_username} has left your company {company_name}"
+        await self.notification_repository.create_notification_for_user(
+            owner_id, message
+        )
+
         return await self.action_repository.delete_one(action.id)
 
     # KICK FROM COMPANY
@@ -281,7 +300,14 @@ class ActionService:
     ) -> ActionSchema:
         action = await self._get_action_or_raise(action_id)
         company_id = action.company_id
+
         await self.company_repository.delete_company_member(company_id, action.user_id)
+
+        company_name = await self.company_repository.get_company_name(company_id)
+        message = f"You were removed from the company {company_name}"
+        await self.notification_repository.create_notification_for_user(
+            action.user_id, message
+        )
 
         return await self.action_repository.delete_one(action.id)
 
@@ -413,7 +439,14 @@ class ActionService:
         member = await self._validate_admin(
             current_user_id, company_id, user_id, MemberStatus.OWNER
         )
+
         await self.company_repository.update_company_member(member, MemberStatus.ADMIN)
+
+        company_name = await self.company_repository.get_company_name(company_id)
+        message = f"You have received the status of an administrator in the company {company_name}"
+        await self.notification_repository.create_notification_for_user(
+            user_id, message
+        )
 
         return member
 
@@ -423,7 +456,16 @@ class ActionService:
         member = await self._validate_admin(
             current_user_id, company_id, user_id, MemberStatus.OWNER
         )
+
         await self.company_repository.update_company_member(member, MemberStatus.USER)
+
+        company_name = await self.company_repository.get_company_name(company_id)
+        message = (
+            f"You have received the status of an user in the company {company_name}"
+        )
+        await self.notification_repository.create_notification_for_user(
+            user_id, message
+        )
 
         return member
 

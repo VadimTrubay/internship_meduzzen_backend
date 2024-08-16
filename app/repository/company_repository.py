@@ -1,7 +1,7 @@
 import uuid
 from typing import List, Dict
 
-from sqlalchemy import select, delete, join
+from sqlalchemy import select, delete, join, and_
 
 from app.conf.invite import MemberStatus
 from app.models.company_member import CompanyMember
@@ -24,6 +24,23 @@ class CompanyRepository(BaseRepository):
         company_obj = company.scalar_one()
 
         return company_obj.name
+
+    async def get_company_owner(self, company_id: uuid.UUID) -> dict:
+        query = (
+            select(CompanyMember.user_id, User.username)
+            .join(User)
+            .filter(
+                and_(
+                    CompanyMember.company_id == company_id,
+                    CompanyMember.role == MemberStatus.OWNER,
+                )
+            )
+        )
+
+        result = await self.session.execute(query)
+        owner_data = result.one_or_none()
+
+        return owner_data
 
     async def create_company_with_owner(
         self, data: Dict, owner_id: uuid.UUID
