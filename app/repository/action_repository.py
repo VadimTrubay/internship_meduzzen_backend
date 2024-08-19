@@ -1,10 +1,11 @@
 import uuid
 from typing import List
 
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, func
 
 from app.models.company_member import CompanyMember
 from app.models.company_model import Company
+from app.models.result_model import Result
 from app.models.user_model import User
 from app.models.action_model import CompanyAction
 from app.conf.invite import InvitationStatus
@@ -17,8 +18,24 @@ class ActionRepository(BaseRepository):
         super().__init__(session=session, model=CompanyAction)
 
     async def get_members(self, company_id: uuid.UUID) -> List[CompanyMemberSchema]:
+        subquery = (
+            select(
+                Result.company_member_id,
+                func.max(Result.created_at).label("last_quiz_attempt"),
+            )
+            .join(CompanyMember, Result.company_member_id == CompanyMember.id)
+            .group_by(Result.company_member_id)
+            .subquery()
+        )
+
         query = (
-            select(CompanyAction, User, Company, CompanyMember)
+            select(
+                CompanyAction,
+                User,
+                Company,
+                CompanyMember,
+                subquery.c.last_quiz_attempt,
+            )
             .distinct()
             .join(User, CompanyAction.user_id == User.id)
             .join(Company, CompanyAction.company_id == Company.id)
@@ -29,10 +46,11 @@ class ActionRepository(BaseRepository):
                     CompanyAction.user_id == CompanyMember.user_id,
                 ),
             )
+            .outerjoin(subquery, subquery.c.company_member_id == CompanyMember.id)
             .filter(CompanyMember.company_id == company_id)
         )
-
         result = await self.session.execute(query)
+
         return result.all()
 
     async def get_member_role(self, user_id: uuid.UUID, company_id: uuid.UUID) -> str:
@@ -41,6 +59,7 @@ class ActionRepository(BaseRepository):
         )
         member_role = await self.session.execute(query)
         role = member_role.scalar_one()
+
         return role.role
 
     @staticmethod
@@ -55,4 +74,5 @@ class ActionRepository(BaseRepository):
             .join(Company, CompanyAction.company_id == Company.id)
             .filter(id_column == id_, CompanyAction.status == status)
         )
+
         return query

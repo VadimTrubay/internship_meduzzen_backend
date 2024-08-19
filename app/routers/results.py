@@ -19,6 +19,7 @@ async def create_result(
     result_service: ResultService = Depends(get_result_service),
 ) -> ResultSchema:
     current_user_id = current_user.id
+
     return await result_service.create_result(
         quiz_id=quiz_id, current_user_id=current_user_id, quiz_request=quiz_request
     )
@@ -31,6 +32,7 @@ async def get_company_rating(
     result_service: ResultService = Depends(get_result_service),
 ) -> float:
     current_user_id = current_user.id
+
     return await result_service.get_company_rating(company_id, current_user_id)
 
 
@@ -40,6 +42,7 @@ async def get_global_rating(
     result_service: ResultService = Depends(get_result_service),
 ) -> float:
     current_user_id = current_user.id
+
     return await result_service.get_global_rating(current_user_id)
 
 
@@ -51,6 +54,7 @@ async def get_export_company(
     result_service: ResultService = Depends(get_result_service),
 ) -> ExportedFile:
     current_user_id = current_user.id
+
     return await result_service.company_answers_list(
         company_id, file_format, current_user_id
     )
@@ -65,6 +69,7 @@ async def get_export_user(
     result_service: ResultService = Depends(get_result_service),
 ) -> ExportedFile:
     current_user_id = current_user.id
+
     return await result_service.user_answers_list(
         company_id, user_id, file_format, current_user_id
     )
@@ -77,4 +82,5 @@ async def get_export_company(
     result_service: ResultService = Depends(get_result_service),
 ) -> ExportedFile:
     current_user_id = current_user.id
+
     return await result_service.my_answers_list(current_user_id, file_format)

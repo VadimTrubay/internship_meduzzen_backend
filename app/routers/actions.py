@@ -32,6 +32,7 @@ async def create_invite(
         company_id=company_id,
         user_id=user_id,
     )
+
     return await action_service.create_invite(
         action_data=action_data, current_user_id=current_user_id
     )
@@ -44,6 +45,7 @@ async def delete_invite(
     action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
+
     return await action_service.cancel_invite(
         action_id=action_id, current_user_id=current_user_id
     )
@@ -56,6 +58,7 @@ async def accept_invite(
     action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
+
     return await action_service.accept_invite(
         action_id=action_id, current_user_id=current_user_id
     )
@@ -68,6 +71,7 @@ async def decline_invite(
     action_service: ActionService = Depends(get_action_service),
 ) -> ActionSchema:
     current_user_id = current_user.id
+
     return await action_service.decline_invite(
         action_id=action_id, current_user_id=current_user_id
     )
@@ -202,6 +206,7 @@ async def get_company_members(
     action_service: ActionService = Depends(get_action_service),
 ) -> List[MembersResponseSchema]:
     current_user_id = current_user.id
+
     return await action_service.get_company_members(current_user_id, company_id)
 
 
@@ -215,6 +220,7 @@ async def add_admin(
     action_service: ActionService = Depends(get_action_service),
 ) -> CompanyMemberSchema:
     current_user_id = current_user.id
+
     return await action_service.add_admin(current_user_id, company_id, user_id)
 
 
@@ -229,6 +235,7 @@ async def remove_admin(
     action_service: ActionService = Depends(get_action_service),
 ) -> CompanyMemberSchema:
     current_user_id = current_user.id
+
     return await action_service.remove_admin(current_user_id, company_id, user_id)
 
 
@@ -241,4 +248,5 @@ async def get_admins(
     action_service: ActionService = Depends(get_action_service),
 ) -> List[GetAdminsResponseSchema]:
     current_user_id = current_user.id
+
     return await action_service.get_admins(current_user_id, company_id)

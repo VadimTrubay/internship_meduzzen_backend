@@ -4,9 +4,12 @@ from typing import Optional, List
 from sqlalchemy import select, func, desc, and_
 
 from app.models.company_member import CompanyMember
+from app.models.company_model import Company
+from app.models.quiz_model import Quiz
 from app.models.result_model import Result
 from app.models.user_model import User
 from app.repository.base_repository import BaseRepository
+from app.schemas.results import UserQuizResultSchema
 
 
 class ResultRepository(BaseRepository):
@@ -30,6 +33,7 @@ class ResultRepository(BaseRepository):
         average_score = (
             total_score_value / total_results_value if total_results_value > 0 else 0.0
         )
+
         return average_score
 
     async def get_last_result_for_user(
@@ -65,7 +69,42 @@ class ResultRepository(BaseRepository):
         )
 
         result = await self.session.execute(query)
+
         return result.scalars().all()
+
+    async def get_quizzes_from_me(
+        self, user_id: uuid.UUID
+    ) -> List[UserQuizResultSchema]:
+        subquery = (
+            select(
+                Result.quiz_id,
+                func.max(Result.created_at).label("last_attempt"),
+                func.avg(Result.score).label("average_score"),
+            )
+            .join(CompanyMember, CompanyMember.id == Result.company_member_id)
+            .filter(CompanyMember.user_id == user_id)
+            .group_by(Result.quiz_id)
+            .subquery()
+        )
+
+        # Main query to retrieve quiz details along with last attempt and average score
+        query = (
+            select(
+                subquery.c.quiz_id,
+                Quiz.name.label("quiz_name"),
+                Company.id.label("company_id"),
+                Company.name.label("company_name"),
+                subquery.c.last_attempt,
+                subquery.c.average_score,
+            )
+            .join(Quiz, Quiz.id == subquery.c.quiz_id)
+            .join(Company, Company.id == Quiz.company_id)
+            .order_by(subquery.c.last_attempt.desc())
+        )
+
+        result = await self.session.execute(query)
+
+        return result.mappings().all()
 
     async def get_latest_results_for_company(
         self, company_id: uuid.UUID
@@ -92,4 +131,5 @@ class ResultRepository(BaseRepository):
         )
 
         result = await self.session.execute(query)
+
         return result.scalars().all()

@@ -32,6 +32,7 @@ async def encode_jwt(
         client_secret,
         algorithm=algorithm,
     )
+
     return encoded_jwt
 
 
@@ -42,6 +43,7 @@ def decode_jwt_token(token: str) -> Dict:
         algorithms=[settings.API_ALGORITHM],
         audience=settings.API_AUDIENCE,
     )
+
     return decoded
 
 
@@ -61,13 +63,17 @@ def decode_auth0_token(token: str) -> Any | None:
             audience=settings.AUTH0_API_AUDIENCE,
         )
         logger.info("Token successfully verified with Auth0.")
+
         return payload
+
     except jwt.ExpiredSignatureError:
         logger.warning("Auth0 verification failed: token is expired.")
         return None
+
     except jwt.InvalidTokenError as e:
         logger.warning(f"Auth0 verification failed: invalid token. Error: {e}")
         return None
+
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
         return None
@@ -76,6 +82,7 @@ def decode_auth0_token(token: str) -> Any | None:
 def decode_jwt(token: str) -> Dict:
     try:
         return decode_jwt_token(token)
+
     except Exception as e:
         logger.info(f"Exception occurred own token {e}")
         return decode_auth0_token(token)

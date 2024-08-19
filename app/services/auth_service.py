@@ -48,6 +48,7 @@ class AuthService:
 
         token = await jwt_utils.encode_jwt(payload={"email": email, "from": "noauth0"})
         token_info = TokenModel(access_token=token, token_type="Bearer")
+
         return token_info
 
     # CREATE USER
@@ -76,6 +77,7 @@ class AuthService:
         await self.repository.create_one(user_data)
         token = await jwt_utils.encode_jwt(payload={"email": email})
         token_info = TokenModel(access_token=token, token_type="Bearer")
+
         return token_info
 
     # GET CURRENT USER
@@ -112,4 +114,5 @@ class AuthService:
 
             await user_repository.create_one(user_data)
             current_user = await user_repository.get_one(email=user_email)
+
         return current_user
