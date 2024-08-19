@@ -1,5 +1,5 @@
 import uuid
-from typing import Optional, Dict
+from typing import Optional
 
 from loguru import logger
 from sqlalchemy import delete
@@ -189,10 +189,17 @@ class QuizService:
         return QuizByIdSchema.from_orm(updated_quiz)
 
     # DELETE QUIZ
-    async def delete_quiz(self, quiz_id: uuid.UUID, current_user_id: uuid.UUID) -> Dict:
-        await self._validate_quiz(quiz_id, current_user_id)
+    async def delete_quiz(
+        self, quiz_id: uuid.UUID, current_user_id: uuid.UUID
+    ) -> QuizResponseSchema:
+        quiz = await self._validate_quiz(quiz_id, current_user_id)
         await self.quiz_repository.delete_quiz(quiz_id)
-        return {"message": "Quiz deleted", "id": quiz_id}
+        return QuizResponseSchema(
+            id=quiz.id,
+            name=quiz.name,
+            description=quiz.description,
+            frequency_days=quiz.frequency_days,
+        )
 
     # GET QUIZ BY ID
     async def get_quiz_by_id(self, quiz_id: uuid.UUID) -> Optional[QuizByIdSchema]:

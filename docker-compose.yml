@@ -90,7 +90,7 @@ celery_worker:
     volumes:
       - .:/code
     ports:
-      - "5557:5555"
+      - "5555:5555"
     command: >
       sh -c "celery flower --app=app.celery.celery --broker="${CELERY_BROKER_URL}""
 

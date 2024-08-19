@@ -1,5 +1,4 @@
 import uuid
-from typing import Dict
 
 from fastapi import APIRouter, Depends
 
@@ -8,6 +7,7 @@ from app.schemas.quizzes import (
     QuizUpdateSchema,
     QuizzesListResponse,
     QuizByIdSchema,
+    QuizResponseSchema,
 )
 from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
@@ -56,12 +56,12 @@ async def update_quiz(
     )
 
 
-@router.delete("/quiz/{quiz_id}", response_model=Dict)
+@router.delete("/quiz/{quiz_id}", response_model=QuizResponseSchema)
 async def delete_quiz(
     quiz_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
     quiz_service: QuizService = Depends(get_quizzes_service),
-) -> Dict:
+) -> QuizResponseSchema:
     current_user_id = current_user.id
 
     return await quiz_service.delete_quiz(

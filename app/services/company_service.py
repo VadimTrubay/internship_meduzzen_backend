@@ -6,14 +6,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.conf.detail import Messages
 from app.exept.custom_exceptions import (
-    NotPermission,
-    NotFound,
     CompanyNotFound,
     NotOwner,
 )
 from app.repository.company_repository import CompanyRepository
 from app.schemas.companies import (
     CompanySchema,
+    CompanyResponseSchema,
 )
 
 
@@ -81,8 +80,12 @@ class CompanyService:
     # DELETE COMPANY
     async def delete_company(
         self, company_id: uuid.UUID, current_user_id: uuid.UUID
-    ) -> Dict:
-        await self.validate_company(current_user_id, company_id)
+    ) -> CompanyResponseSchema:
+        company = await self.validate_company(current_user_id, company_id)
         await self.repository.delete_company(company_id)
 
-        return {"message": "Company deleted", "id": company_id}
+        return CompanyResponseSchema(
+            id=company.id,
+            name=company.name,
+            description=company.description,
+        )

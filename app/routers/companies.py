@@ -1,5 +1,4 @@
 import uuid
-from typing import Dict
 
 from fastapi import APIRouter, Depends
 
@@ -8,6 +7,7 @@ from app.schemas.companies import (
     CompanyCreateRequest,
     CompanyUpdateRequest,
     CompaniesListResponse,
+    CompanyResponseSchema,
 )
 from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
@@ -57,12 +57,12 @@ async def update_company(
     )
 
 
-@router.delete("/{company_id}", response_model=Dict)
+@router.delete("/{company_id}", response_model=CompanyResponseSchema)
 async def delete_company(
     company_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
     company_service: CompanyService = Depends(get_company_service),
-) -> Dict:
+) -> CompanyResponseSchema:
     current_user_id = current_user.id
 
     return await company_service.delete_company(company_id, current_user_id)
