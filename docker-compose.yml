@@ -2,6 +2,7 @@ version: '3.11.5'
 
 services:
   api:
+    container_name: meduzzen-backend-internship
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,9 +15,12 @@ services:
     depends_on:
       - postgres
       - redis
+    networks:
+      - backend
 
   postgres:
     image: postgres:13.0-alpine
+    restart: always
     env_file:
       - .env
     environment:
@@ -25,16 +29,20 @@ services:
       - "${DB_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    restart: always
+    networks:
+      - backend
 
   redis:
     image: redis:latest
+    restart: always
     env_file:
       - .env
     ports:
       - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
+    networks:
+      - backend
 
 celery_worker:
   build:
@@ -46,7 +54,7 @@ celery_worker:
     - postgres
     - redis
   networks:
-    - api_network
+    - backend
   volumes:
     - .:/code
   command: >
@@ -62,7 +70,7 @@ celery_worker:
       - postgres
       - redis
     networks:
-      - api_network
+      - backend
     volumes:
       - .:/code
     command: >
@@ -78,7 +86,7 @@ celery_worker:
       - postgres
       - redis
     networks:
-      - api_network
+      - backend
     volumes:
       - .:/code
     ports:
