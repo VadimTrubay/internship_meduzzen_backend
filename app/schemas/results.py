@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 from typing import List, Dict
 
 from pydantic import BaseModel, ConfigDict
@@ -21,6 +22,14 @@ class UserQuizResultSchema(BaseModel):
     company_name: str
     last_attempt: str
     average_score: float
+
+
+class CompanyMemberResultSchema(BaseModel):
+    data: Dict[str, Dict[datetime, float]]
+
+
+class QuizResultSchema(BaseModel):
+    data: Dict[datetime, float]
 
 
 class QuizRequest(BaseModel):

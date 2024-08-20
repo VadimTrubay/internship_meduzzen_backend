@@ -27,6 +27,8 @@ from app.schemas.results import (
     QuizRequest,
     ExportedFile,
     UserQuizResultSchema,
+    CompanyMemberResultSchema,
+    QuizResultSchema,
 )
 from app.services.redis_service import redis_service
 from app.utils.export_data import export_redis_data
@@ -234,7 +236,9 @@ class ResultService:
 
         return chart_data
 
-    async def my_quiz_results(self, current_user_id, quiz_id: uuid.UUID) -> Dict:
+    async def my_quiz_results(
+        self, current_user_id, quiz_id: uuid.UUID
+    ) -> QuizResultSchema:
         quiz = await self.quiz_repository.get_one(id=quiz_id)
         company_id = quiz.company_id
         if not quiz:
@@ -247,9 +251,15 @@ class ResultService:
         )
         chart_data = await self._make_chart_data(results)
 
-        return chart_data
+        result_data = QuizResultSchema(
+            data=chart_data,
+        )
 
-    async def my_quizzes_latest_results(self, current_user_id: uuid.UUID) -> Dict:
+        return result_data
+
+    async def my_quizzes_latest_results(
+        self, current_user_id: uuid.UUID
+    ) -> QuizResultSchema:
         results = await self.result_repository.get_latest_results_for_company_member(
             current_user_id
         )
@@ -303,7 +313,7 @@ class ResultService:
 
     async def company_members_results(
         self, current_user_id: uuid.UUID, company_id: uuid.UUID
-    ) -> Dict:
+    ) -> CompanyMemberResultSchema:
         await self._get_company_or_raise(company_id)
         await self._validate_company_owner_or_admin_analytics(
             current_user_id, company_id
@@ -326,12 +336,15 @@ class ResultService:
         chart_data = {}
         for username, member_result in member_results.items():
             chart_data[username] = await self._make_chart_data(member_result)
+        result_data = CompanyMemberResultSchema(
+            data=chart_data,
+        )
 
-        return chart_data
+        return result_data
 
     async def company_member_results(
         self, company_id: uuid.UUID, company_member_id, current_user_id: uuid.UUID
-    ) -> Dict:
+    ) -> CompanyMemberResultSchema:
         await self._get_company_or_raise(company_id)
         await self._validate_company_owner_analytics(current_user_id, company_id)
         member = await self.company_repository.get_company_member(
@@ -343,12 +356,15 @@ class ResultService:
 
         results = await self.result_repository.get_many(company_member_id=member.id)
         chart_data = await self._make_chart_data(results)
+        result_data = CompanyMemberResultSchema(
+            data=chart_data,
+        )
 
-        return chart_data
+        return result_data
 
     async def company_members_result_last(
         self, company_id: uuid.UUID, current_user_id: uuid.UUID
-    ) -> Dict:
+    ) -> CompanyMemberResultSchema:
         await self._get_company_or_raise(company_id)
         await self._validate_company_owner_analytics(current_user_id, company_id)
 
@@ -363,4 +379,8 @@ class ResultService:
                 results_dict[user_id] = {}
             results_dict[user_id][result.quiz_id] = result.created_at
 
-        return results_dict
+        result_data = CompanyMemberResultSchema(
+            data=results_dict,
+        )
+
+        return result_data
