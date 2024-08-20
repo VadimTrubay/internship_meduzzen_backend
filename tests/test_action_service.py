@@ -1,5 +1,5 @@
-import unittest
-from unittest.mock import AsyncMock, MagicMock
+import pytest
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 from app.services.action_service import ActionService
@@ -14,407 +14,407 @@ from app.exept.custom_exceptions import (
     AlreadyInCompany,
     UserAlreadyInvited,
     ActionAlreadyAvailable,
-    NotOwner,
     UserNotInvited,
     ActionNotFound,
 )
 
 
-class TestActionService(unittest.IsolatedAsyncioTestCase):
+@pytest.fixture
+def action_service():
+    session = AsyncMock()
+    action_repository = AsyncMock()
+    company_repository = AsyncMock()
+    user_repository = AsyncMock()
+    notification_repository = AsyncMock()
+    return ActionService(
+        session=session,
+        action_repository=action_repository,
+        company_repository=company_repository,
+        user_repository=user_repository,
+        notification_repository=notification_repository,
+    )
 
-    def setUp(self):
-        self.session = AsyncMock()
-        self.action_repository = AsyncMock()
-        self.company_repository = AsyncMock()
-        self.user_repository = AsyncMock()
-        self.notification_repository = AsyncMock()
-        self.action_service = ActionService(
-            session=self.session,
-            action_repository=self.action_repository,
-            company_repository=self.company_repository,
-            user_repository=self.user_repository,
-            notification_repository=self.notification_repository,
-        )
 
-    async def test_create_invite_success(self):
-        company_id = uuid4()
-        user_id = uuid4()
-        current_user_id = uuid4()
-        action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
+@pytest.mark.asyncio
+async def test_create_invite_success(action_service):
+    company_id = uuid4()
+    user_id = uuid4()
+    current_user_id = uuid4()
+    action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
 
-        self.company_repository.get_one.return_value = CompanySchema(
-            id=company_id,
-            name="Test Company",
-            owner_id=current_user_id,
-            description="Test Description",
-            visible=True,
-        )
-        self.user_repository.get_one.return_value = UserSchema(
-            id=user_id,
-            username="testuser",
-            email="testuser@example.com",
-            password="hashedpassword",
-        )
-        self.company_repository.is_user_company_owner.return_value = True
-        self.action_repository.get_one.return_value = None
-        self.action_repository.create_one.return_value = ActionSchema(
-            id=uuid4(),
-            company_id=company_id,
-            user_id=user_id,
-            status=InvitationStatus.INVITED,
-            type=InvitationType.INVITE,
-        )
+    action_service.company_repository.get_one.return_value = CompanySchema(
+        id=company_id,
+        name="Test Company",
+        owner_id=current_user_id,
+        description="Test Description",
+        visible=True,
+    )
+    action_service.user_repository.get_one.return_value = UserSchema(
+        id=user_id,
+        username="testuser",
+        email="testuser@example.com",
+        password="hashedpassword",
+    )
+    action_service.company_repository.is_user_company_owner.return_value = True
+    action_service.action_repository.get_one.return_value = None
+    action_service.action_repository.create_one.return_value = ActionSchema(
+        id=uuid4(),
+        company_id=company_id,
+        user_id=user_id,
+        status=InvitationStatus.INVITED,
+        type=InvitationType.INVITE,
+    )
 
-        result = await self.action_service.create_invite(action_data, current_user_id)
+    result = await action_service.create_invite(action_data, current_user_id)
 
-        self.action_repository.create_one.assert_called_once()
-        self.notification_repository.create_notification_for_user.assert_called_once()
-        self.assertEqual(result.status, InvitationStatus.INVITED)
+    action_service.action_repository.create_one.assert_called_once()
+    action_service.notification_repository.create_notification_for_user.assert_called_once()
+    assert result.status == InvitationStatus.INVITED
 
-    async def test_create_invite_user_not_found(self):
-        company_id = uuid4()
-        user_id = uuid4()
-        current_user_id = uuid4()
-        action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
 
-        self.user_repository.get_one.return_value = None
+@pytest.mark.asyncio
+async def test_create_invite_user_not_found(action_service):
+    company_id = uuid4()
+    user_id = uuid4()
+    current_user_id = uuid4()
+    action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
 
-        with self.assertRaises(UserNotFound):
-            await self.action_service.create_invite(action_data, current_user_id)
+    action_service.user_repository.get_one.return_value = None
 
-    async def test_create_invite_company_not_found(self):
-        company_id = uuid4()
-        user_id = uuid4()
-        current_user_id = uuid4()
-        action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
+    with pytest.raises(UserNotFound):
+        await action_service.create_invite(action_data, current_user_id)
 
-        self.user_repository.get_one.return_value = UserSchema(
-            id=user_id,
-            username="testuser",
-            email="testuser@example.com",
-            password="hashedpassword",
-        )
-        self.company_repository.get_one.return_value = None
 
-        with self.assertRaises(CompanyNotFound):
-            await self.action_service.create_invite(action_data, current_user_id)
+@pytest.mark.asyncio
+async def test_create_invite_company_not_found(action_service):
+    company_id = uuid4()
+    user_id = uuid4()
+    current_user_id = uuid4()
+    action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
 
-    async def test_create_invite_self_invitation(self):
-        company_id = uuid4()
-        user_id = uuid4()
-        current_user_id = user_id
-        action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
+    action_service.user_repository.get_one.return_value = UserSchema(
+        id=user_id,
+        username="testuser",
+        email="testuser@example.com",
+        password="hashedpassword",
+    )
+    action_service.company_repository.get_one.return_value = None
 
-        self.user_repository.get_one.return_value = UserSchema(
-            id=user_id,
-            username="testuser",
-            email="testuser@example.com",
-            password="hashedpassword",
-        )
-        self.company_repository.get_one.return_value = CompanySchema(
-            id=company_id,
-            name="Test Company",
-            owner_id=current_user_id,
-            description="Test Description",
-            visible=True,
-        )
-        self.company_repository.is_user_company_owner.return_value = True
+    with pytest.raises(CompanyNotFound):
+        await action_service.create_invite(action_data, current_user_id)
 
-        with self.assertRaises(YouCanNotInviteYourSelf):
-            await self.action_service.create_invite(action_data, current_user_id)
 
-    async def test_create_invite_user_already_invited(self):
-        company_id = uuid4()
-        user_id = uuid4()
-        current_user_id = uuid4()
-        action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
+@pytest.mark.asyncio
+async def test_create_invite_self_invitation(action_service):
+    company_id = uuid4()
+    user_id = uuid4()
+    current_user_id = user_id
+    action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
 
-        self.company_repository.get_one.return_value = CompanySchema(
-            id=company_id,
-            name="Test Company",
-            owner_id=current_user_id,
-            description="Test Description",
-            visible=True,
-        )
-        self.user_repository.get_one.return_value = UserSchema(
-            id=user_id,
-            username="testuser",
-            email="testuser@example.com",
-            password="hashedpassword",
-        )
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=uuid4(),
-            company_id=company_id,
-            user_id=user_id,
-            status=InvitationStatus.INVITED,
-            type=InvitationType.INVITE,
-        )
+    action_service.user_repository.get_one.return_value = UserSchema(
+        id=user_id,
+        username="testuser",
+        email="testuser@example.com",
+        password="hashedpassword",
+    )
+    action_service.company_repository.get_one.return_value = CompanySchema(
+        id=company_id,
+        name="Test Company",
+        owner_id=current_user_id,
+        description="Test Description",
+        visible=True,
+    )
+    action_service.company_repository.is_user_company_owner.return_value = True
 
-        with self.assertRaises(UserAlreadyInvited):
-            await self.action_service.create_invite(action_data, current_user_id)
+    with pytest.raises(YouCanNotInviteYourSelf):
+        await action_service.create_invite(action_data, current_user_id)
 
-    async def test_create_invite_user_already_in_company(self):
-        company_id = uuid4()
-        user_id = uuid4()
-        current_user_id = uuid4()
-        action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
 
-        self.company_repository.get_one.return_value = CompanySchema(
-            id=company_id,
-            name="Test Company",
-            owner_id=current_user_id,
-            description="Test Description",
-            visible=True,
-        )
-        self.user_repository.get_one.return_value = UserSchema(
-            id=user_id,
-            username="testuser",
-            email="testuser@example.com",
-            password="hashedpassword",
-        )
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=uuid4(),
-            company_id=company_id,
-            user_id=user_id,
-            status=InvitationStatus.ACCEPTED,
-            type=InvitationType.INVITE,
-        )
+@pytest.mark.asyncio
+async def test_create_invite_user_already_invited(action_service):
+    company_id = uuid4()
+    user_id = uuid4()
+    current_user_id = uuid4()
+    action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
 
-        with self.assertRaises(AlreadyInCompany):
-            await self.action_service.create_invite(action_data, current_user_id)
+    action_service.company_repository.get_one.return_value = CompanySchema(
+        id=company_id,
+        name="Test Company",
+        owner_id=current_user_id,
+        description="Test Description",
+        visible=True,
+    )
+    action_service.user_repository.get_one.return_value = UserSchema(
+        id=user_id,
+        username="testuser",
+        email="testuser@example.com",
+        password="hashedpassword",
+    )
+    action_service.action_repository.get_one.return_value = ActionSchema(
+        id=uuid4(),
+        company_id=company_id,
+        user_id=user_id,
+        status=InvitationStatus.INVITED,
+        type=InvitationType.INVITE,
+    )
 
-    async def test_create_invite_action_already_available(self):
-        company_id = uuid4()
-        user_id = uuid4()
-        current_user_id = uuid4()
-        action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
+    with pytest.raises(UserAlreadyInvited):
+        await action_service.create_invite(action_data, current_user_id)
 
-        self.company_repository.get_one.return_value = CompanySchema(
-            id=company_id,
-            name="Test Company",
-            owner_id=current_user_id,
-            description="Test Description",
-            visible=True,
-        )
-        self.user_repository.get_one.return_value = UserSchema(
-            id=user_id,
-            username="testuser",
-            email="testuser@example.com",
-            password="hashedpassword",
-        )
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=uuid4(),
-            company_id=company_id,
-            user_id=user_id,
-            status=InvitationStatus.REQUESTED,
-            type=InvitationType.INVITE,
-        )
 
-        with self.assertRaises(ActionAlreadyAvailable):
-            await self.action_service.create_invite(action_data, current_user_id)
+@pytest.mark.asyncio
+async def test_create_invite_user_already_in_company(action_service):
+    company_id = uuid4()
+    user_id = uuid4()
+    current_user_id = uuid4()
+    action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
 
-    async def test_cancel_invite_success(self):
-        action_id = uuid4()
-        current_user_id = uuid4()
-        company_id = uuid4()
+    action_service.company_repository.get_one.return_value = CompanySchema(
+        id=company_id,
+        name="Test Company",
+        owner_id=current_user_id,
+        description="Test Description",
+        visible=True,
+    )
+    action_service.user_repository.get_one.return_value = UserSchema(
+        id=user_id,
+        username="testuser",
+        email="testuser@example.com",
+        password="hashedpassword",
+    )
+    action_service.action_repository.get_one.return_value = ActionSchema(
+        id=uuid4(),
+        company_id=company_id,
+        user_id=user_id,
+        status=InvitationStatus.ACCEPTED,
+        type=InvitationType.INVITE,
+    )
 
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=action_id,
-            company_id=company_id,
-            user_id=uuid4(),
-            status=InvitationStatus.INVITED,
-            type=InvitationType.INVITE,
-        )
-        self.company_repository.get_one.return_value = CompanySchema(
-            id=company_id,
-            name="Test Company",
-            owner_id=current_user_id,
-            description="Test Description",
-            visible=True,
-        )
-        self.company_repository.is_user_company_owner.return_value = True
+    with pytest.raises(AlreadyInCompany):
+        await action_service.create_invite(action_data, current_user_id)
 
-        result = await self.action_service.cancel_invite(action_id, current_user_id)
 
-        self.action_repository.delete_one.assert_called_once_with(action_id)
-        self.assertEqual(result.id, action_id)
+@pytest.mark.asyncio
+async def test_create_invite_action_already_available(action_service):
+    company_id = uuid4()
+    user_id = uuid4()
+    current_user_id = uuid4()
+    action_data = InviteCreateSchema(company_id=company_id, user_id=user_id)
 
-    async def test_accept_invite_success(self):
-        action_id = uuid4()
-        current_user_id = uuid4()
-        company_id = uuid4()
+    action_service.company_repository.get_one.return_value = CompanySchema(
+        id=company_id,
+        name="Test Company",
+        owner_id=current_user_id,
+        description="Test Description",
+        visible=True,
+    )
+    action_service.user_repository.get_one.return_value = UserSchema(
+        id=user_id,
+        username="testuser",
+        email="testuser@example.com",
+        password="hashedpassword",
+    )
+    action_service.action_repository.get_one.return_value = ActionSchema(
+        id=uuid4(),
+        company_id=company_id,
+        user_id=user_id,
+        status=InvitationStatus.REQUESTED,
+        type=InvitationType.INVITE,
+    )
 
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=action_id,
-            company_id=company_id,
-            user_id=current_user_id,
-            status=InvitationStatus.INVITED,
-            type=InvitationType.INVITE,
-        )
-        self.company_repository.get_one.return_value = CompanySchema(
-            id=company_id,
-            name="Test Company",
-            owner_id=uuid4(),
-            description="Test Description",
-            visible=True,
-        )
+    with pytest.raises(ActionAlreadyAvailable):
+        await action_service.create_invite(action_data, current_user_id)
 
-        result = await self.action_service.accept_invite(action_id, current_user_id)
 
-        self.action_repository.update_one.assert_called_once()
-        self.company_repository.create_company_member.assert_called_once()
-        self.assertEqual(result.id, action_id)
+@pytest.mark.asyncio
+async def test_accept_invite_success(action_service):
+    action_id = uuid4()
+    current_user_id = uuid4()
+    company_id = uuid4()
 
-    async def test_accept_invite_invalid_status(self):
-        action_id = uuid4()
-        current_user_id = uuid4()
+    action_service.action_repository.get_one.return_value = ActionSchema(
+        id=action_id,
+        company_id=company_id,
+        user_id=current_user_id,
+        status=InvitationStatus.INVITED,
+        type=InvitationType.INVITE,
+    )
+    action_service.company_repository.get_one.return_value = CompanySchema(
+        id=company_id,
+        name="Test Company",
+        owner_id=uuid4(),
+        description="Test Description",
+        visible=True,
+    )
 
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=action_id,
-            company_id=uuid4(),
-            user_id=current_user_id,
-            status=InvitationStatus.ACCEPTED,
-            type=InvitationType.INVITE,
-        )
+    result = await action_service.accept_invite(action_id, current_user_id)
 
-        with self.assertRaises(UserNotInvited):
-            await self.action_service.accept_invite(action_id, current_user_id)
+    action_service.action_repository.update_one.assert_called_once()
+    action_service.company_repository.create_company_member.assert_called_once()
+    assert result.id == action_id
 
-    async def test_decline_invite_success(self):
-        action_id = uuid4()
-        current_user_id = uuid4()
-        company_id = uuid4()
 
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=action_id,
-            company_id=company_id,
-            user_id=current_user_id,
-            status=InvitationStatus.INVITED,
-            type=InvitationType.INVITE,
-        )
+@pytest.mark.asyncio
+async def test_accept_invite_invalid_status(action_service):
+    action_id = uuid4()
+    current_user_id = uuid4()
 
-        result = await self.action_service.decline_invite(action_id, current_user_id)
+    action_service.action_repository.get_one.return_value = ActionSchema(
+        id=action_id,
+        company_id=uuid4(),
+        user_id=current_user_id,
+        status=InvitationStatus.ACCEPTED,
+        type=InvitationType.INVITE,
+    )
 
-        self.action_repository.update_one.assert_called_once_with(
-            action_id, {"status": InvitationStatus.DECLINED_BY_USER}
-        )
-        self.assertEqual(result.id, action_id)
+    with pytest.raises(UserNotInvited):
+        await action_service.accept_invite(action_id, current_user_id)
 
-    async def test_decline_invite_invalid_status(self):
-        action_id = uuid4()
-        current_user_id = uuid4()
 
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=action_id,
-            company_id=uuid4(),
-            user_id=current_user_id,
-            status=InvitationStatus.ACCEPTED,
-            type=InvitationType.INVITE,
-        )
+@pytest.mark.asyncio
+async def test_decline_invite_success(action_service):
+    action_id = uuid4()
+    current_user_id = uuid4()
+    company_id = uuid4()
 
-        with self.assertRaises(UserNotInvited):
-            await self.action_service.decline_invite(action_id, current_user_id)
+    action_service.action_repository.get_one.return_value = ActionSchema(
+        id=action_id,
+        company_id=company_id,
+        user_id=current_user_id,
+        status=InvitationStatus.INVITED,
+        type=InvitationType.INVITE,
+    )
 
-    async def test_create_request_already_in_company(self):
-        company_id = uuid4()
-        current_user_id = uuid4()
+    result = await action_service.decline_invite(action_id, current_user_id)
 
-        self.company_repository.get_one.return_value = CompanySchema(
-            id=company_id,
-            name="Test Company",
-            owner_id=current_user_id,
-            description="Test Description",
-            visible=True,
-        )
-        self.company_repository.is_user_company_owner.return_value = True
+    action_service.action_repository.update_one.assert_called_once_with(
+        action_id, {"status": InvitationStatus.DECLINED_BY_USER}
+    )
+    assert result.id == action_id
 
-        action_data = RequestCreateSchema(
-            company_id=company_id, user_id=current_user_id
-        )
 
-        with self.assertRaises(AlreadyInCompany):
-            await self.action_service.create_request(action_data, current_user_id)
+@pytest.mark.asyncio
+async def test_decline_invite_invalid_status(action_service):
+    action_id = uuid4()
+    current_user_id = uuid4()
 
-    async def test_leave_from_company_success(self):
-        action_id = uuid4()
-        current_user_id = uuid4()
-        company_id = uuid4()
+    action_service.action_repository.get_one.return_value = ActionSchema(
+        id=action_id,
+        company_id=uuid4(),
+        user_id=current_user_id,
+        status=InvitationStatus.ACCEPTED,
+        type=InvitationType.INVITE,
+    )
 
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=action_id,
-            company_id=company_id,
-            user_id=current_user_id,
-            status=InvitationStatus.ACCEPTED,
-            type=InvitationType.INVITE,
-        )
+    with pytest.raises(UserNotInvited):
+        await action_service.decline_invite(action_id, current_user_id)
 
-        self.action_repository.delete_one.return_value = ActionSchema(
-            id=action_id,
-            user_id=current_user_id,
-            company_id=company_id,
-            status=InvitationStatus.ACCEPTED,
-            type=InvitationType.INVITE,
-        )
 
-        result = await self.action_service.leave_from_company(
-            action_id, current_user_id
-        )
+@pytest.mark.asyncio
+async def test_create_request_already_in_company(action_service):
+    company_id = uuid4()
+    current_user_id = uuid4()
 
-        self.company_repository.delete_company_member.assert_called_once_with(
-            company_id, current_user_id
-        )
-        self.action_repository.delete_one.assert_called_once_with(action_id)
-        self.assertEqual(result.id, action_id)
+    action_service.company_repository.get_one.return_value = CompanySchema(
+        id=company_id,
+        name="Test Company",
+        owner_id=current_user_id,
+        description="Test Description",
+        visible=True,
+    )
+    action_service.company_repository.is_user_company_owner.return_value = True
 
-    async def test_leave_from_company_not_allowed(self):
-        action_id = uuid4()
-        current_user_id = uuid4()
+    action_data = RequestCreateSchema(company_id=company_id, user_id=current_user_id)
 
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=action_id,
-            company_id=uuid4(),
-            user_id=uuid4(),  # different user_id
-            status=InvitationStatus.ACCEPTED,
-            type=InvitationType.INVITE,
-        )
+    with pytest.raises(AlreadyInCompany):
+        await action_service.create_request(action_data, current_user_id)
 
-        with self.assertRaises(ActionAlreadyAvailable):
-            await self.action_service.leave_from_company(action_id, current_user_id)
 
-    async def test_kick_from_company_success(self):
-        action_id = uuid4()
-        current_user_id = uuid4()
-        company_id = uuid4()
+@pytest.mark.asyncio
+async def test_leave_from_company_success(action_service):
+    action_id = uuid4()
+    current_user_id = uuid4()
+    company_id = uuid4()
 
-        self.action_repository.get_one.return_value = ActionSchema(
-            id=action_id,
-            company_id=company_id,
-            user_id=uuid4(),
-            status=InvitationStatus.ACCEPTED,
-            type=InvitationType.INVITE,
-        )
+    action_service.action_repository.get_one.return_value = ActionSchema(
+        id=action_id,
+        company_id=company_id,
+        user_id=current_user_id,
+        status=InvitationStatus.ACCEPTED,
+        type=InvitationType.INVITE,
+    )
 
-        self.action_repository.delete_one.return_value = ActionSchema(
-            id=action_id,
-            company_id=company_id,
-            user_id=uuid4(),
-            status=InvitationStatus.ACCEPTED,
-            type=InvitationType.INVITE,
-        )
+    action_service.action_repository.delete_one.return_value = ActionSchema(
+        id=action_id,
+        user_id=current_user_id,
+        company_id=company_id,
+        status=InvitationStatus.ACCEPTED,
+        type=InvitationType.INVITE,
+    )
 
-        result = await self.action_service.kick_from_company(action_id, current_user_id)
+    result = await action_service.leave_from_company(action_id, current_user_id)
 
-        self.company_repository.delete_company_member.assert_called_once_with(
-            company_id, self.action_repository.get_one.return_value.user_id
-        )
-        self.action_repository.delete_one.assert_called_once_with(action_id)
-        self.assertEqual(result.id, action_id)
+    action_service.company_repository.delete_company_member.assert_called_once_with(
+        company_id, current_user_id
+    )
+    action_service.action_repository.delete_one.assert_called_once_with(action_id)
+    assert result.id == action_id
 
-    async def test_kick_from_company_action_not_found(self):
-        action_id = uuid4()
-        current_user_id = uuid4()
 
-        self.action_repository.get_one.return_value = None
+@pytest.mark.asyncio
+async def test_leave_from_company_not_allowed(action_service):
+    action_id = uuid4()
+    current_user_id = uuid4()
 
-        with self.assertRaises(ActionNotFound):
-            await self.action_service.kick_from_company(action_id, current_user_id)
+    action_service.action_repository.get_one.return_value = ActionSchema(
+        id=action_id,
+        company_id=uuid4(),
+        user_id=uuid4(),
+        status=InvitationStatus.ACCEPTED,
+        type=InvitationType.INVITE,
+    )
+
+    with pytest.raises(ActionAlreadyAvailable):
+        await action_service.leave_from_company(action_id, current_user_id)
+
+
+@pytest.mark.asyncio
+async def test_kick_from_company_success(action_service):
+    action_id = uuid4()
+    current_user_id = uuid4()
+    company_id = uuid4()
+
+    action_service.action_repository.get_one.return_value = ActionSchema(
+        id=action_id,
+        company_id=company_id,
+        user_id=uuid4(),
+        status=InvitationStatus.ACCEPTED,
+        type=InvitationType.INVITE,
+    )
+
+    action_service.action_repository.delete_one.return_value = ActionSchema(
+        id=action_id,
+        company_id=company_id,
+        user_id=uuid4(),
+        status=InvitationStatus.ACCEPTED,
+        type=InvitationType.INVITE,
+    )
+
+    result = await action_service.kick_from_company(action_id, current_user_id)
+
+    action_service.company_repository.delete_company_member.assert_called_once_with(
+        company_id, action_service.action_repository.get_one.return_value.user_id
+    )
+    action_service.action_repository.delete_one.assert_called_once_with(action_id)
+    assert result.id == action_id
+
+
+@pytest.mark.asyncio
+async def test_kick_from_company_action_not_found(action_service):
+    action_id = uuid4()
+    current_user_id = uuid4()
+
+    action_service.action_repository.get_one.return_value = None
+
+    with pytest.raises(ActionNotFound):
+        await action_service.kick_from_company(action_id, current_user_id)

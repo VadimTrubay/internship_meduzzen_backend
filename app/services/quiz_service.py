@@ -125,8 +125,8 @@ class QuizService:
             users, message
         )
 
-        quiz_dict = quiz_data.dict(exclude={"questions"})
-        question_dicts = [question.dict() for question in quiz_data.questions]
+        quiz_dict = quiz_data.model_dump(exclude={"questions"})
+        question_dicts = [question.model_dump() for question in quiz_data.questions]
         created_quiz_schema = QuizSchema(
             **quiz_dict, questions=question_dicts, company_id=company_id
         )
