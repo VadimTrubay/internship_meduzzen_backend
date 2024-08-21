@@ -1,4 +1,4 @@
-version: '3.11.5'
+version: '3.11'
 
 services:
   api:
@@ -17,6 +17,8 @@ services:
       - redis
     networks:
       - backend
+    command: >
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port ${APP_PORT:-8000} --reload"
 
   postgres:
     image: postgres:13.0-alpine
@@ -25,8 +27,10 @@ services:
       - .env
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_DB=${DB_NAME}
     ports:
-      - "${DB_PORT}:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     networks:
@@ -38,27 +42,25 @@ services:
     env_file:
       - .env
     ports:
-      - "${REDIS_PORT}:6379"
-    volumes:
-      - redis_data:/data
+      - "6379:6379"
     networks:
       - backend
 
-celery_worker:
-  build:
-    context: .
-    dockerfile: Dockerfile
-  env_file:
-    - .env
-  depends_on:
-    - postgres
-    - redis
-  networks:
-    - backend
-  volumes:
-    - .:/code
-  command: >
-    sh -c "celery -A app.celery.celery worker --loglevel=warning --logfile=celery_worker.log"
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - backend
+    volumes:
+      - .:/code
+    command: >
+      sh -c "celery -A app.utils.celery_service worker --loglevel=warning --logfile=celery_worker.log"
 
   celery_beat:
     build:
@@ -74,25 +76,7 @@ celery_worker:
     volumes:
       - .:/code
     command: >
-      sh -c "celery -A app.celery.celery beat --loglevel=warning --logfile=celery_beat.log"
-
-  flower:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    env_file:
-      - .env
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - backend
-    volumes:
-      - .:/code
-    ports:
-      - "5555:5555"
-    command: >
-      sh -c "celery flower --app=app.celery.celery --broker="${CELERY_BROKER_URL}""
+      sh -c "celery -A app.utils.celery_service beat --loglevel=warning --logfile=celery_beat.log"
 
 volumes:
   postgres_data:

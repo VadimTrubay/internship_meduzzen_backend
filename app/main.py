@@ -37,12 +37,17 @@ async def add_process_time_header(request: Request, call_next):
     return response
 
 
-origins = ["*"]
+origins = [
+    "http://127.0.0.1:8080",
+    "http://localhost:8000",
+    "http://host.docker.internal:8000",
+]
+
 app.add_middleware(
     CORSMiddleware,  # noqa
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"],
     allow_headers=[
         "Content-Type",
         "Set-Cookie",

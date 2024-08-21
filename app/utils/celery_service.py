@@ -16,7 +16,7 @@ def send_notifications():
 
 celery.conf.beat_schedule = {
     "run-task": {
-        "task": "app.celery.send_notifications",
+        "task": "app.utils.celery_service.send_notifications",
         "schedule": crontab(hour="0", minute="0"),
     },
 }
