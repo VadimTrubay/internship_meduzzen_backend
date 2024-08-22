@@ -38,9 +38,11 @@ async def add_process_time_header(request: Request, call_next):
 
 
 origins = [
-    "http://127.0.0.1:8080",
+    "http://localhost:8080",
     "http://localhost:8000",
     "http://host.docker.internal:8000",
+    "http://0.0.0.0:5173",
+    "http://0.0.0.0:5173",
 ]
 
 app.add_middleware(
