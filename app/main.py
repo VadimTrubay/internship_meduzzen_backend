@@ -43,6 +43,7 @@ origins = [
     "http://host.docker.internal:8000",
     "http://0.0.0.0:5173",
     "http://0.0.0.0:5173",
+    "https://cdfeuqtvav.us-west-2.awsapprunner.com:5173"
 ]
 
 app.add_middleware(
