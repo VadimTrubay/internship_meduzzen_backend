@@ -9,16 +9,16 @@ services:
     env_file:
       - .env
     ports:
-      - "${APP_PORT}:${APP_PORT}"
+      - "8000:8000"
     volumes:
-      - .:/code
+      - .:/app
     depends_on:
       - postgres
       - redis
     networks:
       - backend
     command: >
-      sh -c "uvicorn app.main:app --host 0.0.0.0 --port ${APP_PORT:-8000} --reload"
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   postgres:
     image: postgres:13.0-alpine
@@ -58,7 +58,7 @@ services:
     networks:
       - backend
     volumes:
-      - .:/code
+      - .:/app
     command: >
       sh -c "celery -A app.utils.celery_service worker --loglevel=warning --logfile=celery_worker.log"
 
@@ -74,7 +74,7 @@ services:
     networks:
       - backend
     volumes:
-      - .:/code
+      - .:/app
     command: >
       sh -c "celery -A app.utils.celery_service beat --loglevel=warning --logfile=celery_beat.log"
 
