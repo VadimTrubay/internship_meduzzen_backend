@@ -1,226 +1,268 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:us-east-1:539214576463:task-definition/meduzzen-backend-task:1",
-    "containerDefinitions": [
+  "family": "meduzzen-backend-task",
+  "containerDefinitions": [
+    {
+      "name": "api",
+      "image": "539214576463.dkr.ecr.us-east-1.amazonaws.com/meduzzen-backend-internship/meduzzen-backend-internship:latest",
+      "cpu": 0,
+      "portMappings": [
         {
-            "name": "api",
-            "image": "539214576463.dkr.ecr.us-east-1.amazonaws.com/meduzzen-backend-internship/meduzzen-backend-internship:latest",
-            "cpu": 0,
-            "portMappings": [
-                {
-                    "containerPort": 8000,
-                    "hostPort": 8000,
-                    "protocol": "tcp"
-                }
-            ],
-            "essential": true,
-            "environment": [
-                {
-                    "name": "REDIS_HOST",
-                    "value": "redis"
-                },
-                {
-                    "name": "DB_NAME",
-                    "value": "postgres"
-                },
-                {
-                    "name": "APP_PORT",
-                    "value": "8000"
-                },
-                {
-                    "name": "DB_USER",
-                    "value": "postgres"
-                },
-                {
-                    "name": "DB_PASSWORD",
-                    "value": "Vad0606Vad"
-                }
-            ],
-            "mountPoints": [],
-            "volumesFrom": [],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/meduzzen-backend",
-                    "awslogs-region": "us-east-1",
-                    "awslogs-stream-prefix": "api"
-                }
-            },
-            "systemControls": []
-        },
-        {
-            "name": "postgres",
-            "image": "postgres:13.0-alpine",
-            "cpu": 0,
-            "portMappings": [
-                {
-                    "containerPort": 5432,
-                    "hostPort": 5432,
-                    "protocol": "tcp"
-                }
-            ],
-            "essential": true,
-            "environment": [
-                {
-                    "name": "POSTGRES_USER",
-                    "value": "postgres"
-                },
-                {
-                    "name": "POSTGRES_PASSWORD",
-                    "value": "Vad0606Vad"
-                },
-                {
-                    "name": "POSTGRES_DB",
-                    "value": "postgres"
-                }
-            ],
-            "mountPoints": [],
-            "volumesFrom": [],
-            "systemControls": []
-        },
-        {
-            "name": "redis",
-            "image": "redis:latest",
-            "cpu": 0,
-            "portMappings": [
-                {
-                    "containerPort": 6379,
-                    "hostPort": 6379,
-                    "protocol": "tcp"
-                }
-            ],
-            "essential": true,
-            "environment": [],
-            "mountPoints": [],
-            "volumesFrom": [],
-            "systemControls": []
-        },
-        {
-            "name": "celery_worker",
-            "image": "539214576463.dkr.ecr.us-east-1.amazonaws.com/meduzzen-backend-internship/meduzzen-backend-internship:latest",
-            "cpu": 0,
-            "portMappings": [],
-            "essential": false,
-            "command": [
-                "sh",
-                "-c",
-                "celery -A app.utils.celery_service worker --loglevel=warning --logfile=celery_worker.log"
-            ],
-            "environment": [
-                {
-                    "name": "REDIS_HOST",
-                    "value": "redis"
-                },
-                {
-                    "name": "DB_NAME",
-                    "value": "postgres"
-                },
-                {
-                    "name": "DB_USER",
-                    "value": "postgres"
-                },
-                {
-                    "name": "DB_PASSWORD",
-                    "value": "Vad0606Vad"
-                }
-            ],
-            "mountPoints": [],
-            "volumesFrom": [],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/meduzzen-backend",
-                    "awslogs-region": "us-east-1",
-                    "awslogs-stream-prefix": "celery_worker"
-                }
-            },
-            "systemControls": []
-        },
-        {
-            "name": "celery_beat",
-            "image": "539214576463.dkr.ecr.us-east-1.amazonaws.com/meduzzen-backend-internship/meduzzen-backend-internship:latest",
-            "cpu": 0,
-            "portMappings": [],
-            "essential": false,
-            "command": [
-                "sh",
-                "-c",
-                "celery -A app.utils.celery_service beat --loglevel=warning --logfile=celery_beat.log"
-            ],
-            "environment": [
-                {
-                    "name": "REDIS_HOST",
-                    "value": "redis"
-                },
-                {
-                    "name": "DB_NAME",
-                    "value": "postgres"
-                },
-                {
-                    "name": "DB_USER",
-                    "value": "postgres"
-                },
-                {
-                    "name": "DB_PASSWORD",
-                    "value": "Vad0606Vad"
-                }
-            ],
-            "mountPoints": [],
-            "volumesFrom": [],
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/meduzzen-backend",
-                    "awslogs-region": "us-east-1",
-                    "awslogs-stream-prefix": "celery_beat"
-                }
-            },
-            "systemControls": []
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp"
         }
-    ],
-    "family": "meduzzen-backend-task",
-    "taskRoleArn": "arn:aws:iam::539214576463:role/ecsTaskRole",
-    "executionRoleArn": "arn:aws:iam::539214576463:role/ecsTaskExecutionRole",
-    "networkMode": "awsvpc",
-    "revision": 1,
-    "volumes": [],
-    "status": "ACTIVE",
-    "requiresAttributes": [
+      ],
+      "essential": true,
+      "environment": [
         {
-            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+          "name": "APP_HOST",
+          "value": "0.0.0.0"
         },
         {
-            "name": "ecs.capability.execution-role-awslogs"
+          "name": "APP_PORT",
+          "value": "8000"
         },
         {
-            "name": "com.amazonaws.ecs.capability.ecr-auth"
+          "name": "DEBUG",
+          "value": "True"
         },
         {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+          "name": "DB_NAME",
+          "value": "postgres"
         },
         {
-            "name": "com.amazonaws.ecs.capability.task-iam-role"
+          "name": "DB_USER",
+          "value": "postgres"
         },
         {
-            "name": "ecs.capability.execution-role-ecr-pull"
+          "name": "DB_PASSWORD",
+          "value": "Vad0606Vad"
         },
         {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+          "name": "DB_PORT",
+          "value": "5432"
         },
         {
-            "name": "ecs.capability.task-eni"
+          "name": "DB_HOST",
+          "value": "postgres"
+        },
+        {
+          "name": "REDIS_HOST",
+          "value": "redis"
+        },
+        {
+          "name": "REDIS_PORT",
+          "value": "6379"
+        },
+        {
+          "name": "AUTH0_ALGORITHM",
+          "value": "RS256"
+        },
+        {
+          "name": "AUTH0_SECRET",
+          "value": "7_4mQIWrv1eoQuMqmsb2a453Re8RhQ2e9r87Ik48w3EwPqG46ZySCgRVLL3zG_Fw"
+        },
+        {
+          "name": "AUTH0_DOMAIN",
+          "value": "dev-s0p0h6d7u34fcn28.eu.auth0.com"
+        },
+        {
+          "name": "AUTH0_API_AUDIENCE",
+          "value": "https://meduzzen-api-v4.com"
+        },
+        {
+          "name": "TOKEN_EXPIRATION",
+          "value": "240000"
+        },
+        {
+          "name": "ISSUER",
+          "value": "https://meduzzen-api-v4.com"
+        },
+        {
+          "name": "API_ALGORITHM",
+          "value": "HS256"
+        },
+        {
+          "name": "API_SECRET",
+          "value": "mysupersecretkey123"
+        },
+        {
+          "name": "API_AUDIENCE",
+          "value": "https://meduzzen-app/api.com"
+        },
+        {
+          "name": "CELERY_BROKER_URL",
+          "value": "redis://localhost:6379/1"
+        },
+        {
+          "name": "CELERY_RESULT_BACKEND",
+          "value": "redis://localhost:6379/2"
         }
-    ],
-    "placementConstraints": [],
-    "compatibilities": [
-        "EC2",
-        "FARGATE"
-    ],
-    "requiresCompatibilities": [
-        "FARGATE"
-    ],
-    "cpu": "512",
-    "memory": "1024",
-    "registeredAt": "2024-08-25T08:36:54.031Z",
-    "registeredBy": "arn:aws:iam::539214576463:root",
-    "tags": []
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/meduzzen-backend",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "api"
+        }
+      },
+      "systemControls": []
+    },
+    {
+      "name": "postgres",
+      "image": "postgres:13.0-alpine",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 5432,
+          "hostPort": 5432,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "POSTGRES_USER",
+          "value": "postgres"
+        },
+        {
+          "name": "POSTGRES_PASSWORD",
+          "value": "Vad0606Vad"
+        },
+        {
+          "name": "POSTGRES_DB",
+          "value": "postgres"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "systemControls": []
+    },
+    {
+      "name": "redis",
+      "image": "redis:latest",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 6379,
+          "hostPort": 6379,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "systemControls": []
+    },
+    {
+      "name": "celery_worker",
+      "image": "539214576463.dkr.ecr.us-east-1.amazonaws.com/meduzzen-backend-internship/meduzzen-backend-internship:latest",
+      "cpu": 0,
+      "portMappings": [],
+      "essential": false,
+      "command": [
+        "sh",
+        "-c",
+        "celery -A app.utils.celery_service worker --loglevel=warning --logfile=celery_worker.log"
+      ],
+      "environment": [
+        {
+          "name": "REDIS_HOST",
+          "value": "redis"
+        },
+        {
+          "name": "DB_NAME",
+          "value": "postgres"
+        },
+        {
+          "name": "DB_USER",
+          "value": "postgres"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "value": "Vad0606Vad"
+        },
+        {
+          "name": "DB_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "DB_HOST",
+          "value": "postgres"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/meduzzen-backend",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "celery_worker"
+        }
+      },
+      "systemControls": []
+    },
+    {
+      "name": "celery_beat",
+      "image": "539214576463.dkr.ecr.us-east-1.amazonaws.com/meduzzen-backend-internship/meduzzen-backend-internship:latest",
+      "cpu": 0,
+      "portMappings": [],
+      "essential": false,
+      "command": [
+        "sh",
+        "-c",
+        "celery -A app.utils.celery_service beat --loglevel=warning --logfile=celery_beat.log"
+      ],
+      "environment": [
+        {
+          "name": "REDIS_HOST",
+          "value": "redis"
+        },
+        {
+          "name": "DB_NAME",
+          "value": "postgres"
+        },
+        {
+          "name": "DB_USER",
+          "value": "postgres"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "value": "Vad0606Vad"
+        },
+        {
+          "name": "DB_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "DB_HOST",
+          "value": "postgres"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/meduzzen-backend",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "celery_beat"
+        }
+      },
+      "systemControls": []
+    }
+  ],
+  "taskRoleArn": "arn:aws:iam::539214576463:role/ecsTaskRole",
+  "executionRoleArn": "arn:aws:iam::539214576463:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024"
 }
