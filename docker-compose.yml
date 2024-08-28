@@ -44,7 +44,7 @@ services:
     networks:
       - backend
 
-celery_worker:
+celery:
   build:
     context: .
     dockerfile: Dockerfile
