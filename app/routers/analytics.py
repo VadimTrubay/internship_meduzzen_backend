@@ -20,7 +20,6 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
 @router.get(
     "/company/{company_id}/members_results", response_model=CompanyMemberResultSchema
 )
-
 async def get_company_results(
     company_id: uuid.UUID,
     current_user: UserSchema = Depends(AuthService.get_current_user),
@@ -59,7 +58,6 @@ async def get_my_quiz_results(
 @router.get(
     "/company/{company_id}/member/{company_member_id}/results",
     response_model=CompanyMemberResultSchema,
-
 )
 async def get_company_results_one_user(
     company_id: uuid.UUID,

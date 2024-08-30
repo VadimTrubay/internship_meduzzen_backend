@@ -311,7 +311,6 @@ class ResultService:
             logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
 
-
     async def company_member_results(
         self, company_id: uuid.UUID, company_member_id, current_user_id: uuid.UUID
     ) -> CompanyMemberResultSchema:
