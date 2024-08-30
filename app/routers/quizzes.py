@@ -1,6 +1,8 @@
 import uuid
 
 from fastapi import APIRouter, Depends, status, File, UploadFile
+from typing import Dict
+from fastapi import APIRouter, Depends
 
 from app.schemas.quizzes import (
     QuizSchema,
