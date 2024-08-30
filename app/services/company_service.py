@@ -6,6 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.conf.detail import Messages
 from app.exept.custom_exceptions import (
+    NotPermission,
+    NotFound,
     CompanyNotFound,
     NotOwner,
 )

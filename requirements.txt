@@ -21,6 +21,3 @@ bcrypt==3.2.2
 PyJWT==2.8.0
 cryptography==42.0.8
 faker==26.0.0
-pytz==2024.1
-celery==5.4.0
-flower==2.0.1

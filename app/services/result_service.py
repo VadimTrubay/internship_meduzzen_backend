@@ -311,40 +311,11 @@ class ResultService:
             logger.info(Messages.NOT_PERMISSION)
             raise NotPermission()
 
-    async def company_members_results(
-        self, current_user_id: uuid.UUID, company_id: uuid.UUID
-    ) -> CompanyMemberResultSchema:
-        await self._get_company_or_raise(company_id)
-        await self._validate_company_owner_or_admin_analytics(
-            current_user_id, company_id
-        )
-        company = await self.company_repository.get_one(id=company_id)
-        if not company:
-            logger.info(Messages.COMPANY_NOT_FOUND)
-            raise CompanyNotFound()
-
-        results = await self.company_repository.get_company_members_result_data(
-            company_id
-        )
-
-        member_results = {}
-        for result, username in results:
-            if username not in member_results:
-                member_results[username] = []
-            member_results[username].append(result)
-
-        chart_data = {}
-        for username, member_result in member_results.items():
-            chart_data[username] = await self._make_chart_data(member_result)
-        result_data = CompanyMemberResultSchema(
-            data=chart_data,
-        )
-
-        return result_data
 
     async def company_member_results(
         self, company_id: uuid.UUID, company_member_id, current_user_id: uuid.UUID
     ) -> CompanyMemberResultSchema:
+
         await self._get_company_or_raise(company_id)
         await self._validate_company_owner_analytics(current_user_id, company_id)
         member = await self.company_repository.get_company_member(
@@ -365,6 +336,7 @@ class ResultService:
     async def company_members_result_last(
         self, company_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> CompanyMemberResultSchema:
+
         await self._get_company_or_raise(company_id)
         await self._validate_company_owner_analytics(current_user_id, company_id)
 
