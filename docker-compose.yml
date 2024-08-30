@@ -8,6 +8,7 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
+    restart: always
     ports:
       - "8000:8000"
     volumes:
@@ -15,7 +16,7 @@ services:
     networks:
       - backend
     command: >
-      sh -c "uvicorn app.main:app --host 0.0.0.0 --port ${APP_PORT:-8000} --reload"
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   celery:
     build:
@@ -23,6 +24,7 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
+    restart: always
     networks:
       - backend
     volumes:
@@ -34,12 +36,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    restart: always
     env_file:
       - .env
     networks:
       - backend
     volumes:
       - .:/code
+      - .:/app
     command: >
       sh -c "celery -A app.utils.celery_service beat --loglevel=warning --logfile=celery_beat.log"
 
