@@ -33,7 +33,7 @@ jobs:
 
               echo "Building and running Docker Compose with the latest images..."
               docker-compose up -d --build
-          
+
           EOF
 
   deploy:
