@@ -21,11 +21,13 @@ class TestActionService(unittest.IsolatedAsyncioTestCase):
         self.action_repository = AsyncMock()
         self.company_repository = AsyncMock()
         self.user_repository = AsyncMock()
+        self.notification_repository = AsyncMock()
         self.action_service = ActionService(
             session=self.session,
             action_repository=self.action_repository,
             company_repository=self.company_repository,
             user_repository=self.user_repository,
+            notification_repository=self.notification_repository,
         )
 
     async def test_create_invite_success(self):
