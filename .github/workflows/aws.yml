@@ -3,13 +3,13 @@ name: Deploy to Amazon ECS
 on:
   push:
     branches:
-      - be_21_add_import_data
+      - BE_21_add_import_data
 
 jobs:
   setup-and-test:
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: be_21_add_import_data
+      BRANCH_NAME: BE_21_add_import_data
 
     steps:
       - name: Checkout code
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: setup-and-test
     env:
-      BRANCH_NAME: be_21_add_import_data
+      BRANCH_NAME: BE_21_add_import_data
 
     steps:
       - name: Checkout code
