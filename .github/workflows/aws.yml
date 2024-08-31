@@ -33,7 +33,6 @@ jobs:
 
               echo "Building and running Docker Compose with the latest images..."
               docker-compose up -d --build
-#              docker-compose exec -T api pytest
           
           EOF
 
