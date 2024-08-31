@@ -30,6 +30,7 @@ async def get_all_users(
     skip: int = 1,
     limit: int = 10,
     user_service=Depends(get_user_service),
+    current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
     users = await user_service.get_users(skip, limit)
     total_count = await user_service.get_total_count()
@@ -39,7 +40,11 @@ async def get_all_users(
 
 
 @router.get("/{user_id}", response_model=UserSchema)
-async def get_user_by_id(user_id: uuid.UUID, user_service=Depends(get_user_service)):
+async def get_user_by_id(
+    user_id: uuid.UUID,
+    user_service=Depends(get_user_service),
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+):
     user = await user_service.get_user_by_id(user_id)
 
     return user

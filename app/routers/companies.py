@@ -23,6 +23,7 @@ async def get_all_companies(
     skip: int = 1,
     limit: int = 10,
     company_service: CompanyService = Depends(get_company_service),
+    current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
     companies = await company_service.get_companies(skip, limit)
     total_count = await company_service.get_total_count()
@@ -73,5 +74,6 @@ async def delete_company(
 async def get_company_by_id(
     company_id: uuid.UUID,
     company_service: CompanyService = Depends(get_company_service),
+    current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
     return await company_service.get_company_by_id(company_id)
