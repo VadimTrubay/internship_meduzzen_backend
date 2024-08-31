@@ -20,7 +20,7 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/ec2-key.pem
           chmod 600 /tmp/ec2-key.pem
 
-          ssh -o StrictHostKeyChecking=no -i /tmp/ec2-key.pem ec2-user@${{ secrets.EC2_PUBLIC_IP }} <<EOF
+          ssh -o StrictHostKeyChecking=no -i /tmp/ec2-key.pem ubuntu@${{ secrets.EC2_PUBLIC_IP }} <<EOF
               cd internship_meduzzen_backend
 
               echo "Switching to the correct branch..."
@@ -52,7 +52,7 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > /tmp/ec2-key.pem
           chmod 600 /tmp/ec2-key.pem
 
-          ssh -o StrictHostKeyChecking=no -i /tmp/ec2-key.pem ec2-user@${{ secrets.EC2_PUBLIC_IP }} <<EOF
+          ssh -o StrictHostKeyChecking=no -i /tmp/ec2-key.pem ubuntu@${{ secrets.EC2_PUBLIC_IP }} <<EOF
               cd internship_meduzzen_backend
 
               echo "Pulling latest code from git repository..."
