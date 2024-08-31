@@ -52,19 +52,19 @@ class CompanyService:
     async def get_companies(
         self, skip: int, limit: int, current_user: UserSchema
     ) -> List[CompanySchema]:
-        current_user_id = current_user.id
-        companies = await self.repository.get_many(skip=skip, limit=limit)
+        if current_user:
+            companies = await self.repository.get_many(skip=skip, limit=limit)
 
-        return [CompanySchema.model_validate(company) for company in companies]
+            return [CompanySchema.model_validate(company) for company in companies]
 
     # GET COMPANY BY ID
     async def get_company_by_id(
         self, company_id: uuid.UUID, current_user: UserSchema
     ) -> Optional[CompanySchema]:
-        current_user_id = current_user.id
-        company = await self._get_company_or_raise(company_id)
+        if current_user:
+            company = await self._get_company_or_raise(company_id)
 
-        return company
+            return company
 
     # CREATE COMPANY
     async def create_company(

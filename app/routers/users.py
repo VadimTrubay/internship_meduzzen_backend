@@ -25,7 +25,11 @@ async def verify_user_permission(
         raise NotPermission()
 
 
-@router.get("/", response_model=UsersListResponse)
+@router.get(
+    "/",
+    response_model=UsersListResponse,
+    dependencies=[Depends(verify_user_permission)],
+)
 async def get_all_users(
     skip: int = 1,
     limit: int = 10,
@@ -39,7 +43,11 @@ async def get_all_users(
     return UsersListResponse(users=result, total_count=total_count)
 
 
-@router.get("/{user_id}", response_model=UserSchema)
+@router.get(
+    "/{user_id}",
+    response_model=UserSchema,
+    dependencies=[Depends(verify_user_permission)],
+)
 async def get_user_by_id(
     user_id: uuid.UUID,
     user_service=Depends(get_user_service),
