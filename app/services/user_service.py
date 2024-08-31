@@ -49,17 +49,17 @@ class UserService:
     async def get_users(
         self, skip: int, limit: int, current_user: UserSchema
     ) -> List[UserSchema]:
-        current_user_id = current_user.id
-        users = await self.repository.get_many(skip=skip, limit=limit)
+        if current_user:
+            users = await self.repository.get_many(skip=skip, limit=limit)
 
-        return [UserSchema.model_validate(user) for user in users]
+            return [UserSchema.model_validate(user) for user in users]
 
     # GET USER BY ID
     async def get_user_by_id(
         self, user_id: uuid.UUID, current_user: UserSchema
     ) -> Optional[UserSchema]:
-        current_user_id = current_user.id
-        return await self._get_user_or_raise(user_id)
+        if current_user:
+            return await self._get_user_or_raise(user_id)
 
     # UPDATE USER
     async def update_user(
