@@ -31,8 +31,16 @@ def parse_excel(file_path: str) -> List[QuizSchema]:
         description = str(row[headers["description"]])
         frequency_days = row[headers["frequency_days"]]
         question_text = str(row[headers["question_text"]])
-        correct_answer = str(row[headers["correct_answer"]]) if row[headers["correct_answer"]] else None
-        answer_options = row[headers["answer_options"]].split(",") if row[headers["answer_options"]] else []
+        correct_answer = (
+            str(row[headers["correct_answer"]])
+            if row[headers["correct_answer"]]
+            else None
+        )
+        answer_options = (
+            row[headers["answer_options"]].split(",")
+            if row[headers["answer_options"]]
+            else []
+        )
 
         if quiz_name not in quizzes:
             quizzes[quiz_name] = {
@@ -68,7 +76,9 @@ def parse_excel(file_path: str) -> List[QuizSchema]:
                 QuestionSchema(
                     question_text=q["question_text"],
                     correct_answer=[str(ans) for ans in q["correct_answer"]],
-                    answer_options=[str(option).strip() for option in q["answer_options"]],
+                    answer_options=[
+                        str(option).strip() for option in q["answer_options"]
+                    ],
                 )
                 for q in quiz["questions"].values()
             ],
