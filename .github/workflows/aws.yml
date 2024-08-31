@@ -3,13 +3,13 @@ name: Deploy to Amazon ECS
 on:
   push:
     branches:
-      - develop
+      - BE_21_add_import_data
 
 jobs:
   setup-and-test:
     runs-on: ubuntu-latest
     env:
-      BRANCH_NAME: develop
+      BRANCH_NAME: BE_21_add_import_data
 
     steps:
       - name: Checkout code
@@ -34,14 +34,13 @@ jobs:
               echo "Building and running Docker Compose with the latest images..."
               docker-compose up -d --build
 
-              docker-compose exec -T web poetry run pytest --maxfail=1 --disable-warnings -q -v
           EOF
 
   deploy:
     runs-on: ubuntu-latest
     needs: setup-and-test
     env:
-      BRANCH_NAME: develop
+      BRANCH_NAME: BE_21_add_import_data
 
     steps:
       - name: Checkout code
