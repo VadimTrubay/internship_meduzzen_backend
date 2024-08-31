@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.11'
 
 services:
   api:
@@ -9,38 +9,14 @@ services:
     env_file:
       - .env
     restart: always
-    depends_on:
-      - postgres
-      - redis
     ports:
       - "8000:8000"
+    volumes:
+      - .:/app
     networks:
       - backend
-
-
-  postgres:
-    image: postgres:13.0-alpine
-    container_name: meduzzen-backend-postgres
-    restart: always
-    env_file:
-      - .env
-    environment:
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-    ports:
-      - "5432:5432"
-    networks:
-      - backend
-
-  redis:
-    image: redis:latest
-    container_name: meduzzen-backend-redis
-    restart: always
-    env_file:
-      - .env
-    ports:
-      - "6379:6379"
-    networks:
-      - backend
+    command: >
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   celery:
     build:
@@ -49,11 +25,10 @@ services:
     env_file:
       - .env
     restart: always
-    depends_on:
-      - postgres
-      - redis
     networks:
       - backend
+    volumes:
+      - .:/app
     command: >
       sh -c "celery -A app.utils.celery_service worker --loglevel=warning --logfile=celery_worker.log"
 
@@ -62,13 +37,12 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: always
-    depends_on:
-      - postgres
-      - redis
     env_file:
       - .env
     networks:
       - backend
+    volumes:
+      - .:/app
     command: >
       sh -c "celery -A app.utils.celery_service beat --loglevel=warning --logfile=celery_beat.log"
 
