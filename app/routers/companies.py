@@ -25,6 +25,7 @@ async def get_all_companies(
     company_service: CompanyService = Depends(get_company_service),
     current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
+    current_user_id = current_user.id
     companies = await company_service.get_companies(skip, limit)
     total_count = await company_service.get_total_count()
     result = [CompanySchema.from_orm(company) for company in companies]
@@ -76,4 +77,6 @@ async def get_company_by_id(
     company_service: CompanyService = Depends(get_company_service),
     current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
+    current_user_id = current_user.id
+
     return await company_service.get_company_by_id(company_id)
