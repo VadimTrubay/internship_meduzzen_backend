@@ -27,12 +27,12 @@ def parse_excel(file_path: str) -> List[QuizSchema]:
     quizzes = {}
 
     for row in sheet.iter_rows(min_row=2, values_only=True):
-        quiz_name = row[headers["name"]]
-        description = row[headers["description"]]
+        quiz_name = str(row[headers["name"]])
+        description = str(row[headers["description"]])
         frequency_days = row[headers["frequency_days"]]
-        question_text = row[headers["question_text"]]
-        correct_answer = row[headers["correct_answer"]]
-        answer_options = row[headers["answer_options"]]
+        question_text = str(row[headers["question_text"]])
+        correct_answer = str(row[headers["correct_answer"]]) if row[headers["correct_answer"]] else None
+        answer_options = row[headers["answer_options"]].split(",") if row[headers["answer_options"]] else []
 
         if quiz_name not in quizzes:
             quizzes[quiz_name] = {
@@ -49,18 +49,15 @@ def parse_excel(file_path: str) -> List[QuizSchema]:
             question = {
                 "question_text": question_text,
                 "correct_answer": [correct_answer] if correct_answer else [],
-                "answer_options": answer_options.split(",") if answer_options else [],
+                "answer_options": answer_options,
             }
             questions[question_text] = question
-
         else:
             if correct_answer and correct_answer not in question["correct_answer"]:
                 question["correct_answer"].append(correct_answer)
-            if answer_options:
-                options = answer_options.split(",")
-                for option in options:
-                    if option not in question["answer_options"]:
-                        question["answer_options"].append(option)
+            for option in answer_options:
+                if option not in question["answer_options"]:
+                    question["answer_options"].append(option)
 
     quizzes_list = [
         QuizSchema(
@@ -70,8 +67,8 @@ def parse_excel(file_path: str) -> List[QuizSchema]:
             questions=[
                 QuestionSchema(
                     question_text=q["question_text"],
-                    correct_answer=q["correct_answer"],
-                    answer_options=q["answer_options"],
+                    correct_answer=[str(ans) for ans in q["correct_answer"]],
+                    answer_options=[str(option).strip() for option in q["answer_options"]],
                 )
                 for q in quiz["questions"].values()
             ],

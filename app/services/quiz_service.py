@@ -291,6 +291,7 @@ class QuizService:
         self, quiz_id: uuid.UUID, quiz_data: QuizSchema, current_user_id: uuid.UUID
     ) -> None:
         quiz_update_data = QuizUpdateSchema(
+            id=quiz_id,
             name=quiz_data.name,
             description=quiz_data.description,
             frequency_days=quiz_data.frequency_days,
