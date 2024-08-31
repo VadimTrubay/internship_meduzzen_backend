@@ -25,12 +25,21 @@ async def get_all_companies(
     company_service: CompanyService = Depends(get_company_service),
     current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
-    current_user_id = current_user.id
-    companies = await company_service.get_companies(skip, limit)
+    companies = await company_service.get_companies(skip, limit, current_user)
     total_count = await company_service.get_total_count()
     result = [CompanySchema.from_orm(company) for company in companies]
 
     return CompaniesListResponse(companies=result, total_count=total_count)
+
+
+@router.get("/{company_id}", response_model=CompanySchema)
+async def get_company_by_id(
+    company_id: uuid.UUID,
+    company_service: CompanyService = Depends(get_company_service),
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+):
+
+    return await company_service.get_company_by_id(company_id, current_user)
 
 
 @router.post("/", response_model=CompanySchema)
@@ -69,14 +78,3 @@ async def delete_company(
     current_user_id = current_user.id
 
     return await company_service.delete_company(company_id, current_user_id)
-
-
-@router.get("/{company_id}", response_model=CompanySchema)
-async def get_company_by_id(
-    company_id: uuid.UUID,
-    company_service: CompanyService = Depends(get_company_service),
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-):
-    current_user_id = current_user.id
-
-    return await company_service.get_company_by_id(company_id)

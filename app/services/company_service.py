@@ -14,6 +14,7 @@ from app.schemas.companies import (
     CompanySchema,
     CompanyResponseSchema,
 )
+from app.schemas.users import UserSchema
 
 
 class CompanyService:
@@ -48,13 +49,19 @@ class CompanyService:
         return count
 
     # GET COMPANIES
-    async def get_companies(self, skip, limit) -> List[CompanySchema]:
+    async def get_companies(
+        self, skip: int, limit: int, current_user: UserSchema
+    ) -> List[CompanySchema]:
+        current_user_id = current_user.id
         companies = await self.repository.get_many(skip=skip, limit=limit)
 
         return [CompanySchema.model_validate(company) for company in companies]
 
     # GET COMPANY BY ID
-    async def get_company_by_id(self, company_id: uuid.UUID) -> Optional[CompanySchema]:
+    async def get_company_by_id(
+        self, company_id: uuid.UUID, current_user: UserSchema
+    ) -> Optional[CompanySchema]:
+        current_user_id = current_user.id
         company = await self._get_company_or_raise(company_id)
 
         return company
