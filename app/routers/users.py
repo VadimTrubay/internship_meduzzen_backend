@@ -28,7 +28,6 @@ async def verify_user_permission(
 @router.get(
     "/",
     response_model=UsersListResponse,
-    dependencies=[Depends(verify_user_permission)],
 )
 async def get_all_users(
     skip: int = 1,
