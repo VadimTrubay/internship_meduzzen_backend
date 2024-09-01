@@ -6,15 +6,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.conf.detail import Messages
 from app.exept.custom_exceptions import (
-    NotPermission,
-    NotFound,
     CompanyNotFound,
     NotOwner,
 )
 from app.repository.company_repository import CompanyRepository
 from app.schemas.companies import (
     CompanySchema,
+    CompanyResponseSchema,
 )
+from app.schemas.users import UserSchema
 
 
 class CompanyService:
@@ -49,16 +49,22 @@ class CompanyService:
         return count
 
     # GET COMPANIES
-    async def get_companies(self, skip, limit) -> List[CompanySchema]:
-        companies = await self.repository.get_many(skip=skip, limit=limit)
+    async def get_companies(
+        self, skip: int, limit: int, current_user: UserSchema
+    ) -> List[CompanySchema]:
+        if current_user:
+            companies = await self.repository.get_many(skip=skip, limit=limit)
 
-        return [CompanySchema.model_validate(company) for company in companies]
+            return [CompanySchema.model_validate(company) for company in companies]
 
     # GET COMPANY BY ID
-    async def get_company_by_id(self, company_id: uuid.UUID) -> Optional[CompanySchema]:
-        company = await self._get_company_or_raise(company_id)
+    async def get_company_by_id(
+        self, company_id: uuid.UUID, current_user: UserSchema
+    ) -> Optional[CompanySchema]:
+        if current_user:
+            company = await self._get_company_or_raise(company_id)
 
-        return company
+            return company
 
     # CREATE COMPANY
     async def create_company(
@@ -81,8 +87,12 @@ class CompanyService:
     # DELETE COMPANY
     async def delete_company(
         self, company_id: uuid.UUID, current_user_id: uuid.UUID
-    ) -> Dict:
-        await self.validate_company(current_user_id, company_id)
+    ) -> CompanyResponseSchema:
+        company = await self.validate_company(current_user_id, company_id)
         await self.repository.delete_company(company_id)
 
-        return {"message": "Company deleted", "id": company_id}
+        return CompanyResponseSchema(
+            id=company.id,
+            name=company.name,
+            description=company.description,
+        )

@@ -1,6 +1,9 @@
+import aiofiles
+import os
 import uuid
-from typing import Optional, Dict
+from typing import Optional, Dict, List, Any
 
+from fastapi import UploadFile
 from loguru import logger
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,6 +27,7 @@ from app.schemas.quizzes import (
     QuizByIdSchema,
     QuestionByIdSchema,
 )
+from app.utils.parse_excel import parse_excel
 
 
 class QuizService:
@@ -95,6 +99,13 @@ class QuizService:
                     logger.info(Messages.BAD_REQUEST)
                     raise BadRequest()
 
+    # UPLOAD EXCEL FILE
+    @staticmethod
+    async def _validate_file_type(file: UploadFile) -> None:
+        if not file.filename.endswith((".xlsx", "xls")):
+            logger.info(Messages.INVALID_FILE_TYPE)
+            raise BadRequest()
+
     # CREATE QUIZ
     async def create_quiz(
         self, quiz_data: QuizSchema, company_id: uuid.UUID, current_user_id: uuid.UUID
@@ -125,8 +136,8 @@ class QuizService:
             users, message
         )
 
-        quiz_dict = quiz_data.dict(exclude={"questions"})
-        question_dicts = [question.dict() for question in quiz_data.questions]
+        quiz_dict = quiz_data.model_dump(exclude={"questions"})
+        question_dicts = [question.model_dump() for question in quiz_data.questions]
         created_quiz_schema = QuizSchema(
             **quiz_dict, questions=question_dicts, company_id=company_id
         )
@@ -189,10 +200,17 @@ class QuizService:
         return QuizByIdSchema.from_orm(updated_quiz)
 
     # DELETE QUIZ
-    async def delete_quiz(self, quiz_id: uuid.UUID, current_user_id: uuid.UUID) -> Dict:
-        await self._validate_quiz(quiz_id, current_user_id)
+    async def delete_quiz(
+        self, quiz_id: uuid.UUID, current_user_id: uuid.UUID
+    ) -> QuizResponseSchema:
+        quiz = await self._validate_quiz(quiz_id, current_user_id)
         await self.quiz_repository.delete_quiz(quiz_id)
-        return {"message": "Quiz deleted", "id": quiz_id}
+        return QuizResponseSchema(
+            id=quiz.id,
+            name=quiz.name,
+            description=quiz.description,
+            frequency_days=quiz.frequency_days,
+        )
 
     # GET QUIZ BY ID
     async def get_quiz_by_id(self, quiz_id: uuid.UUID) -> Optional[QuizByIdSchema]:
@@ -226,3 +244,60 @@ class QuizService:
             await self.quiz_repository.toggle_quiz_active_status(quiz_id, False)
         else:
             await self.quiz_repository.toggle_quiz_active_status(quiz_id, True)
+
+    # IMPORT QUIZZES
+    async def import_quizzes(
+        self, file: UploadFile, company_id: uuid.UUID, current_user_id: uuid.UUID
+    ) -> dict[str, list[Any] | str]:
+        os.makedirs("temp", exist_ok=True)
+
+        file_location = f"temp/{file.filename}"
+        async with aiofiles.open(file_location, "wb") as buffer:
+            content = await file.read()
+            await buffer.write(content)
+
+        quizzes_data = parse_excel(file_location)
+        os.remove(file_location)
+
+        created_quizzes = []
+        updated_quizzes = []
+
+        await self._get_company_or_raise(company_id)
+
+        for quiz_data in quizzes_data:
+            existing_quiz = await self.quiz_repository.get_one(
+                name=quiz_data.name, company_id=company_id
+            )
+            if existing_quiz:
+                updated_quizzes.append(quiz_data.name)
+                await self.update_existing_quiz(
+                    existing_quiz.id, quiz_data, current_user_id
+                )
+            else:
+                created_quizzes.append(quiz_data.name)
+                await self.create_quiz(
+                    quiz_data=quiz_data,
+                    company_id=company_id,
+                    current_user_id=current_user_id,
+                )
+
+        return {
+            "status": "Quizzes import completed",
+            "created_quizzes": created_quizzes,
+            "updated_quizzes": updated_quizzes,
+        }
+
+    async def update_existing_quiz(
+        self, quiz_id: uuid.UUID, quiz_data: QuizSchema, current_user_id: uuid.UUID
+    ) -> None:
+        quiz_update_data = QuizUpdateSchema(
+            id=quiz_id,
+            name=quiz_data.name,
+            description=quiz_data.description,
+            frequency_days=quiz_data.frequency_days,
+            questions=quiz_data.questions,
+        )
+
+        await self.update_quiz(
+            quiz_id=quiz_id, quiz_data=quiz_update_data, current_user_id=current_user_id
+        )

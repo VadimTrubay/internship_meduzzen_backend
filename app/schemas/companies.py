@@ -29,6 +29,12 @@ class CompanyUpdateRequest(BaseModel):
     visible: Optional[bool] = None
 
 
+class CompanyResponseSchema(BaseModel):
+    id: uuid.UUID
+    name: str
+    description: str
+
+
 class CompanyDetailResponse(CompanySchema):
     owner_id: uuid.UUID
 
