@@ -16,13 +16,6 @@ def user_service():
 
 @pytest.mark.asyncio
 async def test_get_users_success(user_service):
-    user_id = uuid4()
-    current_user = UserSchema(
-        id=user_id,
-        email="testuser@example.com",
-        username="testuser",
-        password="testpassword",
-    )
     user_service.repository.get_many.return_value = [
         UserSchema(
             id=uuid4(),
@@ -37,7 +30,7 @@ async def test_get_users_success(user_service):
             password="testpassword2",
         ),
     ]
-    users = await user_service.get_users(skip=0, limit=10, current_user=current_user)
+    users = await user_service.get_users(skip=0, limit=10)
     assert len(users) == 2
 
 
