@@ -46,9 +46,7 @@ class UserService:
         return count
 
     # GET USERS
-    async def get_users(
-        self, skip: int, limit: int
-    ) -> List[UserSchema]:
+    async def get_users(self, skip: int, limit: int) -> List[UserSchema]:
         users = await self.repository.get_many(skip=skip, limit=limit)
 
         return [UserSchema.model_validate(user) for user in users]
