@@ -16,6 +16,13 @@ def user_service():
 
 @pytest.mark.asyncio
 async def test_get_users_success(user_service):
+    user_id = uuid4()
+    current_user = UserSchema(
+        id=user_id,
+        email="testuser@example.com",
+        username="testuser",
+        password="testpassword",
+    )
     user_service.repository.get_many.return_value = [
         UserSchema(
             id=uuid4(),
@@ -30,29 +37,41 @@ async def test_get_users_success(user_service):
             password="testpassword2",
         ),
     ]
-    users = await user_service.get_users(skip=0, limit=10)
+    users = await user_service.get_users(skip=0, limit=10, current_user=current_user)
     assert len(users) == 2
 
 
 @pytest.mark.asyncio
 async def test_get_user_by_id_success(user_service):
     user_id = uuid4()
+    current_user = UserSchema(
+        id=user_id,
+        email="testuser@example.com",
+        username="testuser",
+        password="testpassword",
+    )
     user_service.repository.get_one.return_value = UserSchema(
         id=user_id,
         email="testuser@example.com",
         username="testuser",
         password="testpassword",
     )
-    user = await user_service.get_user_by_id(user_id)
+    user = await user_service.get_user_by_id(user_id, current_user)
     assert user.id == user_id
 
 
 @pytest.mark.asyncio
 async def test_get_user_by_id_not_found(user_service):
     user_id = uuid4()
+    current_user = UserSchema(
+        id=user_id,
+        email="testuser@example.com",
+        username="testuser",
+        password="testpassword",
+    )
     user_service.repository.get_one.return_value = None
     with pytest.raises(UserNotFound):
-        await user_service.get_user_by_id(user_id)
+        await user_service.get_user_by_id(user_id, current_user)
 
 
 @pytest.mark.asyncio
