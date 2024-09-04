@@ -5,7 +5,8 @@ from app.services.auth_service import AuthService
 from app.schemas.users import (
     SignInRequest,
     SignUpRequest,
-    UserSchema, BaseUserSchema,
+    UserSchema,
+    BaseUserSchema,
 )
 from app.utils.call_services import get_auth_service
 
