@@ -44,14 +44,14 @@ async def get_all_users(
 
 @router.get(
     "/{user_id}",
-    response_model=UserSchema,
+    response_model=BaseUserSchema,
     dependencies=[Depends(verify_user_permission)],
 )
 async def get_user_by_id(
     user_id: uuid.UUID,
     user_service=Depends(get_user_service),
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-):
+    current_user: BaseUserSchema = Depends(AuthService.get_current_user),
+) -> BaseUserSchema:
     user = await user_service.get_user_by_id(user_id, current_user)
 
     return user
