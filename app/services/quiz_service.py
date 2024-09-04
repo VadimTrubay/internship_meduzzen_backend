@@ -266,6 +266,7 @@ class QuizService:
         except Exception:
             raise BadRequest()
 
+
         await self._get_company_or_raise(company_id)
 
         for quiz_data in quizzes_data:
