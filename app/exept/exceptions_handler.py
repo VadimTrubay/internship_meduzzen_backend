@@ -57,7 +57,7 @@ def register_exception_handler(app: FastAPI):
             status_code=status.HTTP_404_NOT_FOUND, content={"detail": str(exc)}
         )
 
-    @app.exception_handler(UserNotFound)
+    @app.exception_handler(EmailAlreadyExists)
     async def email_already_exists_exception_handler(
         request: Request, exc: EmailAlreadyExists
     ):

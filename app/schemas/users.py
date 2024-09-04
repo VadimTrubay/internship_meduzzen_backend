@@ -23,7 +23,6 @@ class SignUpRequest(BaseModel):
 
 class SignInRequest(BaseModel):
     email: EmailStr
-    password: str
 
 
 class SignInResponse(BaseModel):
