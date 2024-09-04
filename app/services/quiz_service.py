@@ -250,6 +250,7 @@ class QuizService:
         self, file: UploadFile, company_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> dict[str, list[Any] | str]:
         os.makedirs("temp", exist_ok=True)
+        await self._validate_file_type(file)
 
         file_location = f"temp/{file.filename}"
         async with aiofiles.open(file_location, "wb") as buffer:
