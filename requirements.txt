@@ -22,3 +22,4 @@ faker==26.0.0
 pytz==2024.1
 celery==5.4.0
 flower==2.0.1
+aiofiles==24.1.0
