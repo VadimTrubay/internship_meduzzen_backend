@@ -15,6 +15,12 @@ jobs:
       with:
         python-version: '3.11'
 
+    - name: Set environment variables
+      run: |
+        echo "APP_HOST=${{ secrets.APP_HOST }}" >> $GITHUB_ENV
+        echo "APP_PORT=${{ secrets.APP_PORT }}" >> $GITHUB_ENV
+        echo "DEBUG=${{ secrets.DEBUG }}" >> $GITHUB_ENV
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
