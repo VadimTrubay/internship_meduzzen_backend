@@ -257,6 +257,7 @@ class ResultService:
 
         return result_data
 
+      
     async def my_quizzes_latest_results(
         self, current_user_id: uuid.UUID
     ) -> QuizResultSchema:

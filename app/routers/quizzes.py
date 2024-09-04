@@ -1,6 +1,7 @@
 import uuid
-from typing import Dict
 
+from fastapi import APIRouter, Depends, status, File, UploadFile
+from typing import Dict
 from fastapi import APIRouter, Depends
 
 from app.schemas.quizzes import (
@@ -75,4 +76,19 @@ async def get_quiz_by_id(
     quiz_id: uuid.UUID,
     quiz_service: QuizService = Depends(get_quizzes_service),
 ) -> QuizByIdSchema:
+
     return await quiz_service.get_quiz_by_id(quiz_id)
+
+
+@router.post("/company/{company_id}/import", status_code=status.HTTP_201_CREATED)
+async def import_quizzes(
+    company_id: uuid.UUID,
+    current_user: UserSchema = Depends(AuthService.get_current_user),
+    quiz_service: QuizService = Depends(get_quizzes_service),
+    file: UploadFile = File(...),
+):
+    current_user_id = current_user.id
+
+    return await quiz_service.import_quizzes(
+        file=file, current_user_id=current_user_id, company_id=company_id
+    )

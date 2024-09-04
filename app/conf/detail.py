@@ -33,6 +33,7 @@ class Messages(Enum):
     SUCCESS_GET_CURRENT_USER = "Success get current user"
     YOU_CAN_NOT_INVITE_YOUR_SELF = "You can't invite yourself"
     BAD_REQUEST = "Bad request"
+    INVALID_FILE_TYPE = "Invalid file type"
 
     def __str__(self):
         return self.value

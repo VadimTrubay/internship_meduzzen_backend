@@ -25,7 +25,6 @@ async def get_company_results(
     current_user: UserSchema = Depends(AuthService.get_current_user),
     result_service: ResultService = Depends(get_result_service),
 ) -> CompanyMemberResultSchema:
-
     current_user_id = current_user.id
 
     return await result_service.company_members_results(current_user_id, company_id)
@@ -47,7 +46,6 @@ async def get_my_quiz_results(
     current_user: UserSchema = Depends(AuthService.get_current_user),
     result_service: ResultService = Depends(get_result_service),
 ) -> QuizResultSchema:
-
     current_user_id = current_user.id
 
     return await result_service.my_quiz_results(
@@ -80,7 +78,6 @@ async def get_company_result_last(
     current_user: UserSchema = Depends(AuthService.get_current_user),
     result_service: ResultService = Depends(get_result_service),
 ) -> CompanyMemberResultSchema:
-
     current_user_id = current_user.id
 
     return await result_service.company_members_result_last(company_id, current_user_id)
