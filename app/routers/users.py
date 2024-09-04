@@ -33,6 +33,7 @@ async def get_all_users(
     skip: int = 1,
     limit: int = 10,
     user_service=Depends(get_user_service),
+    current_user: UserSchema = Depends(AuthService.get_current_user),
 ):
     users = await user_service.get_users(skip, limit)
     total_count = await user_service.get_total_count()
