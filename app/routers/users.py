@@ -45,7 +45,6 @@ async def get_all_users(
 @router.get(
     "/{user_id}",
     response_model=BaseUserSchema,
-    dependencies=[Depends(verify_user_permission)],
 )
 async def get_user_by_id(
     user_id: uuid.UUID,
