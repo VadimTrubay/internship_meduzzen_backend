@@ -42,7 +42,6 @@ services:
     networks:
       - backend
     volumes:
-      - .:/code
       - .:/app
     command: >
       sh -c "celery -A app.utils.celery_service beat --loglevel=warning --logfile=celery_beat.log"

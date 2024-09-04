@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock
 from uuid import uuid4
 
 from app.schemas.companies import CompanySchema, CompanyResponseSchema
+from app.schemas.users import UserSchema
 from app.services.company_service import CompanyService
 from app.exept.custom_exceptions import CompanyNotFound
 
@@ -37,6 +38,13 @@ async def test_create_company_success(company_service):
 
 @pytest.mark.asyncio
 async def test_get_companies_success(company_service):
+    user_id = uuid4()
+    current_user = UserSchema(
+        id=user_id,
+        email="testuser@example.com",
+        username="testuser",
+        password="testpassword",
+    )
     companies_data = [
         CompanySchema(
             id=uuid4(),
@@ -56,7 +64,7 @@ async def test_get_companies_success(company_service):
         ),
     ]
     company_service.repository.get_many.return_value = companies_data
-    companies = await company_service.get_companies(0, 10)
+    companies = await company_service.get_companies(0, 10, current_user)
 
     assert len(companies) == 2
     assert companies[0].name == "company1"
@@ -67,6 +75,12 @@ async def test_get_companies_success(company_service):
 async def test_get_company_by_id_success(company_service):
     company_id = uuid4()
     user_id = uuid4()
+    current_user = UserSchema(
+        id=user_id,
+        email="testuser@example.com",
+        username="testuser",
+        password="testpassword",
+    )
     company_service.repository.get_one.return_value = CompanySchema(
         id=company_id,
         name="company",
@@ -76,17 +90,24 @@ async def test_get_company_by_id_success(company_service):
         owner_id=user_id,
     )
 
-    company = await company_service.get_company_by_id(company_id)
+    company = await company_service.get_company_by_id(company_id, current_user)
     assert company.id == company_id
 
 
 @pytest.mark.asyncio
 async def test_get_company_by_id_not_found(company_service):
     company_id = uuid4()
+    user_id = uuid4()
+    current_user = UserSchema(
+        id=user_id,
+        email="testuser@example.com",
+        username="testuser",
+        password="testpassword",
+    )
     company_service.repository.get_one.return_value = None
 
     with pytest.raises(CompanyNotFound):
-        await company_service.get_company_by_id(company_id)
+        await company_service.get_company_by_id(company_id, current_user)
 
 
 @pytest.mark.asyncio
