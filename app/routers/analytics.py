@@ -8,6 +8,7 @@ from app.schemas.results import (
     CompanyMemberResultSchema,
     QuizResultSchema,
 )
+from app.schemas.results import UserQuizResultSchema
 from app.schemas.users import UserSchema
 from app.services.auth_service import AuthService
 from app.services.result_service import ResultService
