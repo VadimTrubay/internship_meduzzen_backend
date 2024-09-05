@@ -1,13 +1,15 @@
-version: '3.11'
+version: '3.11.5'
 
 services:
   api:
-    container_name: meduzzen-backend-internship
     build:
       context: .
       dockerfile: Dockerfile
+    env_file:
+      - .env
+
     ports:
-      - "8000:8000"
+      - "${APP_PORT}:${APP_PORT}"
     volumes:
       - .:/app
     networks:
@@ -33,9 +35,11 @@ services:
     networks:
       - backend
     volumes:
-      - .:/app
-    command: >
-      sh -c "celery -A app.utils.celery_service beat --loglevel=warning --logfile=celery_beat.log"
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
 
 volumes:
   postgres_data:
