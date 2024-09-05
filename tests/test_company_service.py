@@ -75,6 +75,7 @@ async def test_get_companies_success(company_service):
 async def test_get_company_by_id_success(company_service):
     company_id = uuid4()
     user_id = uuid4()
+
     current_user = UserSchema(
         id=user_id,
         email="testuser@example.com",
