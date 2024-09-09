@@ -6,6 +6,7 @@ from app.schemas.users import (
     SignInRequest,
     SignUpRequest,
     UserSchema,
+    BaseUserSchema,
 )
 from app.utils.call_services import get_auth_service
 
@@ -28,9 +29,9 @@ async def create_user(
     return await user_service.create_user(user_create.model_dump())
 
 
-@router.get("/me", response_model=UserSchema)
+@router.get("/me", response_model=BaseUserSchema)
 async def get_current_user_route(
-    current_user: UserSchema = Depends(AuthService.get_current_user),
-) -> UserSchema:
+    current_user: BaseUserSchema = Depends(AuthService.get_current_user),
+) -> BaseUserSchema:
 
     return current_user

@@ -1,0 +1,80 @@
+version: '3.11'
+
+services:
+  api:
+    container_name: meduzzen-backend-internship
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    networks:
+      - backend
+    depends_on:
+      - postgres
+      - redis
+    command: >
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  postgres:
+    image: postgres:14.0-alpine
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    restart: always
+
+  redis:
+    image: redis:latest
+    env_file:
+      - .env
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    restart: always
+    networks:
+      - backend
+    volumes:
+      - .:/app
+    command: >
+      sh -c "celery -A app.utils.celery_service worker --loglevel=warning --logfile=celery_worker.log"
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    env_file:
+      - .env
+    networks:
+      - backend
+    volumes:
+      - .:/app
+    command: >
+      sh -c "celery -A app.utils.celery_service beat --loglevel=warning --logfile=celery_beat.log"
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  backend:
+    driver: bridge

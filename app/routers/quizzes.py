@@ -2,8 +2,6 @@ import uuid
 from typing import Dict
 
 from fastapi import APIRouter, Depends, status, File, UploadFile
-from typing import Dict
-from fastapi import APIRouter, Depends
 
 from app.schemas.quizzes import (
     QuizSchema,
@@ -24,6 +22,7 @@ router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 async def get_quizzes(
     company_id: uuid.UUID,
     quiz_service: QuizService = Depends(get_quizzes_service),
+    current_user: UserSchema = Depends(AuthService.get_current_user),
 ) -> QuizzesListResponse:
     quizzes = await quiz_service.get_quizzes(company_id)
     total_count = await quiz_service.get_total_count(company_id)
@@ -76,6 +75,7 @@ async def delete_quiz(
 async def get_quiz_by_id(
     quiz_id: uuid.UUID,
     quiz_service: QuizService = Depends(get_quizzes_service),
+    current_user: UserSchema = Depends(AuthService.get_current_user),
 ) -> QuizByIdSchema:
 
     return await quiz_service.get_quiz_by_id(quiz_id)
