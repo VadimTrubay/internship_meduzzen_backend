@@ -250,17 +250,22 @@ class QuizService:
         self, file: UploadFile, company_id: uuid.UUID, current_user_id: uuid.UUID
     ) -> dict[str, list[Any] | str]:
         os.makedirs("temp", exist_ok=True)
+        await self._validate_file_type(file)
+        try:
+            file_location = f"temp/{file.filename}"
+            async with aiofiles.open(file_location, "wb") as buffer:
+                content = await file.read()
+                await buffer.write(content)
 
-        file_location = f"temp/{file.filename}"
-        async with aiofiles.open(file_location, "wb") as buffer:
-            content = await file.read()
-            await buffer.write(content)
+            quizzes_data = parse_excel(file_location)
+            os.remove(file_location)
 
-        quizzes_data = parse_excel(file_location)
-        os.remove(file_location)
+            created_quizzes = []
+            updated_quizzes = []
 
-        created_quizzes = []
-        updated_quizzes = []
+        except Exception:
+            raise BadRequest()
+
 
         await self._get_company_or_raise(company_id)
 

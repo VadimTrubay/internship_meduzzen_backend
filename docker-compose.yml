@@ -10,13 +10,41 @@ services:
     ports:
       - "${APP_PORT}:${APP_PORT}"
     volumes:
-      - .:/code
+      - .:/app
+    networks:
+      - backend
     depends_on:
       - postgres
       - redis
+    command: >
+      sh -c "uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   postgres:
     image: postgres:14.0-alpine
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    restart: always
+
+  redis:
+    image: redis:latest
+    env_file:
+      - .env
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
     env_file:
       - .env
     environment:
@@ -35,6 +63,10 @@ services:
       - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
 
 volumes:
   postgres_data:

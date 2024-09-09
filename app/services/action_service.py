@@ -130,7 +130,6 @@ class ActionService:
                     return invite
         else:
             data = action_data.model_dump()
-
             data["status"] = InvitationStatus.INVITED.value
             data["type"] = InvitationType.INVITE.value
 
